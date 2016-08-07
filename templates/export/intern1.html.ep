@@ -1,0 +1,49 @@
+% layout 'intern1';
+% title 'Export für SKGB-intern 1';
+
+<h2><%= title %></h2>
+
+<p>SKGB-intern 1.x wurde früher per Export aus GS-Verein mit Daten versorgt. Wegen der geplanten Migration aller Dienste nach SKGB-intern 2 lohnt sich eine direkte Anpassung an die neue Datenbank nur begrenzt. Statt dessen werden hier die Daten aus SKGB-intern 2 im GS-Verein–Format bereitgestellt, so dass sie in SKGB-intern 1.x mit der Funktion <a href=http://intern1.skgb.de/digest/vorstand/update/>GS-Verein–Update</a> manuell importiert werden können.
+
+<p>Dieser Export ist geeignet für Version 1.3 und enthält alle zusätzlichen SEPA-Spalten.
+
+% use Mojo::Util;
+% use Encode;
+% my $data = "";
+% foreach my $row (@$export) {
+%  no warnings 'uninitialized';
+%  $data .= join("\t", @$row) . "\n";
+% }
+% $data =~ s/\n/\x0d\x0a/g;
+<p>→ <a href="data:;charset=windows-1252;base64,<%= Mojo::Util::b64_encode Encode::encode 'windows-1252', $data %>" download=EXPORT.TXT>Download EXPORT.TXT</a>
+
+<h3>Vorschau</h3>
+<table>
+% my ($header, $odd) = (1, 0);
+% foreach my $row (@$export) {
+<%== $odd ? "<tr class=odd>" : "<tr>" %>
+%  foreach my $col (@$row) {
+%   if ($col) {
+%    $col =~ s/Mitnum/Mit­num/;
+%    $col =~ s/Zahlfremd/Zahl­fremd/;
+%    $col =~ s/Abteilung/Abtei­lung/;
+%    $col =~ s/^Aktiv/A/;
+%    $col =~ s/^Passiv/P/;
+%    $col =~ s/^Nichtmitglied/–/;
+%    $col =~ s/^Jugend/J/;
+%    $col =~ s/, Ehrenmitglied$/ E/;
+%    $col =~ s/, Gastmitglied$/ G/;
+%    $col =~ s/, Kontoinhaber$/ K/;
+%#    $col =~ s/,00$//;
+%    $col =~ s/Zahlart/Zahl­art/;
+%    $col =~ s/^Bankeinzug$/LAS/;
+%    $col =~ s/^Überweisung$/ÜB/;
+%   }
+<%== $header ? "<th>" : "<td>" %><%= $col // "" %> <% } %>
+%#  }
+%  ($header, $odd) = (0, ! $odd);
+% }
+</table>
+
+<hr>
+<p><%= -1 + scalar @$export %> Personen (inkl. Kontoinhaber)

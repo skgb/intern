@@ -1,0 +1,13 @@
+% layout 'intern1';
+% my $code = $codes->[0];
+% title 'Access Code ' . $code->{code};
+
+<h2><%= title %></h2>
+
+
+<p><b><%= $code->{code} %></b> <%= $code->{this_session} && '(current session)' %> <%= $code->{this_expired} && '(expired)' %>
+<p>issued: <%= $code->{creation} %>
+<p>expiration: <%= $code->{expiration} %>
+<p>access: first <%= $code->{first_use} %>, last <%= $code->{access} %>
+<p><input type=submit name=edit value="view/edit rights"<%= $code->{this_expired} && ' disabled' %>> <input type=submit name=delete value="delete<%= $code->{this_session} && ' and log out' %>" disabled>
+

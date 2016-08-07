@@ -1,0 +1,39 @@
+% layout 'intern1';
+% title 'Wiki';
+
+<h2><%= title %></h2>
+
+<p><b>"<%= $name %>" – History</b>
+
+
+
+<table>
+<th colspan=2>Vergleich
+<th>Datum
+<th>Autor
+% my $odd = 1;
+% foreach my $revision (@$revisions) {
+<%== $odd ? "<tr class=odd>" : "<tr>" %>
+%    if ($revision->[5]) {
+<td><a href="<%= $revision->[5] %>">Aktuell</a>
+%    } else {
+<td>Aktuell
+%    }
+%    if ($revision->[4]) {
+<td><a href="<%= $revision->[4] %>">Vorherige</a>
+%    } else {
+<td>Vorherige
+%    }
+<td><a href="<%= $revision->[3] %>"><%= $revision->[1] %></a>
+<td><%= $revision->[0] %>
+%  $odd = ! $odd;
+% }
+</table>
+
+
+% if ($logged_in) {
+<p>'<%= $logged_in->name() %>' logged in.
+% }
+
+<p><a href=/>index</a>
+

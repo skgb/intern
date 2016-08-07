@@ -1,0 +1,72 @@
+% layout 'intern1';
+% title 'Liste der Postanschriften';
+% use 5.016;
+
+<h2><%= title %></h2>
+
+%= form_for postliste => (method => 'GET') => begin
+<p><label><input type=checkbox name=all id=allcheckbox value="" <%= defined param('all') ? 'checked' : '' %>>
+auch Kontakte mit E-Mail zeigen</label>
+<input type=submit id=allsubmit>
+<script>
+document.getElementById("allcheckbox").onclick = function () {
+	this.form.submit();  // known issue: using the back button may break the UI temporarily
+};
+document.getElementById("allsubmit").outerHTML = '';
+</script>
+% end
+
+
+<table id=membertable class="compact">
+<thead>
+<!-- colspan=<%= $address_cols %> doesn't seem to work with DataTables; testing required -->
+<tr>
+<th>Name
+%  for (my $i = 0; $i < $address_cols; $i++) {
+<th>Zeile <%= $i + 1 %>
+%  }
+<th>Sortierschlüssel
+</thead>
+% my $user = $self->skgb->session->user;
+% foreach my $row (@$list) {
+%  my $profile_url = url_for('mglpage');
+%  $profile_url = $profile_url->query(node => $row->{person}->node_id) unless $row->{person}->equals($user);
+<tr>
+<td><%= link_auth_to $profile_url => begin %><%= $row->{person}->name %><% end %>
+%#<td><%= $row->{person}->membership->{status_long} %>
+%  for (my $i = 0; $i < $address_cols; $i++) {
+<td><%= $row->{address}->[$i] || '' %>
+%  }
+%#<td><%= $row->{person}->gs_verein_id || '–' %>
+<td><%= fc($row->{person}->name_sortable) %>
+% }
+</table>
+
+<script type="text/javascript" src="DataTables/datatables.js"></script>
+<script>
+$(document).ready(function() {
+	var cols = $('#membertable tr')[1].childElementCount;
+	var exportOptions = {columns: ':visible'};
+	$('#membertable').DataTable( {
+		"columnDefs": [{
+			targets: cols - 1,
+			visible: false,
+			searchable: false
+		},{
+			targets: 0,
+			orderData: [ cols - 1 ]
+		}],
+		colReorder: true,
+		lengthMenu: [[20, 50, -1], [20, 50, "All"]],
+		iDisplayLength: 50,
+		stateSave: true,
+		dom: 'lBfrtip',
+		buttons: [
+			{extend: 'copy', exportOptions: exportOptions},
+			{extend: 'csv', exportOptions: exportOptions},
+			{extend: 'pdf', exportOptions: exportOptions},
+			{extend: 'print', exportOptions: exportOptions, autoPrint: false, text: 'Print View'},
+		]
+	} );
+} );
+</script>

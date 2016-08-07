@@ -1,0 +1,21 @@
+% layout 'intern1';
+% title 'Wiki';
+
+<h2><%= title %></h2>
+
+<p><b>"<%= $name %>"</b>
+
+<div><%== $diff %></div>
+
+<hr>
+% if (param 'oldid') {
+<p>(Vergleich zweier Versionen der Seite <a href="<%= url_for 'wikiview' %>"><%= $name %></a>)
+% }
+
+
+% if ($logged_in) {
+<p>'<%= $logged_in->name() %>' logged in.
+% }
+
+<p><a href=/>index</a>
+

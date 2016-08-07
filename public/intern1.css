@@ -1,0 +1,344 @@
+/* SKGB-intern Standard (Screen) Stylesheet
+ * Version 1.3
+ * Absolute/margin positioning edition
+ * CSS layer 2
+ *
+ * Copyright (c) 2004, 2006, 2016 Segel- und Kanugemeinschaft Bruchertalsperre e. V.
+ * by Arne Johannessen
+ * mailto:webmaster@skgb.de
+ *
+ * Based on prior art by Mark Newhouse <http://realworldstyle.com/>
+ */
+
+.hide {
+	display: none !important;
+}
+ABBR {
+	font-style: inherit;
+	font-variant: inherit;
+}
+
+#head {
+	position: absolute;
+	left: 0;
+	top: 0;
+	margin: 0;
+	padding: 0;
+	width: 100%;
+	height: 4em;
+	background-color: #eee;
+}
+#head H1 {
+	margin: 0;
+	padding: .5em;
+	height: 1em;
+	border-left: 6px solid #bbb;
+	font: 200%/1.0 "Arial Black", "Impact", "Lucida Grande", "Lucida", "Verdana", sans-serif;
+	font-weight: normal;
+}
+#head H1 A, #head H1 A:link, #head H1 A:hover {
+	text-decoration: none;
+	color: black;
+	background-color: inherit;
+}
+#head H1 EM {
+	font-weight: inherit;
+	font-style: inherit;
+	color: #f00;
+}
+
+BODY {
+	margin: 4.5em 0 2em 0;
+	padding: 0 .5em;
+	font: normal 100% "Times", serif;
+	color: black;
+	background: white;
+}
+BODY#intern-skgb-de {
+	margin-left: 9.5em;
+}
+#intern-skgb-de A, #intern-skgb-de :link {
+	color: #f00;
+	background-color: inherit;
+}
+#intern-skgb-de A:hover, #intern-skgb-de A:active {
+	color: white;
+	background-color: #f00;
+}
+#intern-skgb-de A:visited {
+	background-image: url("checked.png");
+	background-repeat: no-repeat;
+	background-position: bottom right;
+	padding-right: 11px;
+}
+A[type]:after {
+	font-size: 93%;
+}
+A[type="application/pdf"]:after {
+	content: " [PDF]";
+}
+A[type="text/rtf"]:after {
+	content: " [RTF]";
+}
+A[type="application/msword"]:after {
+	content: " [DOC]";
+}
+A[type="application/xml"]:after {
+	content: " [XML]";
+}
+A[type="text/xml"]:after {
+	content: " [XML]";
+}
+A[type="text/plain"]:after {
+	content: " [TXT]";
+}
+A[type="image/png"]:after {
+	content: " [PNG]";
+}
+A[type="image/jpeg"]:after {
+	content: " [JPEG]";
+}
+
+P, UL, OL, H2, H3, H4, FORM, .browser-liste {
+	margin: .5em 0;
+}
+H2, H3, H4 {
+	font-size: 1em;
+	font-weight: bold;
+	margin-top: 1.5em;
+}
+FORM#intern-starten INPUT {
+	font-size: 1em;
+}
+.browser-liste * {
+	display: inline;
+	margin: 0;
+	padding: 0;
+}
+TABLE {
+	border-collapse: collapse;
+}
+TH {
+	text-align: left;
+	font-weight: normal;
+	vertical-align: bottom;
+}
+#intern-skgb-de THEAD TH, #intern-skgb-de TH[scope=col], #intern-skgb-de TR:first-child TH {
+	padding-bottom: .5em;
+}
+#intern-skgb-de TR:first-child TH[scope=row] {
+	padding-bottom: 0;
+}
+#intern-skgb-de TD, #intern-skgb-de TH {
+	padding-right: 1em;
+}
+#intern-skgb-de TR.odd {
+	background-color: #def;
+	color: inherit;
+}
+#intern-skgb-de BLOCKQUOTE {
+	margin: 0;
+	padding: 0;
+	border-left: solid #00c .5ex;
+}
+
+#menu {
+	margin: -.5em 0 0 -.5em;
+	padding: 1px 0 1em;
+	width: 9.5em;
+	font-style: normal;
+	font-family: "Trebuchet MS", "Arial", "Lucida", "Helvetica", sans-serif;
+}
+#intern-skgb-de #menu {
+	margin: 0;
+	position: absolute;
+	left: 0;
+	top: 4em;
+}
+#menu>* {
+	font-size: 89%;
+	border: none;
+}
+#menu UL {
+	margin: 0;
+	padding: 0;
+}
+#menu LI {
+	display: block;
+	margin: 0 0 1px 0;
+}
+#menu LI A, #menu LI :link, #menu LI A:hover, #menu LI STRONG A {
+	display: block;
+	padding: 4px 4px 4px .5em;
+	border-left: 6px solid #bbb;
+	border-right: 6px solid #ddd;
+	text-decoration: none;
+	background-color: #eee;
+	color: #666;
+}
+#menu UL#menu-up LI A {
+	border-left-color: #d00;
+}
+#menu LI#vorstandsbereich A {
+	border-left-color: #a05;
+}
+#menu LI A:link, #menu LI A:visited, #menu LI STRONG A, #menu LI STRONG A:hover {
+	color: #f00;
+}
+#menu UL#menu-up LI A:link, #menu UL#menu-up LI A:visited {
+	color: #f00;
+}
+#menu LI#vorstandsbereich A:link, #menu LI#vorstandsbereich A:visited {
+	color: #c06;
+}
+#menu LI A:link:hover, #menu LI A:visited:hover {
+	border-left-color: #d00;
+	border-right-color: #e00;
+	background-color: #f00;
+	color: #fff;
+}
+#menu UL#menu-up LI A:link:hover, #menu UL#menu-up LI A:visited:hover {
+	border-left-color: #d00;
+	border-right-color: #e00;
+	background-color: #f00;
+	color: #fff;
+}
+#menu LI#vorstandsbereich A:link:hover, #menu LI#vorstandsbereich A:visited:hover {
+	border-left-color: #a05;
+	border-right-color: #b06;
+	background-color: #c06;
+	color: #fff;
+}
+/*
+#menu LI A:visited, #menu LI STRONG A {
+	background-image: url("checked.png");
+	background-repeat: no-repeat;
+	background-position: 99% 98%;
+}
+*/
+#menu LI STRONG A, #menu LI STRONG A:hover {
+	border-right-color: #f00;
+	font-weight: normal;
+}
+#menu HR {
+	display: block;
+	margin: 0 0 1px 0;
+	padding: 0;
+	height: 1em;
+	width: auto;
+	color: black;
+	background-color: #eee;
+	border: none;
+	border-left: 6px solid #bbb;
+}
+#menu P {
+	margin: 1em 6px;
+	padding: 0 0 0 .5em;
+}
+
+#foot {
+	position: absolute;
+	top: 0;
+	right: 0;
+	margin: 1em;
+	padding: 0;
+	text-align: right;
+	font: 70% "Geneva", sans-serif;
+	color: #777;
+	background: transparent;
+}
+
+KBD, CODE {
+	padding: .2em .8em;
+	background: #eee;
+	color: green;
+}
+
+
+/*
+DL {
+	line-height: 1.35;
+}
+DT, DL:after {
+	clear: left;
+}
+DL:after {
+	content: '.';
+	display: block;
+	height: 0;
+	visibility: hidden;
+}
+DT, DD {
+	display: block;
+	float: left;
+	margin: 0;
+	padding: 0;
+}
+DT {
+	width: 14em;
+}
+DD {
+	width: 11em;
+}
+DT+DD {
+	width: 9em;
+}
+DT.odd:before {
+	content: '.';
+	display: block;
+	position: absolute;
+	width: 34em;
+	z-index: -1;
+	background-color: #def;
+	color: #def;
+}
+*/
+
+
+#foot>p {
+	margin: 0 0 1em;
+}
+
+#membertable_wrapper {
+	margin-top: 1.5em;
+}
+.dt-buttons {
+	padding-left: 1em;
+}
+#intern-skgb-de A.dt-button, #intern-skgb-de .dt-button:link, .dataTables_wrapper>DIV {
+	font: .75em sans-serif;
+	color: #444;
+}
+#intern-skgb-de A.dt-button:hover, #intern-skgb-de A.dt-button:active {
+	color: black;
+}
+#intern-skgb-de A.paginate_button.disabled:hover {
+	background: #eee;
+}
+
+a.no-access:after {
+	color: black;
+	font-weight: bold;
+	content: '   (kein Zugriff)';
+}
+#menu a.no-access:after {
+	content: '';
+}
+.loginsteps {
+	height: 6.5em;
+	position: relative;
+	padding: 1em 0 1.5em 5em;
+	margin: 1em;
+}
+.loginsteps h2 {
+	margin: 0;
+}
+.loginsteps big {
+	position: absolute;
+	font-size: 4em;
+	color: #777;
+	font-weight: bold;
+	z-index: -1;
+	left: -.05em;
+	top: 0;
+}

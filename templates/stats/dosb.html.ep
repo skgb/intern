@@ -1,0 +1,19 @@
+% layout 'intern1';
+% title 'Verbandsmeldungen';
+
+<h2>Bestandserhebung LSB</h2>
+<p>(A-Zahlen über DOSB-Schnittstelle)
+% use Mojo::Util;
+% my $data = $stats->dosb;
+%# $data =~ s/\n/\x0d\x0a/g;
+<p>→ <a href="data:;base64,<%= Mojo::Util::b64_encode $data %>" download=<%= $stats->dosb_filename %>>Download <%= $stats->dosb_filename %></a>
+
+<h3>B-Zahlen LSB/SVNRW</h3>
+<pre>
+%= $stats->svnrw
+</pre>
+
+<h2>DSV-Vereinsmeldebogen</h2>
+<pre>
+%= $stats->dsv
+</pre>

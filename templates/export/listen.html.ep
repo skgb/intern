@@ -1,0 +1,50 @@
+% layout 'intern1';
+% title 'Export (Listen-Schnittstelle)';
+
+<h2><%= title %></h2>
+
+<p>GS-Verein hat ein Berichtssystem eingebaut, das jedoch unser Corporate Design nicht unterstützt. Daher wurde ein festgelegtes Export-Format definiert, mit dem Daten aus GS-Verein in eine vernünftige Layoutsoftware übernommen werden können, um daraus Mitgliederlisten, Anwesenheitslisten u. ä. herstellen zu können. Dieses Export-Format ist die „Listen-Schnittstelle“.
+
+<p>Unterschiede zum originalen GS-Verein–Export:
+<ul>
+<li>Da bisher unter OS X layoutet wurde, erfolgt der Export an dieser Stelle gleich passend mit Unix-Zeilenumbrüchen; Konvertierung für Windows bei Bedarf z. B. mit <a href=https://notepad-plus-plus.org/>Notepad++</a>.
+<li>Aus gleichem Grund wird UTF-8 verwendet statt Ingos Spezial-Kodierung.
+<li>Statt der Primäradressen werden SKGB–E-Mail–Adressen exportiert (Datenschutz).
+</ul>
+
+% use Mojo::Util;
+% use Encode;
+% my $data = "";
+% foreach my $row (@$listen) {
+%  no warnings 'uninitialized';
+%  $data .= join("\t", @$row) . "\n";
+% }
+%# $data =~ s/\n/\x0d\x0a/g;
+<p>→ <a href="data:;charset=UTF-8;base64,<%= Mojo::Util::b64_encode Encode::encode 'UTF-8', $data %>" download=LISTEN.TXT>Download LISTEN.TXT</a>
+
+<h3>Vorschau</h3>
+<table>
+% my ($header, $odd) = (1, 0);
+% foreach my $row (@$listen) {
+<%== $odd ? "<tr class=odd>" : "<tr>" %>
+%  foreach my $col (@$row) {
+%   if ($col) {
+%    $col =~ s/Mitnum/Mit­num/;
+%    $col =~ s/Abteilung/Abtei­lung/;
+%    $col =~ s/^Aktiv($|,)/A$1/;
+%    $col =~ s/^Passiv($|,)/P$1/;
+%    $col =~ s/^Nichtmitglied($|,)/–$1/;
+%    $col =~ s/^Jugend($|,)/J$1/;
+%    $col =~ s/, Ehrenmitglied$/ E/;
+%    $col =~ s/, Gastmitglied$/ G/;
+%    $col =~ s/, Kontoinhaber$/ K/;
+%    $col =~ s/^kein Stegdienst, keine Arbeiten$/kein Stegdienst, keine Arbeiten/;
+%   }
+<%== $header ? "<th>" : "<td>" %><%= $col // "" %> <% } %>
+%#  }
+%  ($header, $odd) = (0, ! $odd);
+% }
+</table>
+
+<hr>
+<p><%= -1 + scalar @$listen %> Mitglieder

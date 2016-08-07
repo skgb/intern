@@ -1,0 +1,29 @@
+% layout 'intern1';
+% title 'Wiki';
+
+<h2><%= title %></h2>
+
+<p><b>"<%= $name %>"</b>
+
+%= form_for wiki => (method => 'POST') => begin
+
+<!--p><input type=text name=title value="<%= $name %>"-->
+<p><textarea name=content><%= $article && $article->{revision}->get_property('text') %></textarea>
+
+<p><input type=submit name=save value="<%= $article ? 'Artikel sichern' : 'Artikel anlegen' %>"> <input type=submit name=cancel value="Abbrechen">
+
+%= csrf_field
+% end
+
+
+
+
+
+
+
+% if ($logged_in) {
+<p>'<%= $logged_in->name() %>' logged in.
+% }
+
+<p><a href=/>index</a>
+

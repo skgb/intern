@@ -1,0 +1,210 @@
+% layout 'intern1';
+% title 'Welcome';
+
+<style>
+html {
+	font-family: "FreeSerif", "Times", "Times New Roman", serif;
+}
+h2 {
+	font-size: 1em;
+}
+.spalte {
+	float: left;
+	width: 16em;
+}
+.spalte ul, .spalte li {
+	display: block;
+	margin-top: 0;
+	margin-left: 0;
+	padding-left: 0;
+}
+.zeile {
+	clear: left;
+	padding-top: .6em;
+}
+p, ul, form, h2, dl {
+	margin: .6em 0 0;
+}
+p:first-child {
+	margin-top: 0;
+}
+small {
+	font-family: "Helvetica Neue", "Helvetica", sans-serif;
+}
+dd * {
+	margin: 0;
+	padding: 0;
+}
+dt {
+	font-weight: bold;
+}
+dt::after {
+	content: ':';
+}
+label.disabled {
+	color: silver;
+}
+
+/*
+form::after {
+	display: block;
+	content: ' ';
+	width: 0;
+	height: 0;
+	clear: left;
+}
+*/
+</style>
+
+<!--
+<h2><%#= $msg %></h2>
+This page was generated from the template "templates/regeln/welcome.html.ep"
+and the layout "templates/layouts/default.html.ep",
+<%= link_to 'click here' => url_for %> to reload the page or
+<%= link_to 'here' => '/index.html' %> to move forward to a static page. To
+learn more, you can also browse through the documentation
+<%= link_to 'here' => '/perldoc' %>.
+<hr>
+-->
+
+<script>
+% use Mojo::JSON;
+var regelnList = <%== Mojo::JSON::to_json $regeln_list %>
+</script>
+
+<h2>SKGB-Regeln</h2>
+<p>Mit diesem Werkzeug lassen sich die Satzung und Ordnungen des Vereins in bestimmte Fassungen transformieren. Die mit diesem Werkzeug erzeugten Dokumente sind nicht offiziell. Es dient historischen Zwecken und vereinfacht das Arbeiten mit unserem proprietären Dateiformat SKGB-Regeln XML.
+<form action="" method=GET>
+<div class=spalte>
+	<p>Regelwerk:
+	<ul>
+% my $default = 1;
+% foreach my $key (sort keys %$regeln_list) {
+% 	my $regeln = $regeln_list->{$key};
+		<li><label><input type=radio name=regeln value="<%= $key %>"<%= formattr 'checked', 'regeln', $key, $default %>> <%= $regeln->{colloquial} %><%= ' (' . $regeln->{file} . ')' if $regeln->{duplicate_name} %></label>
+% 	$default = undef;
+% }
+	</ul>
+% if (! %$regeln_list) {
+	<p>keine Regelwerke gefunden!
+% }
+</div>
+<div class=spalte>
+	<p>Version:
+	<br><span id=version-list><input type=text name=base value="<%= param('base') ? param('base') : 'head' %>">
+	<br><small>„base“ | „head“ | JJJJ-MM-TT</small></span>
+	<p>Änderungen zeigen:
+	<br><label><input type=radio name=changes value=none<%= formattr 'checked', 'changes', 'none', 'default' %>> keine</label>
+	<br><label><input type=radio name=changes value=all<%= formattr 'checked', 'changes', 'all' %>> alle</label>
+	<br><label><input type=radio name=changes value=prev<%= formattr 'checked', 'changes', 'prev' %>> nur zu vorhergehender Version</label>
+	<p>Format:
+	<br><select name=format>
+		<option value=xml<%= formattr 'selected', 'format', 'xml', 'default' %>>SKGB-Regeln XML</option>
+		<option value=html<%= formattr 'selected', 'format', 'html' %>>HTML</option>
+		<option value=xhtml<%= formattr 'selected', 'format', 'html_stander' %> disabled>XHTML+SVG</option>
+		<option value=odf<%= formattr 'selected', 'format', 'odf' %>>LibreOffice OpenDocument</option>
+		<option value=txt<%= formattr 'selected', 'format', 'txt' %>>reiner Text (unstrukturiert)</option>
+		<!--option value=rep<%= formattr 'selected', 'format', 'rep' %> disabled>Änderungsbericht</option-->
+	</select>
+	<br><label id=raw-label style="display:none"><input type=checkbox name=raw value=1<%= formattr 'checked', 'raw', '1' %>> roh</label>
+</div>
+<div class=zeile>
+<p><input type=submit value="Transformation starten"<%= ' disabled' if ! %$regeln_list %>><input type=hidden name=run value=1>
+</div>
+</form>
+
+<!--pre>
+%= dumper $regeln_list if app->mode eq 'development';
+</pre-->
+
+<h3>Anmerkungen zu den Ausgabeformaten</h3>
+<dl>
+<dt>SKGB-Regeln XML<dd><ul>
+<li>Meta-Elemente und -Attribute wie <code>&lt;aktuell></code> oder <code>@stand</code> werden nicht in allen Fällen angemessen transformiert. Diese müssen kontrolliert und ggf. nachbearbeitet werden.
+<li>Teilweise entsteht störender überflüssiger Weißraum.
+<li>Auch die <code>head</code>-Versionen werden transformiert. Diese Einstellung ist <em>nicht</em> dazu geeignet, autoritative Versionen abzurufen.
+</ul>
+<dt>HTML<dd><ul>
+<li>Ausgabe in XHTML mit allen Änderungen. Durch eine vom Nutzer im Browser auswählbare CSS-Formatvorlage können alle Änderungen verborgen werden.
+<li>Änderungen werden farblich markiert und, sofern möglich, auch mit einem Tool-Tip versehen, der das Datum und den TOP des Beschlusses der jeweiligen Änderung anzeigt.
+<li>Geschachtelte Streichungen / Einfügungen erscheinen nicht mit korrektem Tool-Tip. Auch werden sie nicht immer korrekt durchgestrichen bzw. unterstrichen.
+<li>Bei gestrichenen und eingefügten Absätzen, Buchstaben und Nummern sind die Aufzählungszeichen nicht immer korrekt als gestrichen bzw. eingefügt markiert. Auch die Nummerierung besonders bei Streichungen ist tlws. eigenwillig, besonders wenn Änderungen über mehrere Versionen hinweg dargestellt werden. Bei etwas Mitdenken ist der Zusammenhang aber meist eindeutig.
+</ul>
+<dt>XHTML+SVG<dd><ul>
+<li>wie HTML, jedoch ist der Stander als SVG mit XML in das Dokument eingebettet, so dass der Zugriff auf eine lokale Kopie ohne Netzwerk möglich ist
+<li>noch nicht implementiert
+</ul>
+<dt>LibreOffice OpenDocument<dd><ul>
+<li>Das Zeigen von Änderungen wird nicht unterstützt.
+<li>Das ausgegebene Dokument <em>sollte</em> ein ganz normales unkomprimiertes <a href=https://de.wikipedia.org/wiki/OpenDocument>ODF</a>-Textdokument sein, das auch in anderer Software funktioniert. In der Praxis werden allerdings von Drittsoftware oftmals nur komprimierte ODF-Dokumente unterstützt und die SVG-Integration funktioniert oft nicht wie erwartet. Deshalb wird für dieses Ausgabeformat nur die Verwendung mit <a href=https://de.libreoffice.org/download/libreoffice-fresh/>LibreOffice</a> empfohlen.
+<li>Apache OpenOffice oder NeoOffice <em>sollten</em> ebenfalls bestens funktionieren, sind aber völlig ungetestet und deshalb nicht empfohlen.
+<li><code>&lt;nr></code> wird nur innerhalb von <em>nummerierten</em> Absätzen unterstützt (Grenzfälle siehe FinO und NutzOVayu). In einem Paragraphen mit nur einem einzigen (unnummerierten) Absatz werden Buchstaben statt Nummern ausgegeben (siehe FinO-Originalfassung). <code>&lt;nr></code> auf oberster Ebene (JungSV) führt nicht zu einem Ergebnis, das well-formed ist.
+<li><code>&lt;lit></code> wird nur innerhalb von <em>nummerierten</em> Absätzen unterstützt. In einem Paragraphen mit nur einem einzigen (unnummerierten) Absatz werden Nummern statt Buchstaben ausgegeben (siehe JO).
+<li>Bei Beitragslisten ist regelmäßig Nachbearbeitung erforderlich.
+<li>Teilweise entsteht störender überflüssiger Weißraum.
+</ul>
+<dt>reiner Text<dd><ul>
+<li>Entfernt <em>alle</em> Formatierungen, Strukturierungen und Meta-Daten, gibt aber <em>alle</em> CDATA-Inhalte aus, Weißraum ausgenommen. Folglich wird das Zeigen von Änderungen nicht unterstützt.
+<li>Das Ausgabeformat ist nicht fix definiert. In Zukunft könnte es z. B. durch eine Markdown-Ausgabe ersetzt werden. Im Augenblick ist es fast unlesbar, aber mit der Vollständigkeit (abgesehen von Dingen wie Nummerierungen) mag es dennoch nützlich sein, um Änderungen zu verfolgen.
+</ul>
+<!--
+<dt>Änderungsbericht<dd><ul>
+<li>„Artikelgesetz“
+<li>noch nicht implementiert
+</ul>
+-->
+</dl>
+
+<script>
+(function(){
+	var formatPopupMenu = document.forms[0].format;
+	var rawCheckbox = document.forms[0].raw;
+	var rawCheckboxLabel = document.getElementById('raw-label');
+	
+	function enableRawCheckbox () {
+		var rawDisabled = this.value == 'txt' || this.value == 'html' || this.value == 'xhtml' || this.value == 'xml';
+		rawCheckbox.disabled = rawDisabled;
+		rawCheckboxLabel.className = rawDisabled ? 'disabled' : '';
+	}
+	formatPopupMenu.onchange = enableRawCheckbox;
+	(enableRawCheckbox.bind(formatPopupMenu))();  // execute right away; TODO: -> DOMContentLoaded
+	
+	var regelnRadioButtons = document.forms[0].regeln;
+	var versionListContainer = document.getElementById('version-list');
+	
+	function createVersionMenu () {
+		var regeln = null;
+		for (var i = 0; i < regelnRadioButtons.length; i++) {
+			if (! regelnRadioButtons[i].checked) { continue; }
+			regeln = regelnList[ regelnRadioButtons[i].value ];
+			break;
+		}
+		var versionList = regeln.version_list.slice();  // deep copy
+		versionList.unshift('base');
+		
+		var oldValue = document.forms[0].base.value;
+		var newValueIndex = oldValue == 'head' ? versionList.length - 1 : -1;
+		for (var i = 0; i < versionList.length; i++) {
+			if (versionList[i] != oldValue) { continue; }
+			newValueIndex = i;
+			break;
+		}
+		var versionPopupHtml = '<select name=base>';
+		for (var i = versionList.length - 1; i >= 0; i--) {
+			versionPopupHtml += '<option value="';
+			versionPopupHtml += i == versionList.length - 1 ? 'head' : versionList[i];
+			versionPopupHtml += '"';
+			versionPopupHtml += i == newValueIndex ? ' selected' : '';
+			versionPopupHtml += '>';
+			versionPopupHtml += versionList.length > 1 ? (i == versionList.length - 1 ? 'head ('+versionList[i]+')' : versionList[i]) : 'head';
+			versionPopupHtml += '</option>';
+		}
+		versionPopupHtml += '</select>';
+		versionListContainer.innerHTML = versionPopupHtml;
+	}
+	for (var i = 0; i < regelnRadioButtons.length; i++) {
+		regelnRadioButtons[i].onchange = createVersionMenu;
+	}
+	createVersionMenu();  // TODO: -> DOMContentLoaded
+})();
+</script>

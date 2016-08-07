@@ -1,0 +1,64 @@
+% layout 'intern1';
+% title 'Mitgliederliste';
+% use 5.016;
+
+<h2><%= title %></h2>
+
+
+<table id=membertable class="compact">
+<thead>
+<tr><th>Name<th>Status<th>Alter<th>MNr-alt<th>Sortierschlüssel
+</thead>
+% my $user = $self->skgb->session->user;
+% foreach my $member (@$members) {
+%  my $profile_url = url_for('mglpage');
+%  $profile_url = $profile_url->query(node => $member->node_id) unless $member->equals($user);
+%  next if ! $member->membership->{status};
+<tr>
+<td><%= link_auth_to $profile_url => begin %><%= $member->name %><% end %>
+<td><%= $member->membership->{status_long} %>
+<td><%= $member->age %>
+<td><%= $member->gs_verein_id || '–' %>
+<td><%= fc($member->name_sortable) %>
+% }
+</table>
+<!--p>Mitgliederliste access: <%= has_access ? 'YES' : 'NO' %>-->
+
+<script type="text/javascript" src="DataTables/datatables.js"></script>
+<script>
+// https://datatables.net/
+$(document).ready(function() {
+	var cols = $('#membertable tr')[0].childElementCount;
+	var exportOptions = {columns: ':visible'};
+	$('#membertable').DataTable( {
+		"columnDefs": [{
+			targets: cols - 1,
+			visible: false,
+			searchable: false
+		},{
+			targets: 0,
+			orderData: [ cols - 1 ]
+		}],
+//		order: [[ cols - 1, 'asc' ]],
+		colReorder: true,
+//		fixedHeader: true,
+//		responsive: true,
+//		keys: true,
+//		select: true,
+		lengthMenu: [[20, 50, -1], [20, 50, "All"]],
+		iDisplayLength: -1,
+//		paging: false,
+//		order: [[ 0, "asc" ]],
+		stateSave: true,
+		dom: 'lBfrtip',
+		buttons: [
+//			'colvis',
+			{extend: 'copy', exportOptions: exportOptions},
+			{extend: 'csv', exportOptions: exportOptions},
+//			'excel',
+			{extend: 'pdf', exportOptions: exportOptions},
+			{extend: 'print', exportOptions: exportOptions, autoPrint: false, text: 'Print View'},
+		]
+	} );
+} );
+</script>

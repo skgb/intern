@@ -1,0 +1,27 @@
+Return-Path: webmaster@skgb.de
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=UTF-8
+X-Mailer: SKGB-intern/<%== $SKGB::Intern::VERSION %> LOMS (Pre) Mojo::SMTP::Client/<%== $Mojo::SMTP::Client::VERSION %> Perl/<%== substr $^V, 1 %>
+Message-ID: <%== Email::MessageID->new(host => 'intern.skgb.de')->in_brackets %>
+Date: <%== POSIX::strftime '%a, %d %b %Y %H:%M:%S %z', localtime %>
+From: <%== Encode::encode 'MIME-Q', 'SKGB-intern, Schlüsselfabrik' %> <login@intern.skgb.de.invalid>
+To: <%== $to_header %><%==
+"\nCc: $cc_header" if $cc_header; %>
+Subject: neuer Zugangscode zu SKGB-intern 2
+MIME-Version: 1.0
+
+<%== $person->name_salutation %>,
+
+hier Dein neuer Zugangscode zu SKGB-intern 2:
+<%== $code %>
+
+<%== $link %>
+
+Solltest Du keinen neuen Zugangscode angefordert haben, kannst Du diese Nachricht einfach ignorieren.
+
+
+-- 
+automatisch erzeugt
+
+<%# template is ASCII-only, UTF-8 names in body must be unit-tested %>
+

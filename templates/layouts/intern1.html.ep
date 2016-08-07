@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<meta charset=UTF-8>
+<title><%= title %> (SKGB-intern 2)</title>
+<style>@import url("/intern1.css?a9");</style>
+<link rel="stylesheet" type="text/css" href="/DataTables/datatables.css"/>
+<!--link rel=icon href=/icon.png type=image/png sizes="16x16"-->
+<body id=intern-skgb-de>
+<div id=head><h1><a href=/>SKGB<em>-intern 2</em> Preview</a></h1></div>
+
+
+<%= content %>
+
+
+% my $link_menu_to = begin
+%  my $title = shift;
+%  my $action_name = shift;
+%  my $is_query_significant = shift;
+%  my $is_index = ($is_query_significant ? $self->url_with : $self->url_for) eq $self->url_for($action_name);
+<li><%== $is_index ? '<strong>' : '' %><%= link_auth_to $title, $action_name %><%== $is_index ? '</strong>' : '' %>
+% end
+
+<div id=menu><ul>
+% my $user = $self->skgb->session->user;
+% if ($user) {
+%# <a href=/profile>
+%= $link_menu_to->($user->name, 'mglpage', 1)
+%= $link_menu_to->('Abmelden', $self->url_for('login')->query(logout=>1,target=>url_for))
+% }
+% else {
+<!--
+<li><%= link_to 'Anmelden', 'login' %>
+-->
+%= $link_menu_to->('Anmelden', 'login')
+%= $link_menu_to->('Neuer Zugangscode', 'keyfactory')
+% }
+</ul><hr><ul>
+%= $link_menu_to->('Index', 'index')
+%= $link_menu_to->('Mitgliederliste', 'mglliste')
+%#= $link_menu_to->('Jugendliste', 'jgdliste')
+%= $link_menu_to->('Anschriftenliste', 'postliste')
+</ul><hr><ul id=menu-up>
+<li><a href=http://intern1.skgb.de/>intern1.skgb.de</a>
+<li><a href=http://www.skgb.de/>www.skgb.de</a>
+</ul><hr></div>
+
+<script>
+// The logout button shouldn't be a GET link because of its side effects.
+(function () {
+	// TODO: move this to DOMContentLoaded event
+	if (! document.getElementById || ! document.getElementsByTagName) {
+		return;
+	}
+	var menuLinks = document.getElementById('menu').getElementsByTagName('A');
+	var logoutPattern = /\/login\?logout=1/;
+	for (var i = menuLinks.length - 1; i > 0; i--) {
+		if (logoutPattern.test(menuLinks[i].href)) {
+			var logoutLink = '' + menuLinks[i].href;
+			window.logout = function logout () {
+				// TODO: submit a POST form instead
+				document.location.href = logoutLink;
+			};
+			menuLinks[i].href = 'javascript:logout()';
+			return;
+		}
+	}
+})();
+</script>
+
+
+<div id=foot>
+<p>Version <%= $SKGB::Intern::VERSION %>
+<br><%= POSIX::strftime('%Y-%m-%d', localtime) %>
+% if ($user) {
+<br><%= $user->name() %>
+<!--
+%= form_for login => (method => 'POST') => begin
+<input type=submit name=logout value="Logout">
+<input type=hidden name=target value="<%= url_for %>">
+% end
+-->
+% }
+% elsif ( $self->url_for() eq $self->url_for('login') ) {
+<br>&nbsp;
+% }
+% else {
+<br>&nbsp;
+<!--
+%= form_for login => begin
+<p><input type=submit value="Login">
+<input type=hidden name=target value="<%= url_for %>">
+% end
+-->
+% }
+</div>

@@ -1,0 +1,35 @@
+% layout 'intern1';
+% title 'List of Access Codes' . ($logged_in && ! defined param('all') ? ' for ' . $logged_in->name() : '');
+
+<h2><%= title %></h2>
+
+<ul>
+
+% foreach my $code (@$codes) {
+<li>
+%= form_for url_for('auth', code => $code->{code}) => (method => 'POST') => begin
+<p><b><%= $code->{code} %></b> <%= $code->{this_session} && '(current session)' %> <%= $code->{this_expired} && '(expired)' %>
+%== defined param('all') ? '<p>for: ' . $code->{for}->name : '';
+<p>issued: <%= $code->{creation} %>
+<p>expiration: <%= $code->{expiration} %>
+<p>access: first <%= $code->{first_use} %>, last <%= $code->{access} %>
+<p><input type=submit name=edit value="view/edit rights"<%= $code->{this_expired} && ' disabled' %>> <input type=submit name=delete value="delete<%= $code->{this_session} && ' and log out' %>" disabled>
+
+%  end
+% }
+</ul>
+
+<p>auto-delete access codes
+<select disabled>
+<option>when logging out</option>
+<option>4 hours after logging out</option>
+<option>on expiration</option>
+<option>1 day after expiration</option>
+<option>1 week after expiration</option>
+<option>2 months after expiration</option>
+<option>1 year after expiration</option>
+<option selected>never</option>
+</select> <input type=submit value="store prefs" disabled> (not yet implemented)
+
+<p><input type=button value="delete unused" disabled>
+

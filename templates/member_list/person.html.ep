@@ -1,0 +1,93 @@
+% layout 'intern1';
+% title $person->name;
+% use 5.016;
+
+<h2><%= title %></h2>
+
+<pre>
+Benutzername für <a href=http://intern1.skgb.de/>SKGB-intern 1</a>:   <%= $person->legacy_user %>
+% my $skgbEmail = $person->legacy_user ? $person->legacy_user . "\@skgb.de" : "";
+% my $skgbEmailHref = $skgbEmail ? " href=mailto:$skgbEmail" : "";
+SKGB–E-Mail–Adresse (ungeprüft):  <a<%= $skgbEmailHref %>><%= $skgbEmail %></a>
+informelle Anrede<%= $person->_property('salutation') ? "" : " (automatisch)" %>:  <%= $person->name_salutation %>
+
+Mitgliedsstatus:  <%= $person->membership->{status_long} %>
+Jahresbeitrag:  <%= $person->_property('debitBase') || 0 %> €
+Lastschriftmandate:   <%= scalar @$mandates ? join ', ', @$mandates : "keine" %>
+Debitorenstammnummer:  <%= $person->_property('debitorSerial') %>
+GS-Verein-Nummer / MNr-alt:  <%= $person->gs_verein_id %>  <%= $person->gs_verein_id && $person->gs_verein_id gt '396' ? "(nicht in GS-Verein)" : "" %>
+Eintritt:  <%= $person->membership->{joined} && $person->membership->{joined} eq '1967-09-01' ? 'Gründungsmitglied 1967' : $person->membership->{joined} %>
+Austritt:  <%= $person->membership->{leaves} || ( $person->membership->{joined} ? '–' : '' ) %>
+
+<!--Geschlecht:  <%= $person->_property('gender') %>
+-->Geboren:  <%= $person->_property('born') %>  <%= $person->_property('born') ? ( '(Alter: ' . (length $person->_property('born') > 4 ? '' : 'ca. ') . $person->age . ' Jahre)' ) : '' %>
+Beruf/Branche (Hobbys):  <%= $person->_property('skills') %>
+beteiligt sich am Vereinsleben (GS-Verein–„Aktiv“):  <%= defined $person->membership->{status} ? $person->membership->{regular} ? 'ja' : 'nein' : '' %>
+
+eigene Boote:
+% foreach my $boat (@$boats) {
+<%= $boat->{class} %> <span style="text-transform: uppercase"><%= $boat->{mark} %></span> (<%= $boat->{_berth} ? "Liegeplatz: $boat->{_berth}" : "kein Liegeplatz" %>)
+%#=  dumper $boat
+% }
+<%= "keine\n" if ! scalar @$boats;
+
+%>
+Vereinsschlüssel:
+% foreach my $key (@$clubkeys) {
+<%= $key->{_nr} && "Nr. $key->{_nr} " %><%= $key->{deposit} ? "gegen $key->{deposit} $key->{currency}" : "ohne" %> Pfand<%= $key->{returned} && " (zurückgegeben, Pfandrückzahlung noch nicht erfolgt)" %><%= $key->{comment} && " ($key->{comment})" %>
+%#=  dumper $key
+% }
+<%= "ohne\n" if ! scalar @$clubkeys;
+
+%>
+Kontaktdaten:
+% foreach my $address (@$addresses) {
+%  $address->{address} =~ s/\n/, /g;
+%  if ($address->{type}) {
+%   $address->{type} =~ s/street|email//;
+%   $address->{type} =~ s/phone/Tel/;
+%   $address->{type} =~ s/mobile/mobil/;
+%   $address->{type} =~ s/fax/Fax/;
+%  }
+<%= "$address->{address}"
+%><%= $address->{type} ? " $address->{type}" : ""
+%><%= $address->{primary} ? " (primär)" : ""
+%><%= $address->{kind} ? " ($address->{kind})" : ""
+%><%= $address->{comment} ? " ($address->{comment})" : ""
+%>
+%#=  dumper $address
+% }
+<%= "keine\n" if ! scalar @$addresses;
+
+%>
+Bekannte Beziehungen zu anderen Personen:
+% my $user = $self->skgb->session->user;
+% foreach my $related (@$all_related) {
+%  my $profile_url = url_for('mglpage');
+%  $profile_url = $profile_url->query(node => $related->{person}->node_id) unless $related->{person}->equals($user);
+%  my @type = ();
+%  @type = ($related->{relation}->type) if $related->{direct};
+%  push @type, sort keys %{$related->{related_through}} if $related->{indirect};
+%#= dumper $related
+%  my $type = join ', ', @type;
+%  if ($type =~ m/COLLECTOR/) {
+%   my $signed = $related->{relation}->get_property('signed') || '';
+%   $signed = substr $signed, 0, 7;
+%   $type =~ s/COLLECTOR/COLLECTOR ($signed)/ if $signed;
+%  }
+%  $type =~ s/PARENT/sorgeberechtigt/ if $related->{forward};
+%  $type =~ s/PARENT/sorgeberechtigt für/ if ! $related->{forward};
+%  $type =~ s/COLLECTOR/darf abgeholt werden von/ if $related->{forward};
+%  $type =~ s/COLLECTOR/darf abholen/ if ! $related->{forward};
+%  $type =~ s/Address/Kontaktdaten/;
+%  $type =~ s/Mandate/Zahlungsdaten/;
+%  $type =~ s/Boat/Boot/;
+<%= link_to $related->{person}->name, $profile_url %>: <%= $type %>
+% }
+<%= "keine\n" if ! scalar @$all_related;
+
+%>
+</pre>
+
+<hr>
+<p><strong>Warnung.</strong> Diese Seite <%= $person->gs_verein_id && $person->gs_verein_id gt '396' ? "zeigt" : "wurde automatisch aus einem Export aus GS-Verein erzeugt. Sie zeigt auch" %> wegen der noch nicht abgeschlossenen Entwicklung von SKGB-intern 2 nicht unbedingt alle zu dieser Person gespeicherten Daten. Es ist außerdem gut möglich, dass Angaben <%= $person->gs_verein_id && $person->gs_verein_id gt '396' ? "noch" : "veraltet," %> unvollständig oder falsch sind.

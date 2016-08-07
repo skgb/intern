@@ -1,0 +1,45 @@
+% layout 'intern1';
+% title 'Zugangscode anfordern';
+
+% use Mojo::Util;
+% my $target_query = param('target') ? 'target=' . Mojo::Util::url_escape param 'target' : '';
+
+
+<div class=loginsteps>
+<h2><big>①</big> Zugangscode anfordern</h2>
+
+<form method=POST action="">
+<p>Gib hier deine E-Mail–Adresse oder deinen Namen ein:
+<p><input type=text name=name value="<%= param 'name' %>" style="width: 20em" id=name>
+<input type=submit value="Code anfordern">
+% if (! param 'name') {
+<script>
+document.getElementById("name").focus();
+</script>
+% }
+</form>
+
+% if (param 'name') {
+%   if (app->mode eq 'development' && $user_ambiguous) {
+<p><b>Name unclear, please try again.</b>
+%   } elsif (app->mode eq 'development' && $user_unknown) {
+<p><b>Name unknown, please try again.</b>
+%   } elsif (app->mode eq 'development') {
+<p><b>Name found!</b>
+%   } else {
+<p><b>→ Sollten wir einen Zugang unter „<%= param 'name' %>“ finden können, erhältst du gleich eine E-Mail mit Deinem neuen Zugangscode.</b>
+%   if (param 'target') {
+<!--p><a href=<%= param 'target' %>>zurück</a-->
+%   }
+%   }
+% }
+
+</div>
+
+
+<div class=loginsteps>
+<h2><big>②</big> mit Zugangscode anmelden</h2>
+
+<p>Wenn du oben deine E-Mail–Adresse oder deinen Benutzernamen eingibst, senden wir dir einen neuen Zugangscode per E-Mail zu. Mit diesem Zugangscode kannst du dich dann <%= link_to 'anmelden', url_for('login')->query($target_query) %> und SKGB-intern 2 benutzen.
+
+</div>

@@ -1,0 +1,13 @@
+% layout 'intern1';
+% title 'Secure Content';
+
+<h2><%= title %></h2>
+
+<p><b>"<%= $name %>"</b>
+
+% if ($logged_in) {
+<p>'<%= $logged_in->name() %>' logged in.
+% }
+
+<p><a href=/>index</a>
+

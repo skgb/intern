@@ -1,0 +1,93 @@
+% layout 'intern1';
+% title 'Anmelden';
+
+% use Mojo::Util;
+% my $target_query = param('target') ? 'target=' . Mojo::Util::url_escape param 'target' : '';
+
+
+
+<div class=loginsteps>
+<h2><big>①</big> Zugangscode anfordern</h2>
+
+<p>Wenn du keinen gültigen Zugangscode hast, kannst du als Softwareentwickler (oder Helfer/Tester) <!--SKGB-Mitglied--> jederzeit <%= link_to 'hier einen neuen Zugangscode anfordern', url_for('keyfactory')->query($target_query) %>. Den schicken wir dir dann per E-Mail zu, du gibst ihn einfach unten ein und schon kannst du SKGB-intern 2 benutzen.
+
+</div>
+
+
+<div class=loginsteps>
+<h2><big>②</big> mit Zugangscode anmelden</h2>
+
+
+
+
+
+
+%= form_for login => (method => 'POST') => begin
+
+<p>Gib hier den Zugangscode aus der E-Mail ein:
+<p><input type=text name=key id=key value="<%= param 'key' %>">
+<input type=submit value="Anmelden">
+
+% if (param 'target') {
+<input type=hidden name=target value="<%= param 'target' %>">
+% }
+
+<script>
+document.getElementById("key").focus();
+</script>
+
+% end
+
+
+
+
+% if (param 'key') {
+
+%  if ($session->{code}) {
+%   my $expired = $c->skgb->session->expired($session);
+%say "expired: $expired" if ($expired);
+%   if ($expired) {
+%    require Time::Date;
+<p><b>→ This key has expired <%= Time::Date->new_epoch($expired)->natural %>.</b>
+<p>You need to <%= link_to 'get a new key', 'keyfactory' %>. It's easy!
+%#= form_for login => begin
+%#<p><input type=text name=key value="<%= $session->{code} %>"><input type=submit value="Get New Key">
+%# end
+%   }
+%  } else {
+<p><b>→ Key invalid, please try again.</b>
+<p>You may wish to <%= link_to 'get a new key', 'keyfactory' %>. It's easy!
+%  }
+
+% }
+% else {
+
+%#  if ('keyinvalid' eq param 'reason') {
+%#<p><b>→ Your session expired.</b> (Meaning, the cookie vanished. This might be a coding error.)
+%#<p>You need to <%= link_to 'get a new key', 'keyfactory' %>. It's easy!
+%#  }
+%  my $reason = flash('reason') || '';
+%  if ($reason eq 'key') {
+<p><b>→ Your key expired.</b>
+<p>You need to <%= link_to 'get a new key', 'keyfactory' %>. It's easy!
+%  }
+%  elsif ($reason eq 'session') {
+<p><b>→ Your session timed out.</b>
+<p>You need to log in again. You may use the same key you used last time, or alternatively <%= link_to 'get a new key', 'keyfactory' %>. It's easy!
+%# todo: implement a grace period to give user time to enter the key without it expiring in the meantime
+%  }
+%  else {
+<!--p>You can <%= link_to 'get a new key', url_for('keyfactory')->query($target_query) %> at any time. It's easy!-->
+%  }
+
+% }
+
+
+
+
+
+</div>
+
+% if ($session->{user}) {
+<p><b>'<%= $session->{user}->name %>' logged in.</b>
+% }
