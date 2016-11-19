@@ -233,10 +233,10 @@ sub _send_mail {
 #	print "'$lines'\n";
 #	print Data::Dumper::Dumper $to;
 	
-	my @auth = ();
-	@auth = (auth => {login => $self->config->{msa}->{user}, password => $self->config->{msa}->{pass}}) if $self->config->{msa}->{user};
+	my @smtp_auth = ();
+	@smtp_auth = (auth => {login => $self->config->{msa}->{user}, password => $self->config->{msa}->{pass}}) if $self->config->{msa}->{user};
 	$smtp->send(
-		@auth,
+		@smtp_auth,
 		from => $from,
 		to   => $to,
 		data => $lines,

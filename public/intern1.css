@@ -342,3 +342,18 @@ a.no-access:after {
 	left: -.05em;
 	top: 0;
 }
+
+ul.auth ins {
+	color: #070;
+	background: #efe;
+	padding: .1em 0;
+}
+ul.auth del {
+	color: #eaa;
+	background: #fee;
+	padding: .1em 0;
+}
+ul.auth code {
+	color: inherit;
+	padding: .12em .5em;
+}

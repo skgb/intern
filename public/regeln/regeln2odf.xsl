@@ -80,12 +80,6 @@ $Id: regeln2odf.xsl 848 2016-09-07 21:12:19Z aj $
 		</text:span>
 	</xsl:template>
 	
-	<xsl:template match="html:s">
-		<text:span text:style-name="Marked_20_as_20_Deleted">
-			<xsl:apply-templates/>
-		</text:span>
-	</xsl:template>
-	
 	<xsl:template match="/">
 		<xsl:call-template name="check-version"/>
 		<xsl:call-template name="check-structure"/>
@@ -179,9 +173,6 @@ $Id: regeln2odf.xsl 848 2016-09-07 21:12:19Z aj $
   </style:style>
   <style:style style:name="Underline_20_Emphasis" style:display-name="Underline Emphasis" style:family="text">
    <style:text-properties style:text-underline-style="solid" style:text-underline-width="auto" style:text-underline-color="font-color"/>
-  </style:style>
-  <style:style style:name="Marked_20_as_20_Deleted" style:display-name="Marked as Deleted" style:family="text">
-   <style:text-properties style:text-line-through-style="solid" style:text-line-through-type="single"/>
   </style:style>
 
   <text:list-style style:name="SKGB-Regeln">

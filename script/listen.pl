@@ -110,7 +110,7 @@ while ( my $row = $Q->{export}->fetch ) {
 		$status = "Nichtmitglied";
 #		print $fh $mandate{umr} && $Gbetrag eq "0,00" ? "Nichtmitglied, Kontoinhaber" : "Nichtmitglied" if ! $status;
 	}
-	@rels = $p->{node}->get_outgoing_relationships();
+	@rels = $p->{_node}->get_outgoing_relationships();
 	foreach my $t (@rels) {
 		my $role = $t->end_node->get_property('role');
 		if ($role && $role eq 'guest-member') {
@@ -128,7 +128,7 @@ while ( my $row = $Q->{export}->fetch ) {
 	$nachname =~ s/ć/c´/;
 	print $fh "$nachname\t";
 	
-	print $fh $p->{node}->get_property('prefix') || "", "\t";  # Titel
+	print $fh $p->{_node}->get_property('prefix') || "", "\t";  # Titel
 	
 	print $fh $p->name_part(0), "\t";
 	print $fh "$status\t";
@@ -151,7 +151,7 @@ while ( my $row = $Q->{export}->fetch ) {
 	print $fh "\t";  # Zahlart
 	print $fh "\t";  # Satz
 	
-	print $fh $p->{node}->get_property('debitBase'), ",00", "\t";
+	print $fh $p->{_node}->get_property('debitBase'), ",00", "\t";
 	print $fh $r->get_property('regularContributor') ? "Wahr" : "Falsch", "\t";
 	
 	print $fh "\t";  # Zu11

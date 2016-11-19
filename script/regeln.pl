@@ -139,7 +139,7 @@ the value of the --show-changes option as follows:
 
 -c none (or omitted): The base version default is <head> (the latest version).
 
--c all: The base version default is also <head> (the latest version).
+-c all: The base version default is <head> as well (the latest version).
 
 -c <specific version>: The base version default is same version, such that
 exactly one revision step is shown in the output.

@@ -30,9 +30,27 @@ sub config {
 my $Q = {
   dosb => REST::Neo4p::Query->new(<<QUERY),
 MATCH (p:Person)-[r]-(s:Role)--(:Role{role:'member'})
-WHERE s.role <> 'guest-member' AND (NOT has(r.leaves) OR r.leaves >= toString({target})) AND r.joined <= toString({target})+'-01-01'
-RETURN p, s, r
-ORDER BY p.born, p.gender, s.role, r.regularContributor
+ WHERE s.role <> 'guest-member'
+ AND (NOT has(r.leaves) OR r.leaves >= toString({target}))
+ AND r.joined <= toString({target})+'-01-01'
+ RETURN p, s, r
+ ORDER BY p.born, p.gender, s.role, r.regularContributor
+QUERY
+  no_berth => REST::Neo4p::Query->new(<<QUERY),
+MATCH (b:Boat)--(:Person)-[r]-(s:Role)
+ WHERE NOT (b)--(:Berth)
+ AND s.role IN ['honorary-member','active-member','passive-member']
+ AND (NOT has(r.leaves) OR r.leaves >= toString({target}))
+ AND r.joined <= toString({target})+'-01-01'
+ RETURN count(b)
+QUERY
+  berth => REST::Neo4p::Query->new(<<QUERY),
+MATCH (b:Boat)--(:Person)-[r]-(s:Role)
+ WHERE (b)--(:Berth)
+ AND s.role IN ['honorary-member','active-member','passive-member']
+ AND (NOT has(r.leaves) OR r.leaves >= toString({target}))
+ AND r.joined <= toString({target})+'-01-01'
+ RETURN count(b)
 QUERY
 };
 # error in Neo4p:
@@ -201,6 +219,14 @@ sub dsv {
 	foreach my $bin (sort { $a <=> $b } keys %bins) {
 		push @out, sprintf " %2d %2d   ", $bins{$bin}->{M_A} + $bins{$bin}->{M_P}, $bins{$bin}->{W_A} + $bins{$bin}->{W_P};
 	}
+	
+	$Q->{berth}->execute(target => $self->{targetYear});
+	my $row = $Q->{berth}->fetch;
+	push @out, "\nPrivate Boote mit Liegeplatz:  ", @$row;
+	$Q->{no_berth}->execute(target => $self->{targetYear});
+	my $row = $Q->{no_berth}->fetch;
+	push @out, "\nPrivate Boote ohne Liegeplatz: ", @$row;
+	
 	return wantarray ? @out : join '', @out;
 }
 

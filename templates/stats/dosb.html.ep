@@ -17,3 +17,20 @@
 <pre>
 %= $stats->dsv
 </pre>
+
+<p>Die Bootszahlen berücksichtigen bisher nicht <strong>Vereinsboote und Boote von Jugendmitgliedern;</strong> diese <strong>werden dazuaddiert</strong>. Diese Zahlen inkludieren Boote aller Art; <strong>private Kanus werden subtrahiert</strong> und unter „sonstige“ separat aufgeführt.
+
+<p>Die Boote ohne Liegeplatz sind oft Boote von „Karteileichen“, die noch existieren könnten oder auch nicht. Teilweise sind es aber auch Boote von Mitgliedern, die feste Liegeplätze an anderen Gewässern haben. Solche Feinheiten können im DSV-Formular nicht sinnvoll eingetragen werden, deshalb wurde die Zahl der Boote ohne Liegeplatz in der Vergangenheit oft der Einfachheit halber mit der Gewichtung 0,5 in der Gesamtrechnung inkludiert.
+
+<!--
+<p>Rechenbeispiel 2016:
+<br>16 + 7 + 4 + 7 = 34 Segelboote insgesamt:
+<ul>
+<li>16 = 17 priv. Boote mit Liegeplatz, davon 1 Kanu
+<li>7 = 16 priv. Boote ohne Liegeplatz, davon 2 Kanus, Faktor 0,5
+<li>4 = Vereinskielboote + Startboot + Vereinskanadier
+<li>7 = 3 420er und 4 Optis der Jugendgruppe
+</ul>
+
+<p>Die Zahl der Boote wird im Gegensatz zur Mitgliedschaft nicht stichtagbezogen geführt. Wenn sich also z. B. jemand unterjährig ein neues privates Boot kauft, stimmen die hier angegebenen Zahlen nicht mehr mit den Zahlen der Bestandserhebung überein.
+-->

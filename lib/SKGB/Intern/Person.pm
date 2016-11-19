@@ -1,4 +1,4 @@
-package SKGB::Intern::Model::Person;
+package SKGB::Intern::Person;
 
 use 5.012;
 use utf8;
@@ -7,9 +7,6 @@ use List::MoreUtils qw( none );
 use REST::Neo4p;
 use SKGB::Intern::Plugin::Neo4j;
 use Data::Dumper;
-
-
-# deprecated legacy class
 
 
 my $Q = {
@@ -23,23 +20,16 @@ QUERY
 
 
 sub new {
-	my ($class, $neo4jNode) = @_;
+	my ($class, $person, $relationships) = @_;
 	my $instance = {
-		_node => undef,
-		_simple => undef,
+		node => $person,
+		relationships => $relationships,
 		name => undef,
 		name_sortable => undef,
 		name_salutation => undef,
 		membership => undef,
 	};
-	if ( ref $neo4jNode eq "REST::Neo4p::Node" ) {
-		$instance->{_node} = $neo4jNode;
-#		$instance->{_simple} = $neo4jNode->as_simple;  # DEBUG
-	}
-	elsif ( ref $neo4jNode eq "HASH" ) {
-		$instance->{_simple} = $neo4jNode;
-	}
-	else {
+	if (! $person) {
 		croak "Neo4j node required";
 		return undef;
 	}
@@ -78,18 +68,30 @@ sub new_membership {
 
 
 sub _property {
-	my ($self, $key, $path, $skip) = @_;
-	$skip ||= 0;
+	my ($self, $key, $path, $search) = @_;
 	
 	if ( ! $path ) {
-		$self->{_simple} = $self->{_node}->as_simple if ! $self->{_simple};
-		return $self->{_simple}->{$key};
+		return $self->{node}->{properties}->{$key};
 	}
 	
-	foreach my $item (@$path) {
-		next if $skip-- > 0;
-		return $item->{$key} if $item->{$key};
+	if ($path eq 'relationship') {
+		foreach my $item (@{$self->{relationships}}) {
+			next if $search && $item->{type} !~ m/^$search$/;
+			return $item->{properties}->{$key};
+		}
 	}
+	if ($path eq 'node') {
+		foreach my $item (@{$self->{relationships}}) {
+			next if $search && ! grep m/^$search$/, @{$item->{node}->{labels}};
+			return $item->{node}->{properties}->{$key};
+		}
+	}
+#	grep m/^$person->{id}$/, @rel_nodes;
+	
+# 	foreach my $item (@$path) {
+# 		next if $skip-- > 0;
+# 		return $item->{$key} if $item->{$key};
+# 	}
 	return undef;
 }
 
@@ -102,8 +104,9 @@ sub equals {
 
 sub node_id {
 	my ($self, $other) = @_;
-	return 0 + $self->{_simple}->{_node} if $self->{_simple};
-	return 0 + $self->{_node}->id if $self->{_node};
+	return 0 + $self->{node}->{id} if $self->{node};
+#	return 0 + $self->{_simple}->{_node} if $self->{_simple};
+#	return 0 + $self->{_node}->id if $self->{_node};
 	die "node id unknown";
 }
 
@@ -219,39 +222,40 @@ sub membership {
 	my ($self, $path) = @_;
 	return $self->{membership} if $self->{membership};
 	
+	die "not implemented" if $path;
+	
 	$self->{membership} = { status_long => "Nichtmitglied" };
-	if (! $path) {
+	if (! defined $self->{relationships}) {
+		die "not implemented";
 		my $row = SKGB::Intern::Plugin::Neo4j::execute_memory($Q->{membership}, 1, (node => $self->node_id));
 		return $self->{membership} if ! $row->[0];
-#		my @nodes = $row->[0]->nodes;
-#		my @rels = $row->[0]->relationships;
 		$path = $row->[0]->as_simple;
-# 		while (my $n = shift @nodes) {
-# 			my $r = shift @relns;
-# 			print $r ? $n->id."-".$r->id."->" : $n->id."\n";
-# 		}
 	}
 	
 	my $date = POSIX::strftime('%Y-%m-%d', localtime);
-	my $joined = $self->_property('joined', $path);
-	my $leaves = $self->_property('leaves', $path);
+	my $joined = $self->_property('joined', relationship => undef);
+	my $leaves = $self->_property('leaves', relationship => undef);
 	return $self->{membership} if $joined && $joined gt $date || $leaves && $leaves lt $date;
 	
-	my $regular = $self->_property('regularContributor', $path);
-	my $status = $self->_property('name', $path, 1);  # hack: path item 0 is the :Person
+	my $regular = $self->_property('regularContributor', relationship => undef);
+#	my $status = $self->_property('name', $path, 1);  # hack: path item 0 is the :Person
+	my $status = $self->_property('name', node => undef);  # bug: matches any node
 	$self->{membership}->{status} = $status;
 	$self->{membership}->{regular} = $regular;
-	$self->{membership}->{guest} = $self->_property('_type', $path) eq 'IS_A_GUEST';
+#	$self->{membership}->{guest} = $self->_property('_type', $path) eq 'IS_A_GUEST';
+	$self->{membership}->{guest} = grep {$_->{type} =~ m/^IS_A_GUEST$/} @{$self->{relationships}};
 	$self->{membership}->{joined} = $joined;
 	$self->{membership}->{leaves} = $leaves;
 	
-	if ($self->_property('role', $path) eq 'honorary-member') {
+	if ($self->_property('role', node => undef) eq 'honorary-member') {
 		$status = $regular ? "Aktiv, $status" : "Passiv, $status";
 	}
 	if ($self->{membership}->{guest}) {
 		$status .=  ", Gastmitglied";
 	}
 	$self->{membership}->{status_long} = $status;
+#	say Dumper $self;
+#	die;
 	
 	return $self->{membership};
 }

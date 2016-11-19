@@ -1,24 +1,25 @@
 % layout 'intern1';
-% title 'Mitgliederliste';
+% title 'Personenliste';
 % use 5.016;
 
 <h2><%= title %></h2>
 
+<!--
+<p>Dies soll die Liste derjenigen Personen sein, auf die der eingeloggte Nutzer Zugriff hat. Reguläre Mitglieder sehen also erst mal nur sich selbst (oder eventuell die aktiven Mitglieder?), nicht eingeloggte Benutzer sehen 401 (gemäß Standard-Konzept).
+-->
 
 <table id=membertable class="compact">
 <thead>
-<tr><th>Name<th>Status<th>Alter<th>MNr-alt<th>Sortierschlüssel
+<tr><th>Name<th>Status<th>MNr-alt<th>Sortierschlüssel
 </thead>
 % my $user = $self->skgb->session->user;
 % foreach my $member (@$members) {
-%#  my $profile_url = url_for('mglpage');
+%#  my $profile_url = ();
 %#  $profile_url = $profile_url->query(node => $member->node_id) unless $member->equals($user);
-%  next if ! $member->membership->{status};
+%#  next if ! $member->membership->{status};
 <tr>
 <td><%= link_auth_to person => {person => $member->handle} => begin %><%= $member->name %><% end %>
-<!--<td><%#= link_auth_to $profile_url => begin %><%= $member->name %><% end %>-->
 <td><%= $member->membership->{status_long} %>
-<td><%= $member->age %>
 <td><%= $member->gs_verein_id || '–' %>
 <td><%= fc($member->name_sortable) %>
 % }

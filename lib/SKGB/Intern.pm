@@ -5,7 +5,7 @@ use Mojo::Log;
 use SemVer;
 
 #our $VERSION = Perl::Version->new( '2.0.0_5' );
-our $VERSION = SemVer->new( '2.0.0-a11' );
+our $VERSION = SemVer->new( '2.0.0-a12' );
 
 
 sub startup {
@@ -13,7 +13,8 @@ sub startup {
 	
 #	$ENV{MOJO_REVERSE_PROXY} = 1;
 	
-	$app->plugin('Config' => {file => 'skgb.development.conf'});
+	$app->moniker('skgb-intern');
+	$app->plugin('Config');
 	$app->secrets([ Mojo::Util::sha1_sum($app->moniker . $app->config->{intern}->{cookie_secret}) ]);
 	$app->log( Mojo::Log->new( path => $app->config->{intern}->{log} ) ) if $app->mode eq 'production';
 	
@@ -60,8 +61,12 @@ sub setup_routing {
 	
 	my $logged_in = $r->under('/')->to('key_manager#logged_in');
 #	$logged_in->any('/content/:name')->to('content#content');
-	$logged_in->any('/profile')->to('member_list#person')->name('mglpage');
-	$logged_in->any('/profile/node=(:node)')->to('member_list#node')->name('mglpagenode');  # hack
+	$logged_in->any('/profile')->to('member_list#node')->name('mglpage');
+	$logged_in->any('/profile/node=(:node)')->to('member_list#nodehack')->name('mglpagenode');  # hack
+#	$logged_in->any('/person/(:person)')->to('member_list#person', person => undef)->name('person');
+	$logged_in->any('/person/(#person)')->to('member_list#person')->name('person');
+	$logged_in->any('/person/')->to('member_list#list_person')->name('list_person');
+	$logged_in->any('/austrittsliste')->to('member_list#list_leaving')->name('list_leaving');
 	$logged_in->any('/mitgliederliste')->to('member_list#list')->name('mglliste');
 	$logged_in->any('/anschriftenliste')->to('member_list#postal')->name('postliste');
 	$logged_in->any('/jugendliste')->to('member_list#youth')->name('jgdliste');

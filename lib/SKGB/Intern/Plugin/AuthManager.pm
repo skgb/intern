@@ -1,6 +1,8 @@
 package SKGB::Intern::Plugin::AuthManager;
 use Mojo::Base 'Mojolicious::Plugin';
 
+use utf8;
+
 use REST::Neo4p;
 use String::Random;
 use List::Util;
@@ -14,7 +16,7 @@ use Mojolicious::Plugin::Authorization;
 
 
 my $Q = {
-  access => REST::Neo4p::Query->new(<<QUERY),
+  access => REST::Neo4p::Query->new(<<END),
 MATCH (c:AccessCode)-[:IDENTIFIES]->(p:Person)-[a:IS_A|IS_A_GUEST|ACCESS*..3]->(r:Resource)
  WHERE c.code = {code}
  AND any(y IN r.urls WHERE {url} =~ y)
@@ -23,7 +25,21 @@ MATCH (c:AccessCode)-[:IDENTIFIES]->(p:Person)-[a:IS_A|IS_A_GUEST|ACCESS*..3]->(
  RETURN p, c, r, last(a)
  ORDER BY last(a).level DESC
  LIMIT 1
-QUERY
+END
+#   may => <<END,
+# MATCH (c:AccessCode)-[:IDENTIFIES]->(:Person)-[:IS_A|IS_A_GUEST*..2]->(:Role)-[:MAY]->(s:Right)
+#  WHERE c.code = {code}
+#  RETURN s.right
+# END
+  may => <<_,
+MATCH (c:AccessCode)-[:IDENTIFIES]->(:Person)-[:IS_A|IS_A_GUEST|ROLE|GUEST*..2]->(r:Role)-[:MAY]->(s:Right)
+WHERE c.code = {code} AND NOT( (c)-[:NOT]->(r) )
+RETURN s.right
+UNION
+MATCH (c:AccessCode)-[:ROLE*..2]->(r:Role)-[:MAY]->(s:Right)
+WHERE c.code = {code}
+RETURN s.right
+_
 };
 
 
@@ -34,8 +50,43 @@ sub register {
 	my @helpers = qw( link_auth_to has_access );
 	$app->helper($_ => __PACKAGE__->can("_$_")) for @helpers;
 	
+	my @skgb_helpers = qw( may );
+	$app->helper("skgb.$_" => __PACKAGE__->can("_$_")) for @skgb_helpers;
 	
 }
+
+
+sub _may {
+	my ($c, $right, $key) = @_;
+	$key ||= $c->session('key');
+	return undef if ! $key;
+	$right ||= "mojo:" . $c->current_route;
+	
+	my $rights = $c->stash('rights');
+	if (! $rights) {
+		my @rights = $c->neo4j->session->run($Q->{may}, code => $key);
+		my %rights = map { $_->get => 1 } @rights;
+		$rights = \%rights;
+		$c->stash(rights => $rights);
+		
+#		say "$key:";
+#		say Data::Dumper::Dumper $rights;
+	}
+	
+	return $rights->{$right};
+}
+
+
+# sub _if_may {
+# 	my ($c, $right, $then) = @_;
+# 	
+# 	if (ref $then) {
+# 		# not implemented
+# 		die;
+# 	}
+# 	
+# 	return $c->skgb->may($right) ? $then : "🔒";
+# }
 
 
 # TODO: unit testing
@@ -45,6 +96,9 @@ sub _has_access {
 	$access_level ||= 1;
 	$key ||= $c->session('key');
 	my $url_path = ref $url ? "" . $url->path : $url;
+	
+	say "called has_access for $url";
+#	die if $url eq "/mitgliederliste";
 	
 	# query cache
 	if ($c->stash("user_access.$url_path")) {
@@ -90,7 +144,7 @@ sub _link_auth_to {
 	my ($c, $content) = (shift, shift);
 	my @url = ($content);
 	
-	# Content/Captures logic lifted directly from _link_to helper in Mojo 6.37
+	# Content/Captures logic lifted straight from _link_to helper in Mojo 6.37
 	
 	# Content
 	unless (ref $_[-1] eq 'CODE') {
@@ -101,8 +155,18 @@ sub _link_auth_to {
 	# Captures
 	push @url, shift if ref $_[0] eq 'HASH';
 	
+	# check auth
 	my $url = $c->url_for(@url);
-	return $c->tag('a', class => 'no-access', @_) if ! $c->has_access($url);
+	my $target = $url[0];
+	my $access = $c->skgb->may("mojo:$target");
+	if (! $access) {
+		my $routes = $c->app->routes;
+		my $route = $routes->lookup($target);
+		$access = $route->parent == $routes if $route;  # top level route => no login requirement => public access
+#		$access ||= $c->has_access($url) unless $target && $target eq "_";  # old URL-based scheme
+	}
+	return $c->tag('a', class => 'no-access', @_) if ! $access;
+	
 	return $c->tag('a', href => $url, @_);
 }
 

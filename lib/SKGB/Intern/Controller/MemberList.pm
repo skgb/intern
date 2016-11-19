@@ -2,6 +2,9 @@ package SKGB::Intern::Controller::MemberList;
 use Mojo::Base 'Mojolicious::Controller';
 use 5.016;
 
+use Regexp::Common qw /number/;
+
+
 my $Q = {
   memberships_fast => REST::Neo4p::Query->new(<<QUERY),
 MATCH (p:Person)-[r:IS_A|IS_A_GUEST]->(m:Role)-->(:Role {role:'member'})
@@ -68,11 +71,17 @@ MATCH (p:Person)<--(a:Address {type:'street'})
   OR (p)<-[:FOR {primary:true}]-(a)
  RETURN p, a
 QUERY
-list_postal_all => REST::Neo4p::Query->new(<<QUERY),
+  list_postal_all => REST::Neo4p::Query->new(<<QUERY),
 MATCH (p:Person)<--(a:Address {type:'street'})
  WHERE (p)<-[:FOR]-(a)
  RETURN p, a
 QUERY
+  all_persons => <<END,
+MATCH (p:Person)
+OPTIONAL MATCH (p)-[r:IS_A|IS_A_GUEST|ROLE|GUEST]->(m:Role)-[:IS_A|ROLE]->(:Role {role:'member'})
+RETURN p AS person, type(r) = 'GUEST' OR type(r) = 'IS_A_GUEST' AS guest, m.role AS status
+LIMIT 1
+END
 };
 
 
@@ -81,7 +90,7 @@ sub list {
 	my ($self) = @_;
 	
 	# todo: darf dieser user die liste überhaupt sehen?
-	if ( ! $self->has_access ) {
+	if ( ! $self->skgb->may ) {
 #		$self->res->code(403);
 #	return $self->render(members => []);
 #	return $self->render(template => 'list', members => []);
@@ -120,7 +129,7 @@ sub list {
 sub postal {
 	my ($self) = @_;
 	
-	if ( ! $self->has_access ) {
+	if ( ! $self->skgb->may ) {
 		return $self->render(template => 'key_manager/forbidden', status => 403);
 	}
 	
@@ -144,18 +153,86 @@ sub postal {
 }
 
 
-sub person {
+sub list_person {
 	my ($self) = @_;
-	my @rows;
 	
-	if ( ! $self->has_access ) {
+	if ( ! $self->skgb->may ) {
 		return $self->render(template => 'key_manager/forbidden', status => 403);
 	}
 	
+#	my @persons = $self->neo4j->get_persons($Q->{all_persons}, column => 0);
+	my @persons = $self->neo4j->get_persons(<<END);
+MATCH (p:Person)
+OPTIONAL MATCH (p)-[r:IS_A|IS_A_GUEST|ROLE|GUEST]->(m:Role)-[:IS_A|ROLE]->(:Role {role:'member'})
+RETURN [p, r, m]
+END
+#	use Data::Dumper;
+#	say Dumper \@persons;
+#	die;
+	
+#	foreach my $person (@persons) {
+#	}
+#	my @codes = ($self->_code( $code, SKGB::Intern::Model::Person->new($code->get(1)) ));
+	
+#	return $self->render(text => "" . $self->stash('person'));
+	return $self->render(template => 'member_list/list_person', members => \@persons);
+}
+
+
+sub person {
+	my ($self) = @_;
+	
+	# TODO: The handle may be a semi-permanent opaque ASCII string as defined
+	# by the club secretary (usually something like "firstname.lastname") or it
+	# may be the transient integer low-level database node id. If the former is
+	# supplied, we need to figure out the node id because the node method
+	# expects it. This is potentially very expensive when called in a loop!
+	my $handle = $self->param('person');
+	if ($handle !~ m/^$RE{num}{int}{-sign => ''}$/) {
+		my $result = $self->neo4j->session->run(<<END, handle => $handle);
+MATCH (p:Person)
+WHERE p.userId = {handle}
+RETURN id(p) AS node_id
+END
+		$result->size eq 0 and die "person not in database";
+		$result->size eq 1 or die "database corrupt: multiple persons with same handle";
+		$handle = $result->single->get('node_id');
+	}
+	return $self->node($handle);
+}
+
+
+sub list_leaving {
+	my ($self) = @_;
+	
+	if ( ! $self->skgb->may ) {
+#		return $self->render(template => 'key_manager/forbidden', status => 403);
+	}
+	
+	my @records = $self->neo4j->get_persons(<<END, column => 'p');
+MATCH (p:Person)-[rm:IS_A|IS_A_GUEST|ROLE|GUEST]->(m:Role)-[:IS_A|ROLE]->(:Role {role:'member'})
+WHERE rm.leaves <> ""
+OPTIONAL MATCH (p)-[rk]-(k:ClubKey)
+RETURN p, rm, m, rm.leaves AS leaves, count(k) AS keys, rk.returned AS returned
+END
+	
+	return $self->render(template => 'member_list/list_leaving', records => \@records);
+}
+
+
+sub node {
+	my ($self, $node) = @_;
+	my @rows;
+	
+	if ( ! $self->skgb->may ) {
+		return $self->render(template => 'key_manager/forbidden', status => 403);
+	}
+	
+	$node //= $self->param('node');
 	my $person;
-	if ($self->param('node')) {
+	if ($node) {
 #		say Data::Dumper::Dumper $self->param('node');
-		my $row = $self->neo4j->execute_memory($Q->{member}, 1, (node => 0 + $self->param('node')));
+		my $row = $self->neo4j->execute_memory($Q->{member}, 1, (node => 0 + $node));
 #		say Data::Dumper::Dumper $row;
 		$person = SKGB::Intern::Model::Person->new( $row->[0] );
 	}
@@ -248,6 +325,7 @@ sub person {
 	
 	
 	return $self->render(
+		template => 'member_list/node',
 		person => $person,
 		all_related => \@all_related,
 		addresses => \@addresses,
@@ -258,13 +336,11 @@ sub person {
 }
 
 
-sub node {
+sub nodehack {
 	# hack: redirect to url with query after logging in
 	my ($self) = @_;
 	
-	my $node = $self->stash('node');
-	$node = 1228 if $node eq 462;
-	my $target = $self->url_for('mglpage')->query('node' => $node);
+	my $target = $self->url_for('mglpage')->query('node' => $self->stash('node'));
 	$self->redirect_to($target);
 	return undef;
 }

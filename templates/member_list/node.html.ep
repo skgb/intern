@@ -12,9 +12,10 @@ SKGB–E-Mail–Adresse (ungeprüft):  <a<%= $skgbEmailHref %>><%= $skgbEmail %>
 informelle Anrede<%= $person->_property('salutation') ? "" : " (automatisch)" %>:  <%= $person->name_salutation %>
 
 Mitgliedsstatus:  <%= $person->membership->{status_long} %>
-Jahresbeitrag:  <%= $person->_property('debitBase') || 0 %> €
-Lastschriftmandate:   <%= scalar @$mandates ? join ', ', @$mandates : "keine" %>
-Debitorenstammnummer:  <%= $person->_property('debitorSerial') %>
+% my $may_payment_data = $self->app->mode ne 'development' || $self->skgb->may('payment-data');
+Jahresbeitrag:  <%= $may_payment_data ? ($person->_property('debitBase') || 0) . " €" : "🔒" %>
+Lastschriftmandate:   <%= $may_payment_data ? scalar @$mandates ? join ', ', @$mandates : "keine" : "🔒" %>
+Debitorenstammnummer:  <%= $may_payment_data ? $person->_property('debitorSerial') : "🔒" %>
 GS-Verein-Nummer / MNr-alt:  <%= $person->gs_verein_id %>  <%= $person->gs_verein_id && $person->gs_verein_id gt '396' ? "(nicht in GS-Verein)" : "" %>
 Eintritt:  <%= $person->membership->{joined} && $person->membership->{joined} eq '1967-09-01' ? 'Gründungsmitglied 1967' : $person->membership->{joined} %>
 Austritt:  <%= $person->membership->{leaves} || ( $person->membership->{joined} ? '–' : '' ) %>
@@ -59,6 +60,9 @@ Kontaktdaten:
 % }
 <%= "keine\n" if ! scalar @$addresses;
 
+# TODO:
+# http://microformats.org/wiki/hcard
+
 %>
 Bekannte Beziehungen zu anderen Personen:
 % my $user = $self->skgb->session->user;
@@ -82,7 +86,7 @@ Bekannte Beziehungen zu anderen Personen:
 %  $type =~ s/Address/Kontaktdaten/;
 %  $type =~ s/Mandate/Zahlungsdaten/;
 %  $type =~ s/Boat/Boot/;
-<%= link_to $related->{person}->name, $profile_url %>: <%= $type %>
+<%= link_auth_to person => {person => $related->{person}->handle} => begin %><%= $related->{person}->name %><% end %>: <%= $type %>
 % }
 <%= "keine\n" if ! scalar @$all_related;
 

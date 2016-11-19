@@ -13,12 +13,11 @@ use SKGB::Intern::Model::Person;
 my $TIME_FORMAT = '%Y-%m-%dT%H:%M:%SZ';
 
 my $Q = {
-  access => REST::Neo4p::Query->new(<<QUERY),
-MATCH (c:AccessCode)-[:IDENTIFIES]->(p:Person)-[:IS_A]->(:Role)-[:ACCESS]->(r:Resource)
- WHERE c.code = {code} AND '/login' IN r.urls
- RETURN p, c
- LIMIT 2
-QUERY
+  access => REST::Neo4p::Query->new(<<END),
+MATCH (c:AccessCode)-[:IDENTIFIES]->(p:Person)-[:IS_A|IS_A_GUEST|ROLE|GUEST*..3]->(:Role)-[:ACCESS|MAY]->(r)
+WHERE c.code = {code} AND ((r:Resource) AND '/login' IN r.urls OR (r:Right) AND r.right = 'login')
+RETURN p, c
+END
 };
 
 sub register {
@@ -55,9 +54,9 @@ sub register {
 #		say $key;
 		
 		my @rows = $c->neo4j->execute_memory($Q->{access}, 2, ( code => $key ));
-		if ($rows[1]) {
-			die "database corrupted: multiple persons related to same key '$key'";
-		}
+#		if ($rows[1]) {
+#			die "database corrupted: multiple persons related to same key '$key'";
+#		}
 #		say "trace2b " . scalar @rows;
 		if ($rows[0]) {
 			$session->{code} = $rows[0]->[1];

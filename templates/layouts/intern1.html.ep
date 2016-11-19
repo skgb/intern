@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <meta charset=UTF-8>
 <title><%= title %> (SKGB-intern 2)</title>
-<style>@import url("/intern1.css?a9");</style>
+<style>@import url("/intern1.css?a12");</style>
 <link rel="stylesheet" type="text/css" href="/DataTables/datatables.css"/>
 <!--link rel=icon href=/icon.png type=image/png sizes="16x16"-->
 <body id=intern-skgb-de>
@@ -24,7 +24,7 @@
 % if ($user) {
 %# <a href=/profile>
 %= $link_menu_to->($user->name, 'mglpage', 1)
-%= $link_menu_to->('Abmelden', $self->url_for('login')->query(logout=>1,target=>url_for))
+<li><%= link_to 'Abmelden', $self->url_for('login')->query(logout=>1,target=>url_for) %>
 % }
 % else {
 <!--
@@ -45,25 +45,26 @@
 
 <script>
 // The logout button shouldn't be a GET link because of its side effects.
-(function () {
-	// TODO: move this to DOMContentLoaded event
-	if (! document.getElementById || ! document.getElementsByTagName) {
-		return;
-	}
-	var menuLinks = document.getElementById('menu').getElementsByTagName('A');
-	var logoutPattern = /\/login\?logout=1/;
-	for (var i = menuLinks.length - 1; i > 0; i--) {
-		if (logoutPattern.test(menuLinks[i].href)) {
-			var logoutLink = '' + menuLinks[i].href;
-			window.logout = function logout () {
-				// TODO: submit a POST form instead
-				document.location.href = logoutLink;
-			};
-			menuLinks[i].href = 'javascript:logout()';
-			return;
+if (document.addEventListener) {  // most browsers except IE <= 8
+	document.addEventListener('DOMContentLoaded', function () {
+		var menuLinks = document.getElementById('menu').getElementsByTagName('A');  // DOM Core Level 2, well supported
+		var logoutPattern = /\/login\?logout=1/;
+		for (var i = menuLinks.length - 1; i > 0; i--) {
+			if (logoutPattern.test(menuLinks[i].href)) {
+				var logoutLink = '' + menuLinks[i].href;
+				window.logout = function logout () {
+//					document.location.href = logoutLink;
+					logoutForm = document.createElement('FORM');
+					logoutForm.action = logoutLink;
+					logoutForm.method = 'POST';
+					logoutForm.submit();
+				};
+				menuLinks[i].href = 'javascript:logout()';
+				return;
+			}
 		}
-	}
-})();
+	}, false);
+}
 </script>
 
 

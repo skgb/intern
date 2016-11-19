@@ -7,7 +7,7 @@ use SKGB::Intern::Verbandsmeldung;
 sub dosb {
 	my ($self) = @_;
 	
-	if ( ! $self->has_access ) {
+	if ( ! $self->skgb->may ) {
 		return $self->render(template => 'key_manager/forbidden', status => 403);
 	}
 	

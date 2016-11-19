@@ -9,6 +9,7 @@
 auch Kontakte mit E-Mail zeigen</label>
 <input type=submit id=allsubmit>
 <script>
+// TODO: move this to DOM loaded event
 document.getElementById("allcheckbox").onclick = function () {
 	this.form.submit();  // known issue: using the back button may break the UI temporarily
 };
@@ -29,15 +30,11 @@ document.getElementById("allsubmit").outerHTML = '';
 </thead>
 % my $user = $self->skgb->session->user;
 % foreach my $row (@$list) {
-%  my $profile_url = url_for('mglpage');
-%  $profile_url = $profile_url->query(node => $row->{person}->node_id) unless $row->{person}->equals($user);
 <tr>
-<td><%= link_auth_to $profile_url => begin %><%= $row->{person}->name %><% end %>
-%#<td><%= $row->{person}->membership->{status_long} %>
+<td><%= link_auth_to person => {person => $row->{person}->handle} => begin %><%= $row->{person}->name %><% end %>
 %  for (my $i = 0; $i < $address_cols; $i++) {
 <td><%= $row->{address}->[$i] || '' %>
 %  }
-%#<td><%= $row->{person}->gs_verein_id || '–' %>
 <td><%= fc($row->{person}->name_sortable) %>
 % }
 </table>

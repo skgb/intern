@@ -6,8 +6,38 @@
 
 
 <p><b><%= $code->{code} %></b> <%= $code->{this_session} && '(current session)' %> <%= $code->{this_expired} && '(expired)' %>
+<p>for: <%= $code->{for}->name %>
 <p>issued: <%= $code->{creation} %>
 <p>expiration: <%= $code->{expiration} %>
 <p>access: first <%= $code->{first_use} %>, last <%= $code->{access} %>
-<p><input type=submit name=edit value="view/edit rights"<%= $code->{this_expired} && ' disabled' %>> <input type=submit name=delete value="delete<%= $code->{this_session} && ' and log out' %>" disabled>
+%#<p><input type=submit name=edit value="view/edit rights"<%= $code->{this_expired} && ' disabled' %>> <input type=submit name=delete value="delete<%= $code->{this_session} && ' and log out' %>" disabled>
 
+<h3>Roles</h3>
+<ul class=auth>
+% foreach my $role (@$roles) {
+<li>
+<p>
+<%== $role->{negated} ? "<del>" : $role->{special} ? "<ins>" : "" %>
+<%= $role->{role}->{name} %>
+<%= $role->{indirect} ? " (indirekt)" : "" %>
+<%== $role->{negated} ? "</del>" : $role->{special} ? "</ins>" : "" %>
+% }
+</ul>
+
+<h3>Privileges</h3>
+<ul class=auth>
+% foreach my $priv (@$privs) {
+%  if (! $priv->{new}) {
+<li>
+<p><%= $priv->{priv}->{name} %> (<%= join ', ', @{$priv->{priv}->{urls}} %>)
+%   next;
+%  }
+<li>
+<p>
+<%== $priv->{negated} ? "<del>" : $priv->{special} ? "<ins>" : "" %>
+<%= $priv->{priv}->{name} %>
+<code><%= $priv->{priv}->{right} %></code>
+<%== !! $self->skgb->may($priv->{priv}->{right}, $code->{code}) eq ! $priv->{negated} ? "" : "<b style=color:red;background:yellow>ERROR in queries!</b>" %>
+<%== $priv->{negated} ? "</del>" : $priv->{special} ? "</ins>" : "" %>
+% }
+</ul>

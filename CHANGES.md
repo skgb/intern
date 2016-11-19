@@ -50,3 +50,14 @@ various hidden/internal changes:
 - made radar image be included through HTTPS
 - fixed CSS in layout to support mobile browsers (missing semicolon)
 - implemented REST-style URL for individual profile pages (just as a redirect for now)
+
+2.0.0-a12, 2016-11-18
+- brand new Neo4j driver set to replace Neo4p, including plug-in support
+- deprecated SKGB::Intern::Model::Person, replacement SKGB::Intern::Person is not yet fully compatible and still has Neo4p dependencies that have to be removed
+- limited implementation of new auth framework based on named rights rather than URLs (AuthManager: link\_auth_to() and may(); SessionManager: access query (for compatibility); node.ep (dev mode only) and Auth.pm: incomplete experimental clients)
+- new /person/* endpoint allowing RESTful addressing (so far used for permalinks and a full list view of all persons including non-members)
+- implemented list view of members that are leaving the club
+- implemented count of private boats in DSV stats output
+- reorganised index page
+- fixed logout button in menu to make a POST request instead of a GET
+- fixed broken link to DWD on weather page

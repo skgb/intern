@@ -6,6 +6,46 @@
 <p>Während der Entwicklungsphase muss auf diesem Server mit unangekündigten Wartungsarbeiten gerechnet werden, die jederzeit den Betrieb stören können. Bei Problemen bitte Rückmeldung an den IT-Ausschuss!
 
 <h2>Index</h2>
+<p>Es folgt eine Übersicht der derzeit in SKGB-intern 2 verfügbaren Ressourcen. Für manche Ressourcen ist eine <%= link_auth_to 'Anmeldung', 'login' %> erforderlich. Nicht jeder Benutzer hat Zugriff auf alle Ressourcen.
+<br><br>
+
+<p>Mitgliederdienste:
+<ul>
+<li><%= link_auth_to wetter => begin %>Wetter-Links<% end %>
+<li><%= link_auth_to regeln => begin %>SKGB-Regeln<% end %>
+</ul>
+
+<p>Mitgliederdatenbank:
+<ul>
+<li><%= link_auth_to mglliste => begin %>Mitgliederliste<% end %>
+<li><%= link_auth_to _ => begin %>Jugendliste<% end %>
+<li><%= link_auth_to postliste => begin %>Anschriftenliste<% end %>
+<li><%= link_auth_to list_leaving => begin %>Austrittsliste<% end %>
+</ul>
+
+<p>Vereinsverwaltung:
+<ul>
+<li><%= link_auth_to exportlisten => begin %>Export (Listen-Schnittstelle)<% end %> (lädt langsam)
+<li><%= link_auth_to export1 => begin %>Export nach SKGB-intern 1 (GS-Verein–Schnittstelle)<% end %> (lädt langsam)
+<!--
+<li><%= link_auth_to _ => begin %>DSV-Vereinsmeldebogen<% end %>
+<li><%= link_auth_to _ => begin %>LSB-Bestandserhebung (DOSB-Schnittstelle)<% end %>
+<li><%= link_auth_to _ => begin %>SVNRW-Bestandserhebung (B-Zahlen)<% end %>
+-->
+<li><%= link_auth_to dosb => begin %>Mitgliederzahlen zur Meldung an die Verbände<% end %>
+</ul>
+
+<p>Systemdienste:
+<ul>
+<li><a href=/auth?all>Auth</a>
+<li><%= link_auth_to list_person => begin %>Personenliste<% end %>
+<li><%= link_auth_to wikiview => begin %>Wiki<% end %>
+</ul>
+
+<!--
+<hr>
+
+<h2>Index</h2>
 <p>Übersicht der derzeit in SKGB-intern 2 verfügbaren Ressourcen:</p>
 <ul>
 <li><%= link_auth_to mglliste => begin %>Mitgliederliste<% end %>
@@ -13,20 +53,27 @@
 <li><%= link_auth_to postliste => begin %>Anschriftenliste<% end %>
 <li><%= link_auth_to exportlisten => begin %>Export (Listen-Schnittstelle)<% end %> (lädt langsam)
 <li><%= link_auth_to export1 => begin %>Export nach SKGB-intern 1 (GS-Verein–Schnittstelle)<% end %> (lädt langsam)
-<li><%= link_auth_to _ => begin %><s>DSV-Vereinsmeldebogen</s><% end %>
-<li><%= link_auth_to _ => begin %><s>LSB-Bestandserhebung (DOSB-Schnittstelle)</s><% end %>
-<li><%= link_auth_to _ => begin %><s>SVNRW-Bestandserhebung (B-Zahlen)</s><% end %>
+--
+--
+<li><%= link_auth_to _ => begin %>DSV-Vereinsmeldebogen<% end %>
+<li><%= link_auth_to _ => begin %>LSB-Bestandserhebung (DOSB-Schnittstelle)<% end %>
+<li><%= link_auth_to _ => begin %>SVNRW-Bestandserhebung (B-Zahlen)<% end %>
+--
+--
 <li><%= link_auth_to dosb => begin %>Mitgliederzahlen zur Meldung an die Verbände<% end %>
 <li><%= link_auth_to regeln => begin %>SKGB-Regeln<% end %>
 <li><%= link_auth_to wikiview => begin %>Wiki<% end %>
 <li><%= link_auth_to wetter => begin %>Wetter-Links<% end %>
+<li><a href=/auth?all>Auth</a>
+<li><%= link_auth_to list_person => begin %>Personenliste<% end %>
+<li><%= link_auth_to list_leaving => begin %>Austrittsliste<% end %>
 </ul>
 <p>Für manche Ressourcen ist eine <%= link_auth_to 'Anmeldung', 'login' %> erforderlich. Nicht jeder Benutzer hat Zugriff auf alle Ressourcen.
 
 % if ($logged_in) {
 <p><br><b><%= $logged_in->name %> ist angemeldet.</b>
 % }
-
+-->
 
 <!--
 % my $status = '  (closed)';
@@ -40,8 +87,8 @@
 <hr>
 <p><a href=/mitgliederliste>Mitgliederliste</a> <%= $status %>
 <p><%= link_auth_to mglliste => begin %>Mitgliederliste<% end %>
-<p>Mitgliederliste access: <%= has_access('/mitgliederliste') ? 'YES' : 'NO' %>
-<p>Index access: <%= has_access ? 'YES' : 'NO' %>
+<p>Mitgliederliste access: <%#= has_access('/mitgliederliste') ? 'YES' : 'NO' %>
+<p>Index access: <%#= has_access ? 'YES' : 'NO' %>
 
 % if ($logged_in) {
 <p><b>'<%= $logged_in->name %>' logged in.</b>

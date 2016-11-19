@@ -10,7 +10,7 @@ use SKGB::Regeln;
 sub regeln {
 	my $c = shift;
 	
-	if ( ! $c->has_access ) {
+	if ( ! $c->skgb->may ) {
 #		return $c->render(template => 'key_manager/forbidden', status => 403);
 	}
 	
