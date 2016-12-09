@@ -35,9 +35,9 @@
 <li><%= link_auth_to dosb => begin %>Mitgliederzahlen zur Meldung an die Verbände<% end %>
 </ul>
 
-<p>Systemdienste:
+<p>Systemdienste und Sonstiges:
 <ul>
-<li><a href=/auth?all>Auth</a>
+<li><%== $self->skgb->may('sudo') ? '<a href=/auth?all>' : '<a href=/auth>' %>Auth</a>
 <li><%= link_auth_to list_person => begin %>Personenliste<% end %>
 <li><%= link_auth_to wikiview => begin %>Wiki<% end %>
 </ul>

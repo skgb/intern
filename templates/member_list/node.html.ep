@@ -5,10 +5,13 @@
 <h2><%= title %></h2>
 
 <pre>
-Benutzername für <a href=http://intern1.skgb.de/>SKGB-intern 1</a>:   <%= $person->legacy_user %>
-% my $skgbEmail = $person->legacy_user ? $person->legacy_user . "\@skgb.de" : "";
+% my $has_primary_email = scalar $person->primary_emails;
+% my $i_am_an_intern1_user = $person->legacy_user && $has_primary_email && $person->node_id == $self->skgb->session->user->node_id;
+% my $has_skgb_email = $person->legacy_user && $has_primary_email && $person->membership && $person->membership->{status_long} ne 'Nichtmitglied';
+Handle für Permalink:  <%= link_auth_to person => {person => $person->legacy_user} => begin %><%= $person->legacy_user %><% end %><%== $i_am_an_intern1_user ? "  (= Benutzername für <a href=http://intern1.skgb.de/>SKGB-intern 1</a>)" : "" %>
+% my $skgbEmail = $has_skgb_email ? $person->legacy_user . "\@skgb.de" : "";
 % my $skgbEmailHref = $skgbEmail ? " href=mailto:$skgbEmail" : "";
-SKGB–E-Mail–Adresse (ungeprüft):  <a<%= $skgbEmailHref %>><%= $skgbEmail %></a>
+SKGB–E-Mail–Adresse:   <a<%= $skgbEmailHref %>><%= $skgbEmail %></a>
 informelle Anrede<%= $person->_property('salutation') ? "" : " (automatisch)" %>:  <%= $person->name_salutation %>
 
 Mitgliedsstatus:  <%= $person->membership->{status_long} %>
@@ -27,7 +30,9 @@ beteiligt sich am Vereinsleben (GS-Verein–„Aktiv“):  <%= defined $person->
 
 eigene Boote:
 % foreach my $boat (@$boats) {
-<%= $boat->{class} %> <span style="text-transform: uppercase"><%= $boat->{mark} %></span> (<%= $boat->{_berth} ? "Liegeplatz: $boat->{_berth}" : "kein Liegeplatz" %>)
+%  my $class = $boat->{class};
+%  $class = $boat->{comment} if ! $class && ! $boat->{mark};
+<%= $class %> <span style="text-transform: uppercase"><%= $boat->{mark} %></span> (<%= $boat->{_berth} ? "Liegeplatz: $boat->{_berth}" : "kein Liegeplatz" %>)
 %#=  dumper $boat
 % }
 <%= "keine\n" if ! scalar @$boats;

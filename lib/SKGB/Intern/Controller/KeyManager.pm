@@ -243,7 +243,12 @@ sub _send_mail {
 		quit => 1,
 		sub {
 			my ($smtp, $resp) = @_;
-			warn $resp->error ? 'Failed to send: '.$resp->error : 'Sent successfully';
+			if ($self->app->mode eq 'development') {
+				warn $resp->error ? "Failed to send code $code: ".$resp->error : "Sent successfully (code $code)";
+			}
+			else {
+				warn $resp->error ? "Failed to send: ".$resp->error : "Sent successfully";
+			}
 		},
 	);
 }

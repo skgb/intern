@@ -165,17 +165,18 @@ sub primary_emails {
 		next if ! $email;
 		push @emails, $email;
 	}
-	return @emails if @emails;
-	
-	# try non-primary addresses if no primaries are found
-	foreach my $rel (@rels) {
-		next if $rel->type ne 'FOR';
-		my $start_node = $rel->start_node;
-		next if $start_node->get_property('type') ne 'email';
-		my $email = $start_node->get_property('address');
-		next if ! $email;
-		push @emails, $email;
-	}
+# Non-primary addresses only make sense for the key factory, and *that* only makes sense once users are able to modify their own addresses. Meanwhile, non-primary addresses are a problem for the interim person report page in the 'member_list/node' template, where the email facade should only show for primary addresses.
+# 	return @emails if @emails;
+# 	
+# 	# try non-primary addresses if no primaries are found
+# 	foreach my $rel (@rels) {
+# 		next if $rel->type ne 'FOR';
+# 		my $start_node = $rel->start_node;
+# 		next if $start_node->get_property('type') ne 'email';
+# 		my $email = $start_node->get_property('address');
+# 		next if ! $email;
+# 		push @emails, $email;
+# 	}
 	return @emails;
 }
 

@@ -61,3 +61,8 @@ various hidden/internal changes:
 - reorganised index page
 - fixed logout button in menu to make a POST request instead of a GET
 - fixed broken link to DWD on weather page
+
+2.0.0-a13, 2016-12-09
+- main member list shows join date rather than obsolete ID
+- minor improvements to person report page (permalink handle, facade mail address, boat identification)
+- minor dev mode changes (key factory logs, Auth link availability)
