@@ -14,7 +14,7 @@ my $TIME_FORMAT = '%Y-%m-%dT%H:%M:%SZ';
 
 my $Q = {
   access => REST::Neo4p::Query->new(<<END),
-MATCH (c:AccessCode)-[:IDENTIFIES]->(p:Person)-[:IS_A|IS_A_GUEST|ROLE|GUEST*..3]->(:Role)-[:ACCESS|MAY]->(r)
+MATCH (c:AccessCode)-[:IDENTIFIES]->(p:Person)-[:ROLE|GUEST*..3]->(:Role)-[:ACCESS|MAY]->(r)
 WHERE c.code = {code} AND ((r:Resource) AND '/login' IN r.urls OR (r:Right) AND r.right = 'login')
 RETURN p, c
 END

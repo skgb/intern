@@ -14,7 +14,7 @@ use Data::Dumper;
 
 my $Q = {
   membership => REST::Neo4p::Query->new(<<QUERY),
-MATCH a=(p:Person)-[:IS_A|IS_A_GUEST*]->(:Role {role:'member'})
+MATCH a=(p:Person)-[:ROLE|GUEST*]->(:Role {role:'member'})
  WHERE id(p) = {node}
  RETURN a
  LIMIT 1
@@ -242,7 +242,7 @@ sub membership {
 	my $status = $self->_property('name', $path, 1);  # hack: path item 0 is the :Person
 	$self->{membership}->{status} = $status;
 	$self->{membership}->{regular} = $regular;
-	$self->{membership}->{guest} = $self->_property('_type', $path) eq 'IS_A_GUEST';
+	$self->{membership}->{guest} = $self->_property('_type', $path) eq 'GUEST';
 	$self->{membership}->{joined} = $joined;
 	$self->{membership}->{leaves} = $leaves;
 	

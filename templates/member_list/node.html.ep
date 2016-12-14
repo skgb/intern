@@ -15,7 +15,7 @@ SKGB–E-Mail–Adresse:   <a<%= $skgbEmailHref %>><%= $skgbEmail %></a>
 informelle Anrede<%= $person->_property('salutation') ? "" : " (automatisch)" %>:  <%= $person->name_salutation %>
 
 Mitgliedsstatus:  <%= $person->membership->{status_long} %>
-% my $may_payment_data = $self->app->mode ne 'development' || $self->skgb->may('payment-data');
+% my $may_payment_data = $self->app->mode ne 'development' || $self->skgb->may('payment-data') || $person->handle eq $self->skgb->session->user->handle;
 Jahresbeitrag:  <%= $may_payment_data ? ($person->_property('debitBase') || 0) . " €" : "🔒" %>
 Lastschriftmandate:   <%= $may_payment_data ? scalar @$mandates ? join ', ', @$mandates : "keine" : "🔒" %>
 Debitorenstammnummer:  <%= $may_payment_data ? $person->_property('debitorSerial') : "🔒" %>

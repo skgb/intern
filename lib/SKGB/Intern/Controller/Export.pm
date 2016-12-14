@@ -125,7 +125,7 @@ sub _intern1 {
 		foreach my $t (@rels_o) {
 			$status = $t->end_node->get_property('role');
 			next if ! $status;
-			$isGuest ||= 1 if $t->type eq 'IS_A_GUEST';
+			$isGuest ||= 1 if $t->type eq 'GUEST';
 			if ($t->get_property('leaves') && $t->get_property('leaves') lt $targetDate || $t->get_property('joined') && $t->get_property('joined') gt $targetDate) {
 				$Abteilung = 'Nichtmitglied';
 				# these members would exist in a simple GS-Verein export, but we
@@ -255,7 +255,7 @@ sub _listen {
 		foreach my $t (@rels_o) {
 			$status = $t->end_node->get_property('role');
 			next if ! $status;
-			$isGuest ||= 1 if $t->type eq 'IS_A_GUEST';
+			$isGuest ||= 1 if $t->type eq 'GUEST';
 			if ($t->get_property('leaves') && $t->get_property('leaves') lt $targetDate || $t->get_property('joined') && $t->get_property('joined') gt $targetDate) {
 				$Abteilung = 'Nichtmitglied';
 				# these members would exist in a simple GS-Verein export, but we

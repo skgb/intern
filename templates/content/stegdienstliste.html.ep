@@ -1,0 +1,199 @@
+% layout 'intern1', styles => '@import url(stegdienst.css);';
+% title 'Stegdienstliste erzeugen';
+
+<strong>Stegdienstliste erzeugen</strong>
+
+
+	
+<SCRIPT SRC="jquery-ui-1.8.23.custom/jquery-1.8.1.js"></SCRIPT>
+<SCRIPT SRC="jquery-ui-1.8.23.custom/js/jquery-ui-1.8.23.custom.min.js"></SCRIPT>
+<!--SCRIPT SRC="jquery-ui-1.8.23.custom/development-bundle/ui/jquery-ui-1.8.23.custom.js"></SCRIPT-->
+%# userIsBoardMember: this is not meant to be fool-proof -- evil users can easily re-create something closely resembling the club's letterhead anyway
+<SCRIPT>window.userIsBoardMember = <%= $board_member ? 'true' : 'false' %>;</SCRIPT>
+<SCRIPT SRC="stegdienst.js"></SCRIPT>
+	
+
+
+<P>Score = <!--INPUT TYPE=button CLASS=generate-suggestion-button ID=scorebutton VALUE="-∞" TITLE="klicken, um neuen Vorschlag zu generieren"--><INPUT TYPE=button CLASS=generate-suggestion-button ID=scorebutton VALUE="-∞" DISABLED>     <INPUT TYPE=button ID=warningsbutton VALUE="Warnungen" onclick="$('#tabs').tabs('select', 2)">
+
+
+
+<!-- Strategie (inkl. Import) | Parameter/Einstellungen | Liste+Warnungen | Export -->
+<DIV ID="tabs">
+<UL>
+	<LI><A HREF="#tabs-1">Strategie</A></LI>
+	<LI><A HREF="#tabs-5">Parameter</A></LI>
+	<LI><A HREF="#tabs-6">Warnungen</A></LI>
+	<LI><A HREF="#tabs-2">Stegdienstliste</A></LI>
+	<LI><A HREF="#tabs-4">Export</A></LI>
+	<LI><A HREF="#tabs-7">Druck</A></LI>
+	<LI class=hide><A HREF="#tabs-3">Import</A></LI>
+</UL>
+<DIV ID="tabs-1">
+
+<H2 style="display:none">Vorschlags-Strategie</H2>
+<FORM ACTION="" NAME="strategy" ID="strategy">
+<P><LABEL><INPUT TYPE="radio" NAME="strategy" VALUE="montecarlo" CHECKED> <STRONG>optimiert</STRONG></LABEL>
+<DIV CLASS="strategy-options">
+	<P>aus einer Vielzahl zufälliger Vorschläge automatisch anhand von Parametern den besten auswählen
+</DIV>
+<P><LABEL><INPUT TYPE="radio" NAME="strategy" VALUE="random"> <STRONG>zufällig</STRONG></LABEL>
+<DIV CLASS="strategy-options">
+	<P><LABEL><INPUT TYPE="radio" NAME="randomiser" VALUE="without" CHECKED> ziehen ohne Zurücklegen</LABEL>
+	<LABEL><INPUT TYPE="radio" NAME="randomiser" VALUE="with"> ziehen mit Zurücklegen</LABEL>
+	<P><LABEL><INPUT TYPE="checkbox" NAME="smart" VALUE="yes" CHECKED> leicht vermeidbare Fehler berücksichtigen</LABEL>
+</DIV>
+<P><LABEL CLASS="not-implemented"><INPUT TYPE="radio" NAME="strategy" VALUE="base" DISABLED> <STRONG>unverändert</STRONG></LABEL>
+<DIV CLASS="strategy-options">
+	<P><LABEL CLASS="not-implemented">als Vorlage zu übernehmendes Basis-Jahr: <SELECT NAME="basedata" DISABLED><OPTION VALUE="2016" SELECTED>2016</OPTION><OPTION VALUE="2015">2015</OPTION><OPTION VALUE="2014">2014</OPTION><OPTION VALUE="2013">2013</OPTION><OPTION VALUE="2012">2012</OPTION><OPTION VALUE="2011">2011</OPTION><OPTION VALUE="2010">2010</OPTION><OPTION VALUE="2009">2009</OPTION></SELECT></LABEL>
+</DIV>
+<P><LABEL><INPUT TYPE="radio" NAME="strategy" VALUE="sorted"> <STRONG>sortiert</STRONG></LABEL>
+<DIV CLASS="strategy-options">
+	<P><LABEL><INPUT TYPE="radio" NAME="sortkey" VALUE="id" CHECKED> nach ungefährem Eintrittsdatum</LABEL>
+	<LABEL><INPUT TYPE="radio" NAME="sortkey" VALUE="firstname"> nach Name</LABEL>
+	<LABEL><INPUT TYPE="radio" NAME="sortkey" VALUE="lastname"> nach Nachname</LABEL>
+	<P><LABEL><INPUT TYPE="checkbox" NAME="descending" VALUE="yes"> absteigend</LABEL>
+</DIV>
+<P><LABEL><INPUT TYPE="radio" NAME="strategy" VALUE="import"> <STRONG>importiert</STRONG></LABEL>
+<DIV CLASS="strategy-options">
+	<P>aus Zwischenablage
+</DIV>
+<P><LABEL><INPUT TYPE="radio" NAME="strategy" VALUE="blank"> <STRONG>leere Liste</STRONG></LABEL>
+<DIV CLASS="strategy-options">
+</DIV>
+
+<P><INPUT TYPE="button" VALUE="Vorschlag erzeugen" CLASS="generate-suggestion-button" DISABLED>
+<P CLASS="overwrite-warning"><EM>(der aktuelle Listenentwurf wird überschrieben!)</EM>
+</FORM>
+
+</DIV>
+<DIV ID="tabs-2">
+
+<H2 style="display:none">Stegdienstliste</H2>
+<TABLE ID="stegdienst">
+<THEAD>
+<TR><TH ID="warning-col"> <TH ID="date-col">Woche ab <TH COLSPAN="2" ID="member-cols">Eingeteilte Mitglieder
+<TBODY>
+</TABLE>
+
+<DIV ID="statistics">
+	<H3>Mitgliederliste</H3>
+	<UL ID="members-list"></UL>
+</DIV>
+
+<FORM ACTION="" NAME="liste-form" ID="liste-form">
+<P><INPUT TYPE="button" VALUE="Vorschlag erzeugen" CLASS="generate-suggestion-button" DISABLED>
+</FORM>
+
+<p id=out>
+
+</DIV>
+<DIV ID="tabs-3">
+
+<H2 style="display:none">Import</H2>
+<FORM ACTION="" NAME="import-form" ID="import-form">
+<P>Hier kann eine vorbereitete Liste aus einem anderen Programm (Excel, Word, InDesign, RagTime, Texteditor, …) zur weiteren Bearbeitung mit dieser Anwendung eingelesen werden. Das geht am einfachsten per Copy+Paste.
+</P>
+<TEXTAREA COLS="120" ROWS="16" ID="importdata">
+</TEXTAREA>
+<P><INPUT TYPE="button" VALUE="Import-Daten einlesen" NAME="import" DISABLED>
+<P CLASS="overwrite-warning"><EM>(der aktuelle Listenentwurf wird überschrieben!)</EM>
+<P><SMALL><br>Technische Details zum Datenformat: Grundsätzlich muss es dasselbe Format sein, das vom Export erzeugt wird: Tab/Return-getrennt, „Vorname Nachname“. CSV-Quelltext à la <code>"Name","Name"</code> oder <code>Name;Name</code> wird auch unterstützt, weil sich Tabs nicht so gut tippen lassen (zum Import aus einer anderen Software per Copy/Paste sind Tabs aber natürlich perfekt). „Name, Vorname“ wird nicht unterstützt. Leerzeichen dürfen nur Namensbestandteile trennen, nicht vor oder hinter Namen stehen! Nicht erkennbare Namen werden schlicht ignoriert (silent fail).</SMALL>
+</FORM>
+
+</DIV>
+<DIV ID="tabs-4">
+
+<H2 style="display:none">Export</H2>
+<P>Die bearbeitete Liste kann zur Veröffentlichung hier per Copy+Paste in eine Textverarbeitung wie Word oder in eine Layout-Software wie InDesign oder in eine Tabellenkalkulation wie Excel übernommen werden. Die Daten in diesem Feld passen sich laufend automatisch dem momentanen Bearbeitungsstand der Stegdienstliste an.
+</P>
+<TEXTAREA COLS="75" ROWS="10" ID="exportdata" READONLY>
+</TEXTAREA>
+<P><SMALL><br>Langfristig könnte hier die Liste in die Mitgliederdatenbank übernommen werden können. Mitglieder können dann z. B. E-Mail–Erinnerungen oder ein Kalenderabo bestellen.</SMALL>
+
+</DIV>
+<DIV ID="tabs-5">
+
+<H2 style="display:none">Parameter</H2>
+<P>Monte-Carlo–Methoden erlauben es, auch dann einen Lösungsvorschlag zu liefern, wenn die Randbedingungen (nah/fern, genau zwei Stegdienste etc.) nicht alle erfüllt werden können. Während ein solcher Vorschlag nicht ohne interaktive Prüfung weiterverwendet werden sollte, wird er <EM>wahrscheinlich</EM> nur noch minimale Nachbearbeitung erfordern. Das funktioniert, indem für eine sehr große Anzahl zufälliger Vorschläge anhand einer Metrik die jeweilige Tauglichkeit als Stegdienstliste berechnet und aus dieser Menge dann derjenige Vorschlag ausgewählt wird, der die wenigsten Randbedingungen verletzt.
+<P>Da die Metrik auf mehreren verschiedenen Einzelmerkmalen basiert, wird die Monte-Carlo-Strategie (welche in der Strategie-Liste „optimiert“ heißt) hier über eine entsprechende Anzahl von Einstellungen verfügen, mit deren Hilfe der Nutzer das Verhalten der Strategie detailliert kontrollieren kann. Im Augenblick ist zwar der Monte-Carlo-Algorithmus schon funktionsfähig implementiert, aber noch fast keines der Einzelmerkmale. Für die meisten wird eine erweiterte Datenbank benötigt, die jedoch von SKGB-intern 1.x nicht ohne Weiteres unterstützt werden kann. Daher wird diese App vorerst noch ein bloßes „Preview“ bleiben.
+<P style="margin-bottom:0">Im Augenblick sind provisorisch die folgenden <STRONG>Parameter fest eingebaut.</STRONG> Weil „optimiert“ allerdings immer den besten Zufallsalgorithmus verwendet (ohne zurücklegen, einfache Fehler vermeiden), kommt derzeit lediglich das „fern/fern“-Kriterium beim vollautomatischen Optimieren zum Tragen.
+<UL style="margin-top:0;margin-bottom:0">
+<LI>fern/fern = –0.5 score penalty
+<LI>öfter/seltener als Modus = –0.5 score penalty
+<LI>unangemessen oft = –10.0 score penalty
+<LI>freigestellt = –5.0 score penalty
+<LI><DEL>Vorstand mehrfach = –5.0 score penalty</DEL>
+<LI>Doppelzuteilung = –10.0 score penalty
+<LI>Unterzuteilung = –10.0 score penalty
+<LI>Nebenzuteilung = –5.0 score penalty
+</UL>
+<P>Selbstverständlich ist zu erwarten, dass eine finale Version dieser App eine halbwegs benutzerfreundliche Oberfläche und „sensible defaults“ hat anstelle eines solchen kryptischen Zahlenwirrwarrs. (Mal sehen, ob und ggf. wann die Erwartung wahr wird…)
+<P style="margin-top: 2em">mehr Informationen:
+<UL>
+<LI><P><A HREF="http://de.wikipedia.org/wiki/Monte-Carlo-Algorithmus">Wikipedia zur Monte-Carlo–Methodik</A>
+<LI><P><A HREF="http://intern.skgb.de/digest/vorstand/gs-verein/">Hintergründe zur Motivation für SKGB-intern 2.0</A> (im alten Vorstandsbereich)
+</UL>
+
+</DIV>
+<DIV ID="tabs-6">
+
+<H2 style="display:none">Warnungen</H2>
+<P><EM>Warnungen werden auch als Tooltip auf den Warnsymbolen angezeigt.</EM>
+<DIV ID="warningsarea">
+</DIV>
+
+</DIV>
+<DIV ID="tabs-7">
+
+<H2 style="display:none">Druck</H2>
+<P>Vorstandsmitglieder können hier die bearbeitete Liste im LibreOffice-Format zur Veröffentlichung herunterladen.
+<P><INPUT TYPE=button ID=printbutton VALUE="ODF laden" onclick="SKGB.print()" DISABLED>
+<P STYLE="margin-top:1.5em">Die freie <STRONG>Schriftart <A HREF="http://savannah.gnu.org/projects/freefont/">FreeSerif</A></STRONG> wird <STRONG>benötigt,</STRONG> um das einheitliche Erscheinungsbild in der Vereinskommunikation zu fördern.
+<P>Empfohlen ist die FreeFont-Version 2012 oder neuer. Es sollte alle vier Schnitte von Free<B>Serif</B> installiert werden; die anderen beiden enthaltenen Schriftarten FreeMono und FreeSans werden nicht benötigt. Direktlinks zum Download vom GNU-Server:
+<BR><A HREF="http://ftp.gnu.org/gnu/freefont/freefont-ttf-20120503.zip">freefont-ttf-20120503.zip</A> – empfohlen für Windows
+<BR><A HREF="http://ftp.gnu.org/gnu/freefont/freefont-otf-20120503.tar.gz">freefont-otf-20120503.tar.gz</A> – empfohlen für andere Betriebssysteme
+<P STYLE="margin-top:1.5em">Das ausgegebene Dokument <EM>sollte</EM> ein ganz normales unkomprimiertes OpenDocument/ODF-Textdokument sein, das auch in anderer Software funktioniert. In der Praxis werden allerdings von Drittsoftware oftmals nur komprimierte ODF-Dokumente unterstützt und die SVG-Integration funktioniert oft nicht wie erwartet. Deshalb wird nur die Verwendung mit <A HREF="https://de.libreoffice.org/download/libreoffice-fresh/">LibreOffice 5</A> empfohlen.
+<P>(Apache OpenOffice <EM>sollte</EM> ebenfalls bestens funktionieren, ist aber völlig ungetestet und deshalb nicht empfohlen.)
+
+
+</DIV>
+</DIV>
+
+<P STYLE="font-size:1.5em;margin-bottom:5em">Unfinished Development Work – <STRONG>Technology Preview</STRONG>
+
+<TEXTAREA COLS="120" ROWS="20" ID="initdata" READONLY STYLE="display: none;">
+{
+members: [
+% my @near = qw( Marienheide Kierspe Meinerzhagen Bergneustadt Gummersbach Wiehl Engelskirchen Lindlar Wipperfürth );
+% foreach my $record (sort {$a->get('p')->name_sortable cmp $b->get('p')->name_sortable} @$records) {
+%  my $person = $record->get('p');
+%  my $remote = ! grep { $_ eq $record->get('place') } @near;
+{ id: <%= 0 + $person->gs_verein_id %>, name: "<%= $person->name %>", remote: <%= $remote ? 'true' : 'false' %>, board: <%= $record->get('board') ? 'true' : 'false' %>, exempt: <%= $record->get('exempt') ? 'true' : 'false' %>},
+% }
+]
+}
+</TEXTAREA>
+
+<TEXTAREA COLS="1" ROWS="1" ID="importdata2016" READONLY STYLE="display: none;">
+</TEXTAREA>
+<TEXTAREA COLS="1" ROWS="1" ID="importdata2015" READONLY STYLE="display: none;">
+</TEXTAREA>
+<TEXTAREA COLS="1" ROWS="1" ID="importdata2014" READONLY STYLE="display: none;">
+</TEXTAREA>
+<TEXTAREA COLS="1" ROWS="1" ID="importdata2013" READONLY STYLE="display: none;">
+</TEXTAREA>
+<TEXTAREA COLS="1" ROWS="1" ID="importdata2012" READONLY STYLE="display: none;">
+</TEXTAREA>
+<TEXTAREA COLS="1" ROWS="1" ID="importdata2011" READONLY STYLE="display: none;">
+</TEXTAREA>
+<TEXTAREA COLS="1" ROWS="1" ID="importdata2010" READONLY STYLE="display: none;">
+</TEXTAREA>
+<TEXTAREA COLS="1" ROWS="1" ID="importdata2009" READONLY STYLE="display: none;">
+</TEXTAREA>
+
+
+
+	
+	<P><BR> $Id: stegdienst.html 850 2016-12-14 22:25:03Z aj $ <BR></P>
+</BODY></HTML>

@@ -1,0 +1,119 @@
+@import url("jquery-ui-1.8.23.custom/development-bundle/themes/base/jquery.ui.all.css");
+META {  /* pre-load and cache dragging cursor; Safari 5.1.7 seems to need this */
+	cursor: url(icons/closedhand.cur), pointer;
+}
+.ui-draggable {
+	cursor: url(icons/openhand.cur), pointer;
+}
+.ui-draggable-dragging {
+	cursor: url(icons/closedhand.cur), pointer;
+	box-shadow: 0 0 10px 0px rgba(0,0,0,.8);
+	background-color: #dadada !important;
+	background-image: url(jquery-ui-1.8.23.custom/development-bundle/themes/base/images/ui-bg_glass_75_dadada_1x400.png) !important;
+	border-color: #dadada !important;
+	z-index: 10 !important;
+}
+.ui-widget {
+	font: .91em "Trebuchet MS", Arial, sans-serif;
+}
+.ui-tabs-panel {
+	min-height: 30em;
+}
+/*
+body {
+	font-size: 85%;
+}
+.ui-state-hover {
+	background: red !important;
+}
+TEXTAREA#initdata {
+	font: .6em "Monaco", "Courier", monospaced;
+	width: 100%;
+}
+TD.member {
+	background: silver;
+}
+TD.member>DIV {
+	background: white;
+}
+*/
+
+H2, .strategy-options {
+	margin-bottom: 1.5em;
+}
+.strategy-options {
+	margin-left: 2.5em;
+}
+.ui-tabs-panel A {
+	color: blue;
+}
+LABEL {
+	margin-right: 1.2em;
+}
+
+#statistics .count {
+	position: absolute;
+}
+#statistics .count + * {
+	margin-left: 2.5em;
+}
+#stegdienst TH {
+	font-size: 87%;
+	padding-bottom: 1em;
+}
+#stegdienst TD:first-child, #stegdienst TD:first-child + TD {
+	padding-right: .6em;
+}
+#tabs-2 .ui-draggable {  /* Listen-Tab */
+	padding: 0 .3em;
+	min-width: 12em;
+}
+#stegdienst TD.member {
+	min-width: 12em;
+}
+#stegdienst TD.warning {
+	height: 1.33em; /* keeps empty rows approximately the same height als those with assigned members in it */
+}
+#stegdienst .warning IMG {
+	vertical-align: -18%;
+}
+TABLE#stegdienst, #statistics {
+	display: table-cell;
+}
+#statistics {
+	padding-left: 2.5em;
+}
+#statistics #members-list {
+	padding-bottom: 128px;
+	background-image: url(icons/trash.png);
+	background-repeat: no-repeat;
+	background-position: center bottom;
+}
+UL#members-list, UL#members-list>LI {
+	list-style-type: none;
+	display: block;
+	padding-left: 0;
+	margin-top: 2px;
+}
+.ui-draggable.animated {
+	z-index: 9 !important;
+}
+SPAN.fern, SPAN.nah, SPAN.vorstand, SPAN.befreit {
+	font-size: 60%;
+	font-weight: bold;
+	vertical-align: 2px;
+}
+.activeMember {
+	color: black !important;
+	background-color: #bbb !important;
+	background-image: url(icons/ui-bg_glass_75_adadad_1x400.png) !important;
+}
+LABEL.not-implemented, .strategy-options .not-implemented {
+	color: grey;
+}
+.overwrite-warning {
+	display: none;
+}
+.overwrite-warning.active {
+	display: block;
+}

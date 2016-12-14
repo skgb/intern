@@ -142,17 +142,17 @@ sub _tree {
 # RETURN r.role
 # _
 	my %role_negation = map { $_->get => 1 } $self->neo4j->session->run(<<_, code => $param);
-MATCH (c:AccessCode)-[a:IS_A|IS_A_GUEST|:ROLE|:NOT*..2]->(r:Role)
+MATCH (c:AccessCode)-[a:GUEST|ROLE|NOT*..3]->(r:Role)
 WHERE c.code = {code} AND type(head(a)) = 'NOT'
 RETURN r.role
 _
 	foreach my $role ( $self->neo4j->session->run(<<_, code => $param) ) {
-MATCH (c:AccessCode)-[:IDENTIFIES]->(p:Person)-[:IS_A|IS_A_GUEST|ROLE*..2]->(r:Role)
+MATCH (c:AccessCode)-[:IDENTIFIES]->(p:Person)-[:GUEST|ROLE*..3]->(r:Role)
 WHERE c.code = {code}
 RETURN r, not((p)--(r)) AS indirect, false AS special
 ORDER BY r.name, r.role
 UNION
-MATCH (c:AccessCode)-[:ROLE*..2]->(r:Role)
+MATCH (c:AccessCode)-[:ROLE*..3]->(r:Role)
 WHERE c.code = {code}
 RETURN r, not((c)--(r)) AS indirect, true AS special
 ORDER BY r.name, r.role
@@ -169,19 +169,19 @@ _
 	
 	my @privs;
 	my %priv_negation = map { $_->get => 1 } $self->neo4j->session->run(<<_, code => $param);
-MATCH (c:AccessCode)-[a:IS_A|IS_A_GUEST|ROLE|NOT|MAY|ACCESS*..3]->(s:Right)
+MATCH (c:AccessCode)-[a:GUEST|ROLE|NOT|MAY|ACCESS*..4]->(s:Right)
 WHERE c.code = {code} AND type(head(a)) = 'NOT'
 RETURN s.right
 _
 	foreach my $priv ( $self->neo4j->session->run(<<_, code => $param) ) {
-MATCH (c:AccessCode)-[:IDENTIFIES]->(:Person)-[:IS_A|IS_A_GUEST*..2]->(r:Role)
+MATCH (c:AccessCode)-[:IDENTIFIES]->(:Person)-[:GUEST|ROLE*..3]->(r:Role)
 WHERE c.code = {code}
 MATCH (r)-[:MAY|ACCESS]->(s)
 WHERE (s:Right) OR (s:Resource)
 RETURN s, false AS special, (s:Right) AS new
 ORDER BY s.name, s.right
 UNION
-MATCH (c:AccessCode)-[:IS_A|IS_A_GUEST|:ROLE*..2]->(r:Role)
+MATCH (c:AccessCode)-[:GUEST|ROLE*..3]->(r:Role)
 WHERE c.code = {code}
 MATCH (r)-[:MAY]->(s)
 WHERE (s:Right)

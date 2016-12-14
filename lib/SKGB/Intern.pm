@@ -5,7 +5,7 @@ use Mojo::Log;
 use SemVer;
 
 #our $VERSION = Perl::Version->new( '2.0.0_5' );
-our $VERSION = SemVer->new( '2.0.0-a13' );
+our $VERSION = SemVer->new( '2.0.0-a14' );
 
 
 sub startup {
@@ -14,7 +14,7 @@ sub startup {
 #	$ENV{MOJO_REVERSE_PROXY} = 1;
 	
 	$app->moniker('skgb-intern');
-	$app->plugin('Config');
+	$app->plugin('Config');# => {file => 'conf/' . $app->moniker . '.' . $app->mode . '.conf'});
 	$app->secrets([ Mojo::Util::sha1_sum($app->moniker . $app->config->{intern}->{cookie_secret}) ]);
 	$app->log( Mojo::Log->new( path => $app->config->{intern}->{log} ) ) if $app->mode eq 'production';
 	
@@ -62,7 +62,7 @@ sub setup_routing {
 	my $logged_in = $r->under('/')->to('key_manager#logged_in');
 #	$logged_in->any('/content/:name')->to('content#content');
 	$logged_in->any('/profile')->to('member_list#node')->name('mglpage');
-	$logged_in->any('/profile/node=(:node)')->to('member_list#nodehack')->name('mglpagenode');  # hack
+#	$logged_in->any('/profile/node=(:node)')->to('member_list#nodehack')->name('mglpagenode');  # hack
 #	$logged_in->any('/person/(:person)')->to('member_list#person', person => undef)->name('person');
 	$logged_in->any('/person/(#person)')->to('member_list#person')->name('person');
 	$logged_in->any('/person/')->to('member_list#list_person')->name('list_person');
@@ -73,7 +73,10 @@ sub setup_routing {
 	$logged_in->any('/export/intern1')->to('export#intern1')->name('export1');
 	$logged_in->any('/export/listen')->to('export#listen')->name('exportlisten');
 	
-	$r->route('/regeln/:regeln_moniker')->to('regeln#regeln', regeln_moniker => undef)->name('regeln');
+	$logged_in->any('/stegdienst/erzeugen')->to('content#stegdienstliste')->name('stegdienstliste');
+	$app->plugin(Mount => {'/stegdienst/drucken' => 'script/stegdienst.cgi'});
+	
+	$logged_in->route('/regeln/:regeln_moniker')->to('regeln#regeln', regeln_moniker => undef)->name('regeln');
 	
 	$logged_in->any('/dosb')->to('stats#dosb')->name('dosb');
 	

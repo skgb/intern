@@ -17,7 +17,7 @@ use Mojolicious::Plugin::Authorization;
 
 my $Q = {
   access => REST::Neo4p::Query->new(<<END),
-MATCH (c:AccessCode)-[:IDENTIFIES]->(p:Person)-[a:IS_A|IS_A_GUEST|ACCESS*..3]->(r:Resource)
+MATCH (c:AccessCode)-[:IDENTIFIES]->(p:Person)-[a:ROLE|GUEST|ACCESS*..3]->(r:Resource)
  WHERE c.code = {code}
  AND any(y IN r.urls WHERE {url} =~ y)
  AND coalesce(last(a).level, 1) >= toInt({level})
@@ -32,13 +32,22 @@ END
 #  RETURN s.right
 # END
   may => <<_,
-MATCH (c:AccessCode)-[:IDENTIFIES]->(:Person)-[:IS_A|IS_A_GUEST|ROLE|GUEST*..2]->(r:Role)-[:MAY]->(s:Right)
+MATCH (c:AccessCode)-[:IDENTIFIES]->(:Person)-[:ROLE|GUEST*..3]->(r:Role)-[:MAY]->(s:Right)
 WHERE c.code = {code} AND NOT( (c)-[:NOT]->(r) )
 RETURN s.right
 UNION
-MATCH (c:AccessCode)-[:ROLE*..2]->(r:Role)-[:MAY]->(s:Right)
+MATCH (c:AccessCode)-[:ROLE*..3]->(r:Role)-[:MAY]->(s:Right)
 WHERE c.code = {code}
 RETURN s.right
+_
+  role => <<_,
+MATCH (c:AccessCode)-[:IDENTIFIES]->(:Person)-[:ROLE|GUEST*..3]->(r:Role)
+WHERE c.code = {code} AND r.role = {role} AND NOT( (c)-[:NOT]->(r) )
+RETURN true AS has_role
+UNION
+MATCH (c:AccessCode)-[:ROLE*..3]->(r:Role)
+WHERE c.code = {code} AND r.role = {role}
+RETURN true AS has_role
 _
 };
 
@@ -50,7 +59,7 @@ sub register {
 	my @helpers = qw( link_auth_to has_access );
 	$app->helper($_ => __PACKAGE__->can("_$_")) for @helpers;
 	
-	my @skgb_helpers = qw( may );
+	my @skgb_helpers = qw( may role );
 	$app->helper("skgb.$_" => __PACKAGE__->can("_$_")) for @skgb_helpers;
 	
 }
@@ -74,6 +83,17 @@ sub _may {
 	}
 	
 	return $rights->{$right};
+}
+
+
+# this may be a dirty hack (initially only used to 'simplify' a provisional check in the Stegdienstliste app)
+sub _role {
+	my ($c, $role, $key) = @_;
+	$key ||= $c->session('key');
+	return undef if ! $key;
+	
+	my $result = $c->neo4j->session->run($Q->{role}, code => $key, role => $role);
+	return $result->size;
 }
 
 

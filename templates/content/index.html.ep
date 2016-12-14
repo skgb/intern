@@ -6,7 +6,7 @@
 <p>Während der Entwicklungsphase muss auf diesem Server mit unangekündigten Wartungsarbeiten gerechnet werden, die jederzeit den Betrieb stören können. Bei Problemen bitte Rückmeldung an den IT-Ausschuss!
 
 <h2>Index</h2>
-<p>Es folgt eine Übersicht der derzeit in SKGB-intern 2 verfügbaren Ressourcen. Für manche Ressourcen ist eine <%= link_auth_to 'Anmeldung', 'login' %> erforderlich. Nicht jeder Benutzer hat Zugriff auf alle Ressourcen.
+<p>Es folgt eine Übersicht der derzeit in SKGB-intern 2 verfügbaren Ressourcen. Für manche Ressourcen ist eine <%= link_auth_to 'Anmeldung', 'login' %> erforderlich. <!--Nicht jeder Benutzer hat Zugriff auf alle Ressourcen.-->
 <br><br>
 
 <p>Mitgliederdienste:
@@ -26,17 +26,18 @@
 <p>Vereinsverwaltung:
 <ul>
 <li><%= link_auth_to exportlisten => begin %>Export (Listen-Schnittstelle)<% end %> (lädt langsam)
-<li><%= link_auth_to export1 => begin %>Export nach SKGB-intern 1 (GS-Verein–Schnittstelle)<% end %> (lädt langsam)
 <!--
 <li><%= link_auth_to _ => begin %>DSV-Vereinsmeldebogen<% end %>
 <li><%= link_auth_to _ => begin %>LSB-Bestandserhebung (DOSB-Schnittstelle)<% end %>
 <li><%= link_auth_to _ => begin %>SVNRW-Bestandserhebung (B-Zahlen)<% end %>
 -->
 <li><%= link_auth_to dosb => begin %>Mitgliederzahlen zur Meldung an die Verbände<% end %>
+<li><%= link_auth_to stegdienstliste => begin %>Stegdienstliste erzeugen<% end %>
 </ul>
 
 <p>Systemdienste und Sonstiges:
 <ul>
+<li><%= link_auth_to export1 => begin %>Export nach SKGB-intern 1 (GS-Verein–Schnittstelle)<% end %> (lädt langsam)
 <li><%== $self->skgb->may('sudo') ? '<a href=/auth?all>' : '<a href=/auth>' %>Auth</a>
 <li><%= link_auth_to list_person => begin %>Personenliste<% end %>
 <li><%= link_auth_to wikiview => begin %>Wiki<% end %>

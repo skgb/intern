@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <meta charset=UTF-8>
 <title><%= title %> (SKGB-intern 2)</title>
-<style>@import url("/intern1.css?a12");</style>
+<style>@import url("/intern1.css?a12");<%== defined $self->stash('styles') ? $self->stash('styles') : '' %></style>
 <link rel="stylesheet" type="text/css" href="/DataTables/datatables.css"/>
 <!--link rel=icon href=/icon.png type=image/png sizes="16x16"-->
 <body id=intern-skgb-de>

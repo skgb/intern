@@ -66,3 +66,9 @@ various hidden/internal changes:
 - main member list shows join date rather than obsolete ID
 - minor improvements to person report page (permalink handle, facade mail address, boat identification)
 - minor dev mode changes (key factory logs, Auth link availability)
+
+2.0.0-a14, 2016-12-14
+- integrate app "Stegdienstliste"
+- excise old IS_A* grammar
+- include unfinished version of GS-Verein import script
+- special-case profile page to never block access to one's own data

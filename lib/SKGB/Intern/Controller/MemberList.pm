@@ -7,15 +7,15 @@ use Regexp::Common qw /number/;
 
 my $Q = {
   memberships_fast => REST::Neo4p::Query->new(<<QUERY),
-MATCH (p:Person)-[r:IS_A|IS_A_GUEST]->(m:Role)-->(:Role {role:'member'})
+MATCH (p:Person)-[r:ROLE|GUEST]->(m:Role)-->(:Role {role:'member'})
  RETURN p,r,m
 QUERY
   memberships_path => REST::Neo4p::Query->new(<<QUERY),
-MATCH a=(:Person)-[:IS_A|IS_A_GUEST*..2]->(:Role {role:'member'})
+MATCH a=(:Person)-[:ROLE|GUEST*..2]->(:Role {role:'member'})
  RETURN a
 QUERY
   allmembers => REST::Neo4p::Query->new(<<QUERY),
-MATCH (p:Person)-[:IS_A|IS_A_GUEST*..2]->(:Role {role:'member'})
+MATCH (p:Person)-[:ROLE|GUEST*..2]->(:Role {role:'member'})
  RETURN p
 QUERY
   member => REST::Neo4p::Query->new(<<QUERY),
@@ -78,8 +78,8 @@ MATCH (p:Person)<--(a:Address {type:'street'})
 QUERY
   all_persons => <<END,
 MATCH (p:Person)
-OPTIONAL MATCH (p)-[r:IS_A|IS_A_GUEST|ROLE|GUEST]->(m:Role)-[:IS_A|ROLE]->(:Role {role:'member'})
-RETURN p AS person, type(r) = 'GUEST' OR type(r) = 'IS_A_GUEST' AS guest, m.role AS status
+OPTIONAL MATCH (p)-[r:ROLE|GUEST]->(m:Role)-[:ROLE]->(:Role {role:'member'})
+RETURN p AS person, type(r) = 'GUEST' AS guest, m.role AS status
 LIMIT 1
 END
 };
@@ -163,7 +163,7 @@ sub list_person {
 #	my @persons = $self->neo4j->get_persons($Q->{all_persons}, column => 0);
 	my @persons = $self->neo4j->get_persons(<<END);
 MATCH (p:Person)
-OPTIONAL MATCH (p)-[r:IS_A|IS_A_GUEST|ROLE|GUEST]->(m:Role)-[:IS_A|ROLE]->(:Role {role:'member'})
+OPTIONAL MATCH (p)-[r:ROLE|GUEST]->(m:Role)-[:ROLE]->(:Role {role:'member'})
 RETURN [p, r, m]
 END
 #	use Data::Dumper;
@@ -210,7 +210,7 @@ sub list_leaving {
 	}
 	
 	my @records = $self->neo4j->get_persons(<<END, column => 'p');
-MATCH (p:Person)-[rm:IS_A|IS_A_GUEST|ROLE|GUEST]->(m:Role)-[:IS_A|ROLE]->(:Role {role:'member'})
+MATCH (p:Person)-[rm:ROLE|GUEST]->(m:Role)-[:ROLE]->(:Role {role:'member'})
 WHERE rm.leaves <> ""
 OPTIONAL MATCH (p)-[rk]-(k:ClubKey)
 RETURN p, rm, m, rm.leaves AS leaves, count(k) AS keys, rk.returned AS returned
