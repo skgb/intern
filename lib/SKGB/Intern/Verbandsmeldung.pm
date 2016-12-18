@@ -96,10 +96,21 @@ sub query {
 
 # DOSB
 
+sub club_number {
+	my ($self, $digits) = @_;
+	my $club_ksb = sprintf "%01d%02d%03d", $self->config->{ksb}, $self->config->{gsv}, $self->config->{club};
+	return $club_ksb if $digits == 6;
+	my $club_lsb = sprintf "%01d%s", $self->config->{rb}, $club_ksb;
+	return $club_lsb if $digits == 7 || ! $digits;
+	my $club_dosb = sprintf "%02d%02d%s", $self->config->{lsb}, $self->config->{rb}, $club_ksb;
+	return $club_dosb if $digits == 10;
+	croak 'club number precision must be exactly 6, 7 (default), or 10 digits';
+}
+
 sub dosb_filename {
 	my ($self) = @_;
 	
-	my $club_ksb = sprintf "%01d%02d%03d", $self->config->{ksb}, $self->config->{gsv}, $self->config->{club};
+	my $club_ksb = $self->club_number(6);
 	return "${club_ksb}ja.dat";
 }
 
@@ -112,8 +123,7 @@ sub dosb {
 	my (undef, $min, $hour, $mday, $mon, $year, undef, undef, undef) = localtime;
 	my $timestamp = sprintf("%02d.%02d.%04d_%02d:%02d", $mday, $mon + 1, $year + 1900, $hour, $min);
 	
-	my $club_ksb = sprintf "%01d%02d%03d", $self->config->{ksb}, $self->config->{gsv}, $self->config->{club};
-	my $club = sprintf "%02d%02d%s", $self->config->{lsb}, $self->config->{rb}, $club_ksb;
+	my $club = $self->club_number(10);
 	my ($pin, $tan) = (" " x 8, " " x 8);
 	my @sports = (
 		[$self->config->{assn}, $self->config->{sport}],
@@ -170,8 +180,15 @@ sub _bin_ages {
 	return %bins;
 }
 
+sub _replace_inf {
+	my ($self, $replacement, $out) = @_;
+	foreach my $out_line (@$out) {
+		$out_line =~ s/([0-9])-Inf J/\1$replacement J/;
+	}
+}
+
 sub svnrw {
-	my ($self) = @_;
+	my ($self, %params) = @_;
 	$self->{years} and $self->{targetYear} or croak 'illegal state: execute query first';
 	
 	my @out = ();
@@ -194,6 +211,7 @@ sub svnrw {
 	foreach my $bin (sort { $a <=> $b } keys %bins) {
 		push @out, sprintf "%2d %2d   ", $bins{$bin}->{M_P}, $bins{$bin}->{W_P};
 	}
+	$self->_replace_inf($params{infinity}, \@out) if $params{infinity};
 	return wantarray ? @out : join '', @out;
 }
 
@@ -201,7 +219,7 @@ sub svnrw {
 # DSV
 
 sub dsv {
-	my ($self) = @_;
+	my ($self, %params) = @_;
 	$self->{years} and $self->{targetYear} or croak 'illegal state: execute query first';
 	
 	my @out = ();
@@ -227,6 +245,7 @@ sub dsv {
 	my $row = $Q->{no_berth}->fetch;
 	push @out, "\nPrivate Boote ohne Liegeplatz: ", @$row;
 	
+	$self->_replace_inf($params{infinity}, \@out) if $params{infinity};
 	return wantarray ? @out : join '', @out;
 }
 

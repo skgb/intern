@@ -7,7 +7,7 @@
 
 % foreach my $code (@$codes) {
 <li>
-%= form_for url_for('auth', code => $code->{code}) => (method => 'POST') => begin
+%= form_for url_for('auth', code_placeholder => $code->{code}) => (method => 'POST') => begin
 <p><b><%= $code->{code} %></b> <%= $code->{this_session} && '(current session)' %> <%= $code->{this_expired} && '(expired)' %>
 %== defined param('all') ? '<p>for: ' . $code->{for}->name : '';
 <p>issued: <%= $code->{creation} %>

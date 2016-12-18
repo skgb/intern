@@ -1,8 +1,20 @@
 % layout 'intern1';
 % title 'Verbandsmeldungen';
 
-<h2>Bestandserhebung LSB</h2>
-<p>(A-Zahlen über DOSB-Schnittstelle)
+<h2>LandesSportBund</h2>
+<ul>
+<li><a href=https://www.lsb-nrw-service.de/bsd>Bestandserhebung / Vereinsverwaltung</a>
+<li><a href=https://foerderportal.lsb-nrw.de/>Förderportal</a>
+</ul>
+<p style="margin-bottom:0.25em">Zugang zu den LSB-Diensten:
+<dl style="margin:0">
+<dt style="width:7.8em;float:left;clear:left">registriert auf<dd><kbd>info@skgb.de</kbd>
+<dt style="width:7.8em;float:left;clear:left">Vereinskennziffer<dd><kbd><%= $stats->club_number %></kbd>
+<dt style="width:7.8em;float:left;clear:left">Kennwort<dd><kbd><%= $self->config->{dosb}->{lsb_password} %></kbd>
+</dl>
+
+<h3>A-Zahlen LSB</h3>
+<p>Import über DOSB-Schnittstelle („DOSB-Format“ auswählen und Datei hochladen)
 % use Mojo::Util;
 % my $data = $stats->dosb;
 %# $data =~ s/\n/\x0d\x0a/g;
@@ -10,12 +22,18 @@
 
 <h3>B-Zahlen LSB/SVNRW</h3>
 <pre>
-%= $stats->svnrw
+%= $stats->svnrw(infinity => '-∞ ')
 </pre>
 
-<h2>DSV-Vereinsmeldebogen</h2>
+<h2>Deutscher Segler-Verband</h2>
+<p style="margin-bottom:0.25em">Zugang zum DSV-<a href=http://www.dsv.org/dsv/dsv-vereine/vereinsmeldebogen/>Vereinsmeldebogen</a>:
+<dl style="margin:0">
+<dt style="width:6.5em;float:left;clear:left">registriert auf<dd><kbd>info@skgb.de</kbd>
+<dt style="width:6.5em;float:left;clear:left">Kennwort<dd>wird immer zu Jahresbeginn neu zugesandt
+</dl>
+
 <pre>
-%= $stats->dsv
+%= $stats->dsv(infinity => '-∞ ')
 </pre>
 
 <p>Die Bootszahlen berücksichtigen bisher nicht <strong>Vereinsboote und Boote von Jugendmitgliedern;</strong> diese <strong>werden dazuaddiert</strong>. Diese Zahlen inkludieren Boote aller Art; <strong>private Kanus werden subtrahiert</strong> und unter „sonstige“ separat aufgeführt.

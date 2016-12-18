@@ -159,6 +159,8 @@ sub close {
 
 __END__
 
+http://stackoverflow.com/questions/37381833/neo4j-driver-confirm-transaction-success
+
 
 sub new {
 	my ($class, $url, $user, $pass) = @_;

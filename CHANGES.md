@@ -72,3 +72,8 @@ various hidden/internal changes:
 - excise old IS_A* grammar
 - include unfinished version of GS-Verein import script
 - special-case profile page to never block access to one's own data
+
+2.0.0-a15, 2016-12-18
+- add links to association management sites
+- hungarian-renamed placeholders in routes to make the mojo stash tidier
+- minor internal cleanup

@@ -5,7 +5,7 @@ use Mojo::Log;
 use SemVer;
 
 #our $VERSION = Perl::Version->new( '2.0.0_5' );
-our $VERSION = SemVer->new( '2.0.0-a14' );
+our $VERSION = SemVer->new( '2.0.0-a15' );
 
 
 sub startup {
@@ -55,16 +55,13 @@ sub setup_routing {
 	$r->any('/login')->to('key_manager#login');
 	$r->any('/')->to('content#index')->name('index');
 	
-#	$r->any('/auth')->to('auth#list')->name('authlist');
-#	$r->any('/auth/:code')->to('auth#tree')->name('authtree');
-	$r->any('/auth/:code')->to('auth#auth', code => undef)->name('auth');
+	$r->any('/auth/:code_placeholder')->to('auth#auth', code_placeholder => undef)->name('auth');
 	
 	my $logged_in = $r->under('/')->to('key_manager#logged_in');
 #	$logged_in->any('/content/:name')->to('content#content');
 	$logged_in->any('/profile')->to('member_list#node')->name('mglpage');
-#	$logged_in->any('/profile/node=(:node)')->to('member_list#nodehack')->name('mglpagenode');  # hack
 #	$logged_in->any('/person/(:person)')->to('member_list#person', person => undef)->name('person');
-	$logged_in->any('/person/(#person)')->to('member_list#person')->name('person');
+	$logged_in->any('/person/(#person_placeholder)')->to('member_list#person')->name('person');
 	$logged_in->any('/person/')->to('member_list#list_person')->name('list_person');
 	$logged_in->any('/austrittsliste')->to('member_list#list_leaving')->name('list_leaving');
 	$logged_in->any('/mitgliederliste')->to('member_list#list')->name('mglliste');
@@ -76,14 +73,14 @@ sub setup_routing {
 	$logged_in->any('/stegdienst/erzeugen')->to('content#stegdienstliste')->name('stegdienstliste');
 	$app->plugin(Mount => {'/stegdienst/drucken' => 'script/stegdienst.cgi'});
 	
-	$logged_in->route('/regeln/:regeln_moniker')->to('regeln#regeln', regeln_moniker => undef)->name('regeln');
+	$logged_in->route('/regeln/:moniker_placeholder')->to('regeln#regeln', moniker_placeholder => undef)->name('regeln');
 	
 	$logged_in->any('/dosb')->to('stats#dosb')->name('dosb');
 	
 	my $wiki_action = $logged_in->route;
 	$wiki_action->pattern->placeholder_start('%');  # the ':' is the default placeholder start and cannot be used as a literal unless we reassign this
-	$wiki_action->parse('/wiki/(action):*slug')->to('wiki#view', action_set => 1)->name('wiki');
-	$r->any('/wiki/*slug')->to('wiki#view', slug => undef)->name('wikiview');  # fallback for empty actions
+	$wiki_action->parse('/wiki/(action):*slug_placeholder')->to('wiki#view', action_set => 1)->name('wiki');
+	$r->any('/wiki/*slug_placeholder')->to('wiki#view', slug_placeholder => undef)->name('wikiview');  # fallback for empty actions
 }
 
 

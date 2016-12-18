@@ -14,7 +14,7 @@
 %  my $member = $record->get('p');
 %#  next if ! $member->membership->{status};
 <tr>
-<td><%= link_auth_to person => {person => $member->handle} => begin %><%= $member->name %><% end %>
+<td><%= link_auth_to person => {person_placeholder => $member->handle} => begin %><%= $member->name %><% end %>
 <td><%= $member->membership->{status_long} %>
 <td><%= $record->get('leaves') %>
 <td><%= $record->get('keys') ? "ja" : $record->get('returned') ? "Pfand offen" : "nein" %>

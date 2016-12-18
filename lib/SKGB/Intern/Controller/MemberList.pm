@@ -187,7 +187,7 @@ sub person {
 	# may be the transient integer low-level database node id. If the former is
 	# supplied, we need to figure out the node id because the node method
 	# expects it. This is potentially very expensive when called in a loop!
-	my $handle = $self->param('person');
+	my $handle = $self->param('person_placeholder');
 	if ($handle !~ m/^$RE{num}{int}{-sign => ''}$/) {
 		my $result = $self->neo4j->session->run(<<END, handle => $handle);
 MATCH (p:Person)
@@ -333,16 +333,6 @@ sub node {
 		clubkeys => \@keys,
 		mandates => \@mandates,
 	);
-}
-
-
-sub nodehack {
-	# hack: redirect to url with query after logging in
-	my ($self) = @_;
-	
-	my $target = $self->url_for('mglpage')->query('node' => $self->stash('node'));
-	$self->redirect_to($target);
-	return undef;
 }
 
 1;

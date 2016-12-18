@@ -192,18 +192,18 @@ sub _date {
 sub _slug {
 	my ($self) = @_;
 	
-	my $slug = $self->stash('slug');
+	my $slug = $self->stash('slug_placeholder');
 	
 	# empty slug -> Main Page
-	$self->redirect_to($self->url_for(slug => $self->main_page_slug)) if ! $slug;
+	$self->redirect_to($self->url_for(slug_placeholder => $self->main_page_slug)) if ! $slug;
 	return undef if ! $slug;
 	
 	# normalise (for URL)
 	$slug =~ s/ /_/g;
 	$slug =~ s/^_+|_+$//g;
 	$slug =~ s{([^_])/([^_])}{$1_/_$2}g;
-	if ($slug ne $self->stash('slug')) {
-		$self->redirect_to($self->url_for('wiki', slug => $slug));
+	if ($slug ne $self->stash('slug_placeholder')) {
+		$self->redirect_to($self->url_for('wiki', slug_placeholder => $slug));
 		return undef;
 	}
 	

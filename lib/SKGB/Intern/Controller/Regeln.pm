@@ -45,7 +45,7 @@ sub regeln {
 	};
 	find($wanted, $c->config->{skgb}->{regeln_src});
 	
-	my $regeln_param = $c->param('regeln') || $c->stash('regeln_moniker');
+	my $regeln_param = $c->param('regeln') || $c->stash('moniker_placeholder');
 #	my $regeln_param = $c->param('regeln');
 	if ( ! ($c->param('run') && $regeln_param && $c->param('base') && $c->param('changes') && $c->param('format')) ) {
 #	if ( ! ($c->param('run') && $c->param('regeln') && $c->param('base') && $c->param('changes') && $c->param('format')) ) {

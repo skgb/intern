@@ -21,6 +21,7 @@ sub register {
 	
 	# initialise Neo4j driver
 	my $driver = Neo4j::Driver->new($neo4j_config->{uri})->basic_auth(@neo4j_auth);
+	$self->{neo4j_driver} = $driver;
 	
 	
 	# Execute a query in memory and return a list of all of the results up to a
@@ -35,8 +36,7 @@ sub register {
 	# Return a current database session for the Neo4j driver.
 	$app->helper('neo4j.session' => sub {
 		my ($c) = @_;
-		
-		return $driver->session;
+		return $self->session;
 	});
 	
 	
@@ -146,6 +146,13 @@ sub execute_memory {
 	}
 	$query->finish;
 	return wantarray ? @rows : $rows[0];
+}
+
+
+sub session {
+	# Return a current database session for the Neo4j driver.
+	my ($self) = @_;
+	return $self->{neo4j_driver}->session;
 }
 
 

@@ -48,7 +48,7 @@ END
 # sub tree {
 # 	my ($self) = @_;
 # 	
-# 	my $row = $self->neo4j->execute_memory($Q->{code}, 1000, (code => $self->stash('code')));
+# 	my $row = $self->neo4j->execute_memory($Q->{code}, 1000, (code => $self->stash('code_placeholder')));
 # 	my @codes = ( $self->_code( $row->[0] ) );
 # 	$row->[1]->id eq $self->skgb->session->user->node_id or die 'not authorized';
 # 	
@@ -65,7 +65,7 @@ sub auth {
 		return $self->render(template => 'key_manager/forbidden', status => 403);
 	}
 	
-	return $self->_tree($user) if $self->stash('code');
+	return $self->_tree($user) if $self->stash('code_placeholder');
 	
 	my $template = 'key_manager/codelist';
 	my $param = $self->session('key');
@@ -108,7 +108,7 @@ sub _code {
 sub _tree {
 	my ($self, $user) = @_;
 	
-	my $param = $self->stash('code');
+	my $param = $self->stash('code_placeholder');
 	
 	my $code = $self->neo4j->session->run($Q->{code}, code => $param)->single;
 #	say Data::Dumper::Dumper $code;

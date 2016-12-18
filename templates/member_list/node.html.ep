@@ -8,7 +8,7 @@
 % my $has_primary_email = scalar $person->primary_emails;
 % my $i_am_an_intern1_user = $person->legacy_user && $has_primary_email && $person->node_id == $self->skgb->session->user->node_id;
 % my $has_skgb_email = $person->legacy_user && $has_primary_email && $person->membership && $person->membership->{status_long} ne 'Nichtmitglied';
-Handle für Permalink:  <%= link_auth_to person => {person => $person->legacy_user} => begin %><%= $person->legacy_user %><% end %><%== $i_am_an_intern1_user ? "  (= Benutzername für <a href=http://intern1.skgb.de/>SKGB-intern 1</a>)" : "" %>
+Handle für Permalink:  <%= link_auth_to person => {person_placeholder => $person->legacy_user} => begin %><%= $person->legacy_user %><% end %><%== $i_am_an_intern1_user ? "  (= Benutzername für <a href=http://intern1.skgb.de/>SKGB-intern 1</a>)" : "" %>
 % my $skgbEmail = $has_skgb_email ? $person->legacy_user . "\@skgb.de" : "";
 % my $skgbEmailHref = $skgbEmail ? " href=mailto:$skgbEmail" : "";
 SKGB–E-Mail–Adresse:   <a<%= $skgbEmailHref %>><%= $skgbEmail %></a>
@@ -91,7 +91,7 @@ Bekannte Beziehungen zu anderen Personen:
 %  $type =~ s/Address/Kontaktdaten/;
 %  $type =~ s/Mandate/Zahlungsdaten/;
 %  $type =~ s/Boat/Boot/;
-<%= link_auth_to person => {person => $related->{person}->handle} => begin %><%= $related->{person}->name %><% end %>: <%= $type %>
+<%= link_auth_to person => {person_placeholder => $related->{person}->handle} => begin %><%= $related->{person}->name %><% end %>: <%= $type %>
 % }
 <%= "keine\n" if ! scalar @$all_related;
 
