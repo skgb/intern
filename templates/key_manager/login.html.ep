@@ -43,8 +43,8 @@ document.getElementById("key").focus();
 
 % if (param 'key') {
 
-%  if ($session->{code}) {
-%   my $expired = $c->skgb->session->expired($session);
+%  if ($session && $session->{code}) {
+%   my $expired = $session->expired;
 %say "expired: $expired" if ($expired);
 %   if ($expired) {
 %    require Time::Date;

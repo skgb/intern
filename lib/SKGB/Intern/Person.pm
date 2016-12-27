@@ -29,8 +29,8 @@ sub new {
 		name_salutation => undef,
 		membership => undef,
 	};
-	if (! $person) {
-		croak "Neo4j node required";
+	if (! $person || ! $person->{id} || ! $person->{labels} || ! $person->{properties}) {
+		croak "Neo4j node required (did you request a graph result?)";
 		return undef;
 	}
 	return bless $instance, $class;

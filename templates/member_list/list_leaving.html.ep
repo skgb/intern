@@ -9,7 +9,7 @@
 <thead>
 <tr><th>Name<th>Status<th>Austritt<th>Schlüssel<th>Sortierschlüssel
 </thead>
-% my $user = $self->skgb->session->user;
+%# my $user = $self->skgb->session->user;
 % foreach my $record (@$records) {
 %  my $member = $record->get('p');
 %#  next if ! $member->membership->{status};

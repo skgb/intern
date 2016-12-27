@@ -28,7 +28,7 @@ document.getElementById("allsubmit").outerHTML = '';
 %  }
 <th>Sortierschlüssel
 </thead>
-% my $user = $self->skgb->session->user;
+%# my $user = $self->skgb->session->user;
 % foreach my $row (@$list) {
 <tr>
 <td><%= link_auth_to person => {person_placeholder => $row->{person}->handle} => begin %><%= $row->{person}->name %><% end %>

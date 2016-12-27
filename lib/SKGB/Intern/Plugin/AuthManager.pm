@@ -4,15 +4,13 @@ use Mojo::Base 'Mojolicious::Plugin';
 use utf8;
 
 use REST::Neo4p;
-use String::Random;
-use List::Util;
-use POSIX qw();
-use DateTime::Format::ISO8601;
+#use List::Util;
+#use POSIX qw();
 use Data::Dumper;
 
-use SKGB::Intern::Model::Person;
+use SKGB::Intern::AccessCode;
 
-use Mojolicious::Plugin::Authorization;
+#use Mojolicious::Plugin::Authorization;
 
 
 my $Q = {
@@ -56,12 +54,38 @@ sub register {
 	my ($self, $app, $args) = @_;
 	$args ||= {};
 	
+	$app->sessions->default_expiration( $app->config->{ttl}->{cookie} );
+#	$app->sessions->cookie_name('skgb-intern');
+#	$app->sessions->secure(1);  # HTTPS only
+	
 	my @helpers = qw( link_auth_to has_access );
 	$app->helper($_ => __PACKAGE__->can("_$_")) for @helpers;
 	
-	my @skgb_helpers = qw( may role );
+	my @skgb_helpers = qw( session may role );
 	$app->helper("skgb.$_" => __PACKAGE__->can("_$_")) for @skgb_helpers;
 	
+}
+
+
+# Get the AccessCode object AKA 'session hash'. A key parameter may be given to
+# use that specific key in lieu of the current session; this is required when
+# logging in.
+# Also sets/refreshes the session cookie. To be called on every access.
+sub _session {
+	my ($c, $key) = @_;
+	$key ||= $c->session('key');
+	
+	my $session = $c->stash('session');
+	if (! $session) {
+		$session = SKGB::Intern::AccessCode->new( code => $key, app => $c );
+		if ($session->user) {
+			$session->update;
+			$c->session( key => $key );
+		}
+		$c->stash(session => $session);
+	}
+	
+	return $session;
 }
 
 
@@ -107,57 +131,6 @@ sub _role {
 # 	
 # 	return $c->skgb->may($right) ? $then : "🔒";
 # }
-
-
-# TODO: unit testing
-sub _has_access {
-	my ($c, $url, $access_level, $key) = @_;
-	$url ||= $c->url_for;  # TODO: This is the canonical URL, not the actual URL. Is this secure enough?
-	$access_level ||= 1;
-	$key ||= $c->session('key');
-	my $url_path = ref $url ? "" . $url->path : $url;
-	
-	say "called has_access for $url";
-#	die if $url eq "/mitgliederliste";
-	
-	# query cache
-	if ($c->stash("user_access.$url_path")) {
-		return $c->stash("user_access.$url_path");
-	}
-	
-#	say "_has_access '$url':";
-	my $row;
-	if ($key) {
-		my @parameters = (code => "$key", url => $url_path, level => 0 + $access_level);
-		$row = $c->neo4j->execute_memory($Q->{access}, 1, ( @parameters ));
-#		say Data::Dumper::Dumper $row, \@parameters;
-	}
-	if ( ! $key || ! $row || $c->skgb->session->expired($row->[1]) ) {
-		if (grep( /^$url_path$/, @{$c->config->{public_access}} )) {
-#			say "public";
-			my $access = {
-				user => undef,
-				code => undef,
-				resource => $url_path,
-				access => undef,
-			};
-			$c->stash("user_access.$url_path", $access);
-			return $access;
-		}
-		
-#		say "no";
-		return;  # a false value
-	}
-	
-	my $access = {
-		user => SKGB::Intern::Model::Person->new( $row->[0] ),
-		code => $row->[1],
-		resource => $row->[2],
-		access => $row->[3],
-	};
-	$c->stash("user_access.$url_path", $access);
-	return $access;
-}
 
 
 sub _link_auth_to {

@@ -18,6 +18,7 @@ use Mojo::Util qw(trim);
 #use Util::Any -list => ['all'];
 use List::MoreUtils qw( all );
 
+use SKGB::Intern::AccessCode;
 use SKGB::Intern::Model::Person;
 
 
@@ -117,7 +118,7 @@ sub factory {
 	# #		expire_time => (time() + $self->config->{key_expiry}),
 	# 		expire_time => ( $self->skgb->session->new_expiration_time() ),
 	# 	});
-		$code->set_property({ creation => $self->skgb->session->new_time() });
+		$code->set_property({ creation => SKGB::Intern::AccessCode::new_time() });
 	#	$code->set_property( $self->skgb->session->new_expiration_times() );	
 		my $r1 = $code->relate_to($person->{_node}, 'IDENTIFIES');
 		
@@ -348,8 +349,8 @@ sub _generate_luhn {
 # "session?" step, with redirect
 sub logged_in {
 	my ($self) = @_;
-	my $user = $self->skgb->session->user;
-	if ($user) {
+	my $session = $self->skgb->session;
+	if ($session->user) {
 		return 1;
 	}
 	
@@ -360,23 +361,17 @@ sub logged_in {
 	# 4 session expired, re-login possible => notice
 	my @reason = ();
 	if ($self->session('key')) {
-		say "trace1";
-		my $session = $self->skgb->session->get_session;
-		say "trace4";
-		use Data::Dumper;
-		say "trace5";
-		say Data::Dumper::Dumper($session);
-		say "hello2, '" . $session->{code} . "'";
-		if (! $session->{code}) {
+		say "hello2, '$session'";
+		if (! $session->code) {
 			# this means we have a session cookie, but not the corresponding key => always either a coding error or an attempted attack
 #			die "key missing";
 		}
-		elsif ($self->skgb->session->key_expired($session)) {
+		elsif ($session->key_expired) {
 #			$self->session(expires => 1);
 			$self->flash(reason => 'key');
 #			@reason = (reason => 'key');
 		}
-		elsif ($self->skgb->session->expired($session)) {
+		elsif ($session->expired) {
 #			$self->session(expires => 1);
 			$self->flash(reason => 'session');
 #			@reason = (reason => 'session');
@@ -411,25 +406,24 @@ sub login {
 		$key = $s->( $self->param('key') );
 	}
 	
-	my $session = $self->skgb->session->get_session( $key );
-	my $user = $session->{user};
-	if ($user) {
-		$self->skgb->session->update( $session );
+	my $session = $self->skgb->session( $key );
+	my $may_login = $session && $session->user;
+	if ($may_login) {
 		
 		my $target = $self->param('target') || 'index';
 		$target = 'index' if $target eq $self->url_for('getkey');
 		$self->redirect_to($target);
 	}
-	else {
-		$user = $self->skgb->session->user;
-	}
+#	else {
+#		$may_login = $self->skgb->session->user;
+#	}
 	
 	if ($self->flash('reason')) {
 		$self->session(expires => 1);
 	}
 	
 	my @status = ();
-	@status = (status => 403) if ! $user && $self->param('key');
+	@status = (status => 403) if ! $may_login && $self->param('key');
 	return $self->render(session => $session, @status);
 }
 

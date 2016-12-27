@@ -42,9 +42,9 @@ ATIS Düsseldorf 0211 421116
 
 <ul>
 <li><a href=http://www.dwd.de/DWD/wetter/wv_spez/hobbymet/wetterkarten/bwk_bodendruck_na_ana.png>Bodenanalyse</a> (<a href=http://www.dwd.de/DE/leistungen/hobbymet_wk_europa/hobbyeuropakarten.html>DWD</a>)
-<li><a href=https://www.windyty.com/?51.08,7.56,5>Windanimation</a> (Windyty)
+<li><a href=https://earth.nullschool.net/#current/wind/surface/level/orthographic=6,52,2500/loc=7.56,51.08>Windanimation</a> (EARTH)
 <li>Regenradar: <a href=http://www.dwd.de/DWD/wetter/radar/rad_nrw_akt.jpg>Standbild</a> / <a href=http://www.dwd.de/DWD/wetter/radar/radfilm_nrw_akt.gif>Film</a> (<a href=http://www.dwd.de/DE/leistungen/radarbild_film/radarbild_film.html>DWD</a>)
-<li><a href=https://www.wunderground.com/wundermap/?lat=51.08&amp;lon=7.56&amp;zoom=7&amp;type=lightmap&amp;units=metric&amp;sat=1&amp;sat.num=1&amp;sat.spd=25&amp;sat.opa=80&amp;sat.gtt1=109&amp;sat.gtt2=109&amp;sat.type=IR4&amp;wxsn=0&amp;rad=0>Wolken Infrarot</a> (Weather Underground)
+<!--<li><a href=https://www.wunderground.com/wundermap/?lat=51.08&amp;lon=7.56&amp;zoom=7&amp;type=lightmap&amp;units=metric&amp;sat=1&amp;sat.num=1&amp;sat.spd=25&amp;sat.opa=80&amp;sat.gtt1=109&amp;sat.gtt2=109&amp;sat.type=IR4&amp;wxsn=0&amp;rad=0>Wolken Infrarot</a> (Weather Underground)-->
 <li><a href=http://www.aviationweather.gov/metar?zoom=7&amp;lat=51.08&amp;lon=7.56&amp;layers=B00FFTFFFFFTT&amp;plottype=model&amp;scale=1&amp;density=1&amp;metric=true&amp;decoded=true&amp;taf=false>METAR</a> / <a href=http://www.aviationweather.gov/taf?zoom=8&amp;lat=51.08&amp;lon=7.56&amp;layers=B00TFFFTT&amp;plottype=model&amp;fore=0&amp;density=2&amp;metric=true&amp;decoded=true&amp;metar=false&amp;scale=1.25>TAF</a> (NOAA)
 </ul>
 

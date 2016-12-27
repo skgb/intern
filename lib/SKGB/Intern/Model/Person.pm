@@ -19,6 +19,11 @@ MATCH a=(p:Person)-[:ROLE|GUEST*]->(:Role {role:'member'})
  RETURN a
  LIMIT 1
 QUERY
+  node_id => REST::Neo4p::Query->new(<<QUERY),
+MATCH (p:Person)
+ WHERE id(p) = {node}
+ RETURN p
+QUERY
 };
 
 
@@ -32,7 +37,10 @@ sub new {
 		name_salutation => undef,
 		membership => undef,
 	};
-	if ( ref $neo4jNode eq "REST::Neo4p::Node" ) {
+	if ( ref $neo4jNode eq "SKGB::Intern::Person" || ref $neo4jNode eq "SKGB::Intern::Model::Person" ) {
+		$instance->{_node} = SKGB::Intern::Plugin::Neo4j::execute_memory($Q->{node_id}, 1, (node => $neo4jNode->node_id))->[0];
+	}
+	elsif ( ref $neo4jNode eq "REST::Neo4p::Node" ) {
 		$instance->{_node} = $neo4jNode;
 #		$instance->{_simple} = $neo4jNode->as_simple;  # DEBUG
 	}
@@ -40,9 +48,10 @@ sub new {
 		$instance->{_simple} = $neo4jNode;
 	}
 	else {
-		croak "Neo4j node required";
+		croak "Neo4j node required, got " . ref $neo4jNode;
 		return undef;
 	}
+	print Carp::shortmess 'SKGB::Intern::Model::Person->new deprecated';
 	return bless $instance, $class;
 }
 
@@ -72,6 +81,7 @@ sub new_membership {
 #	my $instance = $class->new( ($neo4jPath->nodes)[0] );
 	$instance->{_simple} = $neo4jPath->[0];
 	$instance->membership($neo4jPath);
+	print Carp::shortmess 'SKGB::Intern::Model::Person->new_membership deprecated';
 #	say Data::Dumper::Dumper $instance;
 	return $instance;
 }

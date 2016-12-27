@@ -64,6 +64,7 @@ sub register {
 		my @persons = ();
 		if (! defined $params->{column}) {
 			$params->{column} = $column_keys->add('person');
+			# BUG: looks like this may corrupt a result that already has a column 'person'
 		}
 		
 		foreach my $record (@{$result->{result}->{data}}) {

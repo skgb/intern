@@ -80,10 +80,10 @@ sub auth {
 # 		push @codes, $self->_code( $row->[0], SKGB::Intern::Model::Person->new($row->[1]) );  # debug
 # 	}
 # 	@codes = sort {$b->{creation} cmp $a->{creation}} @codes;
-	my @rows = $self->neo4j->session->run($query, code => $param);
-	say Data::Dumper::Dumper \@rows;
+	my @rows = $self->neo4j->get_persons($query, code => $param);
+#	say Data::Dumper::Dumper \@rows;
 	foreach my $row (@rows) {
-		push @codes, $self->_code( $row, SKGB::Intern::Model::Person->new($row->get(1)) );
+		push @codes, $self->_code( $row, $row->get('person') );
 #		$row->[1]->id eq $user->node_id or die 'not authorized';  # assertion
 #		push @codes, $self->_code( $row->[0], SKGB::Intern::Model::Person->new($row->[1]) );  # debug
 	}
@@ -110,10 +110,10 @@ sub _tree {
 	
 	my $param = $self->stash('code_placeholder');
 	
-	my $code = $self->neo4j->session->run($Q->{code}, code => $param)->single;
+	my ($code, @codes) = $self->neo4j->get_persons($Q->{code}, code => $param);
 #	say Data::Dumper::Dumper $code;
-	$code or die;
-	my @codes = ($self->_code( $code, SKGB::Intern::Model::Person->new($code->get(1)) ));
+	$code and not @codes or die;
+	@codes = ($self->_code( $code, $code->get('person') ));
 	
 	my @roles;
 # 	my @roles = $self->neo4j->session->run(<<_, code => $param);

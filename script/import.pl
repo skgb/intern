@@ -26,9 +26,9 @@ my %options = (
 	dev => undef,
 	mandate_file => undef,
 #	cypher_file => 'out.cypher.txt',
-	infra_file => 'conf/infrastructure.cypher',
-	roles_file => 'conf/roles.cypher',
-	roles_dev_file => 'conf/roles.development.cypher',
+	infra_file => undef,
+	roles_file => undef,
+	roles_dev_file => undef,
 	intern_dir => 'conf',
 );
 GetOptions(
@@ -56,6 +56,9 @@ my $alles_file = $ARGV[0];
 # if ($options{cypher_file} && ! $options{intern_dir}) {
 # 	pod2usage(-exitstatus => 5, -verbose => 0, -message => 'Cannot create Cypher code without SKGB-intern legacy ("red") DB directory.');
 # }
+$options{infra_file} = "$options{intern_dir}/infrastructure.cypher" if (! defined $options{infra_file});
+$options{roles_file} = "$options{intern_dir}/roles.cypher" if (! defined $options{roles_file});
+$options{roles_dev_file} = "$options{intern_dir}/roles.development.cypher" if (! defined $options{roles_dev_file});
 
 
 
@@ -555,7 +558,7 @@ if ($options{dev}) {
 }
 
 #print ";\nCOMMIT\n";
-print `sed -e '30,54d' -e '1,3d' -e '/^\\/\\//d' -e '/\\[:ROLE.*\\(user\\)/d' "conf/archive/2016-01-01/neuaufnahmen.cypher"`;
+print `sed -e '30,54d' -e '1,3d' -e '/^\\/\\//d' -e '/\\[:ROLE.*\\(user\\)/d' $options{intern_dir}/archive/2016-01-01/neuaufnahmen.cypher`;
 
 
 # Step 6: Write ALLES.ASC to disc for testing

@@ -77,3 +77,7 @@ various hidden/internal changes:
 - add links to association management sites
 - hungarian-renamed placeholders in routes to make the mojo stash tidier
 - minor internal cleanup
+
+2.0.0-a16, 2016-12-27
+- refactor SessionManager -> AccessCode, using SKGB::Intern::Person rather than SKGB::Intern::Model::Person
+- minor fixes to import tool and weather page

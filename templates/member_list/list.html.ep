@@ -9,7 +9,7 @@
 <thead>
 <tr><th>Name<th>Status<th>Alter<th>Eintritt<th>Sortierschlüssel
 </thead>
-% my $user = $self->skgb->session->user;
+%# my $user = $self->skgb->session->user;
 % foreach my $member (@$members) {
 %#  my $profile_url = url_for('mglpage');
 %#  $profile_url = $profile_url->query(node => $member->node_id) unless $member->equals($user);

@@ -4,6 +4,8 @@ use 5.016;
 
 use Regexp::Common qw /number/;
 
+use SKGB::Intern::Model::Person;
+
 
 my $Q = {
   memberships_fast => REST::Neo4p::Query->new(<<QUERY),
@@ -229,16 +231,11 @@ sub node {
 	}
 	
 	$node //= $self->param('node');
-	my $person;
+	my $person = $self->skgb->session->user;
 	if ($node) {
-#		say Data::Dumper::Dumper $self->param('node');
-		my $row = $self->neo4j->execute_memory($Q->{member}, 1, (node => 0 + $node));
-#		say Data::Dumper::Dumper $row;
-		$person = SKGB::Intern::Model::Person->new( $row->[0] );
+		$person = $self->neo4j->execute_memory($Q->{member}, 1, (node => 0 + $node))->[0];
 	}
-	else {
-		$person = $self->skgb->session->user;
-	}
+	$person = SKGB::Intern::Model::Person->new( $person );
 	
 	my @all_related = ();
 	# TODO: add indirect relations (shared phone numbers, debitors etc.)
