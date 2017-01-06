@@ -349,10 +349,18 @@ sub _generate_luhn {
 # "session?" step, with redirect
 sub logged_in {
 	my ($self) = @_;
+	
 	my $session = $self->skgb->session;
 	if ($session->user) {
-		return 1;
+		if ( $self->skgb->may ) {
+			return 1;
+		}
+		# authorization bad!
+		
+		$self->render(template => 'key_manager/forbidden', status => 403, session => $session);
+		return undef;
 	}
+	# authentication bad!
 	
 	# determine reason:
 	# 1 no session cookie => treat as new user => no error msg
@@ -363,16 +371,13 @@ sub logged_in {
 	if ($self->session('key')) {
 		say "hello2, '$session'";
 		if (! $session->code) {
-			# this means we have a session cookie, but not the corresponding key => always either a coding error or an attempted attack
-#			die "key missing";
+			# this means we have a session cookie, but not the corresponding key => always either a coding error or an attempted attack, but treat as new user -- no error msg
 		}
 		elsif ($session->key_expired) {
-#			$self->session(expires => 1);
 			$self->flash(reason => 'key');
 #			@reason = (reason => 'key');
 		}
 		elsif ($session->expired) {
-#			$self->session(expires => 1);
 			$self->flash(reason => 'session');
 #			@reason = (reason => 'session');
 		}
@@ -384,7 +389,7 @@ sub logged_in {
 	$self->redirect_to($self->url_for('login')->query(
 		target => $self->url_for(),
 		@reason,
-	), id => 23);  # WTF?
+	));
 	return undef;
 }
 
@@ -406,24 +411,26 @@ sub login {
 		$key = $s->( $self->param('key') );
 	}
 	
-	my $session = $self->skgb->session( $key );
-	my $may_login = $session && $session->user;
+	my $session;
+	my $may_login = $self->skgb->may('login', $key);
 	if ($may_login) {
-		
-		my $target = $self->param('target') || 'index';
-		$target = 'index' if $target eq $self->url_for('getkey');
-		$self->redirect_to($target);
+		$session = $self->skgb->session( $key );
+		$may_login = $session && $session->user && $self->skgb->may('login');
+		if ($may_login) {
+			
+			my $target = $self->param('target') || 'index';
+			$target = 'index' if $target eq $self->url_for('getkey');
+			$self->redirect_to($target);
+			return undef;
+		}
 	}
-#	else {
-#		$may_login = $self->skgb->session->user;
-#	}
 	
 	if ($self->flash('reason')) {
 		$self->session(expires => 1);
 	}
 	
 	my @status = ();
-	@status = (status => 403) if ! $may_login && $self->param('key');
+	@status = (status => 401) if ! $may_login && $self->param('key') || $self->param('target');  # WWW-Authenticate header is set by AuthManager plugin
 	return $self->render(session => $session, @status);
 }
 

@@ -1,9 +1,9 @@
 CREATE
 (user:Role {name:"User", role:"user"}),
 (member:Role {name:"Mitglied", role:"member"}),
-(activeMember:Role {name:"Aktiv", role:"active-member"})-[:ROLE {fee: 120}]->(member),
-(passiveMember:Role {name:"Passiv", role:"passive-member"})-[:ROLE {fee: 36}]->(member),
-(youthMember:Role {name:"Jugend", role:"youth-member"})-[:ROLE {fee: 35}]->(member),
+(activeMember:Role {name:"Aktives Mitglied", role:"active-member"})-[:ROLE {fee: 120}]->(member),
+(passiveMember:Role {name:"Passives Mitglied", role:"passive-member"})-[:ROLE {fee: 36}]->(member),
+(youthMember:Role {name:"Jugendmitglied", role:"youth-member"})-[:ROLE {fee: 35}]->(member),
 (honoraryMember:Role {name:"Ehrenmitglied", role:"honorary-member"})-[:ROLE {fee: 0, noService: true, noDuties: true}]->(member),
 //(guestMember:Role {name:"Gastmitglied", role:"guest-member"})-[:ROLE]->(member),
 (parent:Role {name:"Sorgeberechtigter", role:"parent"}),
@@ -24,10 +24,10 @@ CREATE
 (clubDeputyYouthWarden:Role {name:"2. Jugendwart", role:"board-deputy-youth-warden"})-[:ROLE]->(boardMember),
 (admin:Role {name:"Administrator", role:"admin"})
 
-CREATE
+//CREATE
 //(memberData:Resource {name:'Member Data', urls:['/profile','/mitgliederliste','/anschriftenliste','/export/listen','/dosb','/regeln(?:/.*)?']})<-[:ACCESS]-(member),
 //(administrative:Resource {name:'Admin', urls:['/export/intern1','/wiki(?:/.*)?']})<-[:ACCESS]-(admin),
-(login:Resource {name:'Login', urls:['/login']})<-[:ACCESS]-(user)
+//(login:Resource {name:'Login', urls:['/login']})<-[:ACCESS]-(user)
 
 CREATE
 //(member)-[:MAY]->(:Right {right:'member-list', name:'Mitgliederliste einsehen'}),
@@ -39,20 +39,23 @@ CREATE
 (admin)-[:MAY]->(:Right {right:'access-log', name:'Anmeldedaten einsehen'})
 CREATE
 (superUser:Role {name:"Super User", role:"super-user"}),
-(superUser)-[:MAY]->(:Right {right:'sudo'})
+(superUser)-[:MAY]->(:Right {right:'sudo', name:'als Super User handeln'})
 CREATE
-(admin)-[:MAY]->(:Right {right:'mojo:export1'}),
-(admin)-[:MAY]->(:Right {right:'mojo:wiki'}),
-(admin)-[:MAY]->(:Right {right:'mojo:wikiview'}),
-(user)-[:MAY]->(:Right {right:'mojo:mglpage'}),
+(admin)-[:MAY]->(:Right {right:'mojo:export1', name:'GS-Verein–Schnittstelle'}),
+(admin)-[:MAY]->(:Right {right:'mojo:wiki', name:'Wiki (lesen und bearbeiten)'}),
+(admin)-[:MAY]->(:Right {right:'mojo:wikiview', name:'Wiki (nur lesen)'}),
+(user)-[:MAY]->(:Right {right:'mojo:mglpage', name:'Personen-Report (nur eigene Person)'}),
 //(boardMember)-[:MAY]->(:Right {right:'mojo:mglpagenode'}),
-(boardMember)-[:MAY]->(:Right {right:'mojo:mglliste'}),
-(boardMember)-[:MAY]->(:Right {right:'mojo:person'}),
-(boardMember)-[:MAY]->(:Right {right:'mojo:list_person'}),
-(boardMember)-[:MAY]->(:Right {right:'mojo:list_leaving'}),
-(boardMember)-[:MAY]->(:Right {right:'mojo:postliste'}),
-(boardMember)-[:MAY]->(:Right {right:'mojo:exportlisten'}),
-(boardMember)-[:MAY]->(:Right {right:'mojo:dosb'}),
-(member)-[:MAY]->(:Right {right:'mojo:regeln'}),
-(member)-[:MAY]->(:Right {right:'mojo:stegdienstliste'}),
-(user)-[:MAY]->(:Right {right:'login'})
+(boardMember)-[:MAY]->(:Right {right:'mojo:mglliste', name:'Mitgliederliste'}),
+(boardMember)-[:MAY]->(:Right {right:'mojo:person', name:'Personen-Report'}),
+(boardMember)-[:MAY]->(:Right {right:'mojo:list_person', name:'Liste aller Personen'}),
+(boardMember)-[:MAY]->(:Right {right:'mojo:list_leaving', name:'Austrittsliste'}),
+(boardMember)-[:MAY]->(:Right {right:'mojo:postliste', name:'Anschriftenliste'}),
+(boardMember)-[:MAY]->(:Right {right:'mojo:exportlisten', name:'Listen-Schnittstelle'}),
+(boardMember)-[:MAY]->(:Right {right:'mojo:dosb', name:'Verbandsmeldungen'}),
+(execBoardMember)-[:MAY]->(list_budget_Right:Right {right:'mojo:list_budget', name:'Einnahmenliste'}),
+(clubDeputyTreasurer)-[:MAY]->(list_budget_Right),
+(member)-[:MAY]->(:Right {right:'mojo:regeln', name:'SKGB-Regeln'}),
+(member)-[:MAY]->(:Right {right:'mojo:stegdienstliste', name:'Stegdienstliste erzeugen'}),
+(user)-[:MAY]->(:Right {right:'login'}),
+(user)-[:MAY]->(:Right {right:'mojo:auth'})

@@ -14,7 +14,7 @@ Requirements
 
 - Neo4j 2.3
 - Perl 5.24
-- Mojolicious 7
+- Mojolicious 7.13
 - various other Perl modules
 - mail submission agent
 - SKGB test data

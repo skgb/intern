@@ -27,7 +27,7 @@ various hidden/internal changes:
 - some work towards auth tree and auth edit (nowhere near finished)
 
 2.0.0-a6, 2016-06-04
-- LISTEN interface implemented (untested)
+- LISTEN interface implemented
 
 2.0.0-a7, 2016-06-10
 - fixed bug in membership leaves date presentation (person.html.ep)
@@ -81,3 +81,10 @@ various hidden/internal changes:
 2.0.0-a16, 2016-12-27
 - refactor SessionManager -> AccessCode, using SKGB::Intern::Person rather than SKGB::Intern::Model::Person
 - minor fixes to import tool and weather page
+
+2.0.0-a17, 2017-01-06
+- fix authentication to respect RFCs 7234 and 7235
+- Auth.pm uses the new AccessCode class
+- initial very rough implementation of downgrade and sudo (buggy)
+- some work towards budget report
+- minor fixes

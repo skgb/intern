@@ -1,0 +1,71 @@
+% layout 'intern1', styles => '.euro:after{content:",– €"}.null:after{content:"–"}';
+% title 'Liste der zu erwartenden Einnahmen';
+% use 5.016;
+
+<h2>Zu erwartende Einnahmen</h2>
+<p>(im laufenden Jahr)
+<ul>
+<li>Mitgliedsbeiträge: <%= $total->{membership} %>,– €
+<li>Liegeplatzgebühren: <%= $total->{berth} %>,– €
+<li>Bootsnutzungbeiträge (Jugend): <%= $total->{usage} %>,– €
+</ul>
+<p>Bekannter Fehler: <strong>Ausgetretene Mitglieder werden hier mitgezählt!</strong>
+
+<h2><%= title %></h2>
+
+<p>Mitglieder mit ungewöhnlichen Beträgen sind gelb hervorgehoben (insgesamt sind ca. <%= $total->{max_error} %>,– € zweifelhaft). Mögliche Deutungen:
+<ul>
+<li>bisher unvollständige Implementierung in SKGB-intern
+<br>(insbesondere sind mehrere Liegeplätze für ein Mitglied noch nicht unterstützt)
+<li>zwischen Mitglied und Vorstand vereinbarte Sonderregelung
+<li>inkonsistente Mitgliederdaten
+</ul>
+<p>In allen diesen Fällen hat die Spalte „Abbuchung“ <em>wahrscheinlich</em> den richtigen Wert.
+<p>Bekannter Fehler: <strong>Ausgetretene Mitglieder sind hier enthalten!</strong>
+
+<table id=membertable class="compact">
+<thead>
+<tr><th>Name<th>Mitgliedschaft<th>Liegeplatz<th>Bootsnutzung<th>Summe<th>Abbuchung<th>Sortierschlüssel
+</thead>
+% foreach my $member (@$members) {
+<tr<%== ($member->{sum} != $member->{debit_base}) && ' style="background:yellow"' %>>
+<td><%= link_auth_to person => {person_placeholder => $member->{person}->handle} => begin %><%= $member->{person}->name %><% end %>
+<td><span class=euro><%=$member->{membership} %></span>
+<td><%== $member->{berth} ? "<span class=euro>$member->{berth}</span>" : "<span class=null></span>" %>
+<td><%== $member->{usage} ? "<span class=euro>$member->{usage}</span>" : "<span class=null></span>" %>
+<td><strong class=euro><%=$member->{sum} %></strong>
+<td><%== $member->{debit_base} ? "<span class=euro>$member->{debit_base}</span>" : "<span class=null></span>" %>
+<td><%= fc($member->{person}->name_sortable) %>
+% }
+</table>
+
+<script type="text/javascript" src="/DataTables/datatables.js"></script>
+<script>
+// https://datatables.net/
+$(document).ready(function() {
+	var cols = $('#membertable tr')[0].childElementCount;
+	var exportOptions = {columns: ':visible'};
+	$('#membertable').DataTable( {
+		"columnDefs": [{
+			targets: cols - 1,
+			visible: false,
+			searchable: false
+		},{
+			targets: 0,
+			orderData: [ cols - 1 ]
+		}],
+		order: [[ 0, 'asc' ]],
+		colReorder: true,
+		lengthMenu: [[20, 50, -1], [20, 50, "All"]],
+		iDisplayLength: -1,
+		stateSave: true,
+		dom: 'lBfrtip',
+		buttons: [
+			{extend: 'copy', exportOptions: exportOptions},
+			{extend: 'csv', exportOptions: exportOptions},
+			{extend: 'pdf', exportOptions: exportOptions},
+			{extend: 'print', exportOptions: exportOptions, autoPrint: false, text: 'Print View'},
+		]
+	} );
+} );
+</script>

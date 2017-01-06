@@ -207,10 +207,6 @@ END
 sub list_leaving {
 	my ($self) = @_;
 	
-	if ( ! $self->skgb->may ) {
-#		return $self->render(template => 'key_manager/forbidden', status => 403);
-	}
-	
 	my @records = $self->neo4j->get_persons(<<END, column => 'p');
 MATCH (p:Person)-[rm:ROLE|GUEST]->(m:Role)-[:ROLE]->(:Role {role:'member'})
 WHERE rm.leaves <> ""
@@ -222,13 +218,44 @@ END
 }
 
 
+sub list_budget {
+	my ($self) = @_;
+	
+	my @records = $self->neo4j->get_persons(<<_, column => 'p');
+MATCH (p:Person)-[rm:ROLE|GUEST]->(m:Role)-[rn:ROLE]->(:Role {role:'member'})
+OPTIONAL MATCH (p)--(:Boat)--(b:Berth)
+WHERE b.ref <> 'Jollenwiese'
+RETURN p, rn, b
+_
+	my @members = ();
+	my %total = (membership => 0, berth => 0, usage => 0, max_error => 0);
+	for my $record (@records) {
+		my $member = {
+			person => $record->get('p'),
+			membership => $record->get('rn')->{fee},
+			berth => $record->get('b') && 65 || 0,  # BUG: hard-coded fee
+			debit_base => $record->get('p')->_property('debitBase'),
+		};
+#		next if ! $member->{person}->membership->{status};
+		$member->{berth} = 0 if $member->{membership} == 0;  # BUG: hard-coded condition
+		$member->{berth} = 0 if $member->{person}->gs_verein_id eq '085' || $member->{person}->gs_verein_id eq '090';  # BUG: hard-coded condition
+		$member->{usage} = $member->{membership} == 35 ? 55 : 0;  # BUG: hard-coded condition and fee
+		$member->{sum} = $member->{membership} + $member->{berth} + $member->{usage};
+		
+		push @members, $member;
+		$total{membership} += $member->{membership};
+		$total{berth} += $member->{berth};
+		$total{usage} += $member->{usage};
+		$total{max_error} += abs($member->{sum} - $member->{debit_base});
+	}
+	
+	return $self->render(template => 'member_list/list_budget', members => \@members, total => \%total);
+}
+
+
 sub node {
 	my ($self, $node) = @_;
 	my @rows;
-	
-	if ( ! $self->skgb->may ) {
-		return $self->render(template => 'key_manager/forbidden', status => 403);
-	}
 	
 	$node //= $self->param('node');
 	my $person = $self->skgb->session->user;

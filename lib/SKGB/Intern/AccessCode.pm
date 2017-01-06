@@ -32,6 +32,10 @@ sub new {
 	$self->app->isa('Mojolicious') or croak "required param 'app' [" . ref($self->app) . "] not a Mojolicious app; SKGB::Intern instance required";
 	$self->app->neo4j && $self->app->neo4j->session->isa('Neo4j::Session') or croak "SKGB::Intern instance required at param 'app' [" . ref($self->app) . "]; possible problem establishing database connection";
 	
+	if (ref $self->{user} && ref $self->{code}) {
+		return $self;
+	}
+	
 	if (defined $self->{code}) {
 		my ($row, @rows) = $self->app->neo4j->get_persons(<<_, code => $self->{code});
 MATCH (c:AccessCode)-[:IDENTIFIES]->(p:Person)
@@ -43,7 +47,6 @@ _
 			$self->{code} = $row->get('c');
 			if ( ! $self->expired ) {
 				$self->{user} = $row->get('person');
-#				$self->{user} = SKGB::Intern::Model::Person->new( $self->{user} );
 			}
 		}
 		else {
@@ -86,10 +89,6 @@ _
 
 sub code {
 	my ($self) = @_;
-#	if (! $self->{code} && $self->{node}) {
-#		die;
-#		$self->{code} = {code => $self->{node}->get_property('code')};
-#	}
 	return $self->{code} && $self->{code}->{code} // '';
 }
 
@@ -97,6 +96,30 @@ sub code {
 sub user {
 	my ($self) = @_;
 	return $self->{user};
+}
+
+
+sub creation {
+	my ($self) = @_;
+	return $self->{code} && $self->{code}->{creation} || '';
+}
+
+
+sub first_use {
+	my ($self) = @_;
+	return $self->{code} && $self->{code}->{first_use} || '';
+}
+
+
+sub access {
+	my ($self) = @_;
+	return $self->{code} && $self->{code}->{access} || '';
+}
+
+
+sub expiration {
+	my ($self) = @_;
+	return $self->creation && POSIX::strftime($TIME_FORMAT, gmtime( DateTime::Format::ISO8601->parse_datetime($self->creation)->epoch() + $self->app->config->{ttl}->{key} )) || '';
 }
 
 

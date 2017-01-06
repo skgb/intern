@@ -7,13 +7,15 @@
 
 % foreach my $code (@$codes) {
 <li>
-%= form_for url_for('auth', code_placeholder => $code->{code}) => (method => 'POST') => begin
-<p><b><%= $code->{code} %></b> <%= $code->{this_session} && '(current session)' %> <%= $code->{this_expired} && '(expired)' %>
-%== defined param('all') ? '<p>for: ' . $code->{for}->name : '';
-<p>issued: <%= $code->{creation} %>
-<p>expiration: <%= $code->{expiration} %>
-<p>access: first <%= $code->{first_use} %>, last <%= $code->{access} %>
-<p><input type=submit name=edit value="view/edit rights"<%= $code->{this_expired} && ' disabled' %>> <input type=submit name=delete value="delete<%= $code->{this_session} && ' and log out' %>" disabled>
+% my $this_session = $code->code eq $self->skgb->session->code;
+% my $this_expired = SKGB::Intern::AccessCode::new_time gt $code->expiration;
+%= form_for url_for('auth', code_placeholder => $code->code) => (method => 'POST') => begin
+<p><b><%= $code->code %></b> <%= $this_session && '(current session)' %> <%= $this_expired && '(expired)' %>
+%== defined param('all') ? '<p>for: ' . $code->user->name : '';
+<p>issued: <%= $code->creation %>
+<p>expiration: <%= $code->expiration %>
+<p>access: first <%= $code->first_use %>, last <%= $code->access %>
+<p><input type=submit name=edit value="view/edit rights"<%= $this_expired && ' disabled' %>> <input type=submit name=delete value="delete<%= $this_session && ' and log out' %>" disabled>
 
 %  end
 % }

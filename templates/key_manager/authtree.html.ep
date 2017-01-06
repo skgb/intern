@@ -1,18 +1,22 @@
 % layout 'intern1';
 % my $code = $codes->[0];
-% title 'Access Code ' . $code->{code};
+% title 'Access Code ' . $code->code;
 
 <h2><%= title %></h2>
 
 
-<p><b><%= $code->{code} %></b> <%= $code->{this_session} && '(current session)' %> <%= $code->{this_expired} && '(expired)' %>
-<p>for: <%= $code->{for}->name %>
-<p>issued: <%= $code->{creation} %>
-<p>expiration: <%= $code->{expiration} %>
-<p>access: first <%= $code->{first_use} %>, last <%= $code->{access} %>
-%#<p><input type=submit name=edit value="view/edit rights"<%= $code->{this_expired} && ' disabled' %>> <input type=submit name=delete value="delete<%= $code->{this_session} && ' and log out' %>" disabled>
+% my $this_session = $code->code eq $self->skgb->session->code;
+% my $this_expired = SKGB::Intern::AccessCode::new_time gt $code->expiration;
+<p><b><%= $code->code %></b> <%= $this_session && '(current session)' %> <%= $this_expired && '(expired)' %>
+<p>for: <%= $code->user->name %>
+<p>issued: <%= $code->creation %>
+<p>expiration: <%= $code->expiration %>
+<p>access: first <%= $code->first_use %>, last <%= $code->access %>
+%#<p><input type=submit name=edit value="view/edit rights"<%= $this_expired && ' disabled' %>> <input type=submit name=delete value="delete<%= $this_session && ' and log out' %>" disabled>
 
 <h3>Roles</h3>
+<form action="" method=POST>
+<input type=hidden name="action" value="modify-roles">
 <ul class=auth>
 % foreach my $role (@$roles) {
 <li>
@@ -21,8 +25,16 @@
 <%= $role->{role}->{name} %>
 <%= $role->{indirect} ? " (indirekt)" : "" %>
 <%== $role->{negated} ? "</del>" : $role->{special} ? "</ins>" : "" %>
+%  if ($c->_may_modify_role($code) && ! $role->{negated}) {
+<input type=submit name="delete=<%= $role->{role}->{role} %>" value="deaktivieren">
+%  }
 % }
 </ul>
+% if ($c->skgb->may('sudo')) {
+<input type=submit name="sudo=all-roles" value="alle Rollen zuweisen">
+<input type=submit name="sudo=reset" value="alle Rollen zurücksetzen">
+% }
+</form>
 
 <h3>Privileges</h3>
 <ul class=auth>
@@ -37,7 +49,7 @@
 <%== $priv->{negated} ? "<del>" : $priv->{special} ? "<ins>" : "" %>
 <%= $priv->{priv}->{name} %>
 <code><%= $priv->{priv}->{right} %></code>
-<%== !! $self->skgb->may($priv->{priv}->{right}, $code->{code}) eq ! $priv->{negated} ? "" : "<b style=color:red;background:yellow>ERROR in queries!</b>" %>
+<%== !! $self->skgb->may($priv->{priv}->{right}, $code->code) eq ! $priv->{negated} ? "" : "<b style=color:red;background:yellow>ERROR in queries!</b>" %>
 <%== $priv->{negated} ? "</del>" : $priv->{special} ? "</ins>" : "" %>
 % }
 </ul>

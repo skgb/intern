@@ -4,6 +4,8 @@ use Mojo::Base 'Mojolicious::Controller';
 use POSIX qw();
 use REST::Neo4p;
 
+use SKGB::Intern::AccessCode;
+
 use Data::Dumper;
 
 my $TIME_FORMAT = '%Y-%m-%dT%H:%M:%SZ';
@@ -65,7 +67,7 @@ sub auth {
 		return $self->render(template => 'key_manager/forbidden', status => 403);
 	}
 	
-	return $self->_tree($user) if $self->stash('code_placeholder');
+	return $self->_tree if $self->stash('code_placeholder');
 	
 	my $template = 'key_manager/codelist';
 	my $param = $self->session('key');
@@ -83,11 +85,15 @@ sub auth {
 	my @rows = $self->neo4j->get_persons($query, code => $param);
 #	say Data::Dumper::Dumper \@rows;
 	foreach my $row (@rows) {
-		push @codes, $self->_code( $row, $row->get('person') );
+		push @codes, SKGB::Intern::AccessCode->new(
+			code => $row->get('c'),
+			user => $row->get('person'),
+			app => $self->app,
+		);
 #		$row->[1]->id eq $user->node_id or die 'not authorized';  # assertion
 #		push @codes, $self->_code( $row->[0], SKGB::Intern::Model::Person->new($row->[1]) );  # debug
 	}
-	@codes = sort {$b->{creation} cmp $a->{creation}} @codes;
+	@codes = sort {$b->creation cmp $a->creation} @codes;
 	
 	return $self->render(template => $template, logged_in => $user, codes => \@codes);
 }
@@ -105,15 +111,71 @@ sub _code {
 }
 
 
-sub _tree {
-	my ($self, $user) = @_;
+sub _may_modify_role {
+	my ($self, $code) = @_;
+	# despite the name this condition is currently only valid for deletion, not for addition!
+	return $code && ! $code->expired && ($code->user->equals($self->skgb->session->user) || $self->skgb->may('sudo'));
+}
+
+
+sub _modify_roles {
+	my ($self, $code) = @_;
 	
+	if (! $self->_may_modify_role($code)) {
+		return $self->render(template => 'key_manager/forbidden', status => 403);
+	}
+	
+	foreach my $role ( @{$self->req->params->names} ) {
+		if ($role =~ m/^delete=(.+)$/) {
+			$self->neo4j->session->run(<<_, code => "$code", role => $1);
+MATCH (c:AccessCode), (r:Role)
+WHERE c.code = {code} AND r.role = {role}
+CREATE (c)-[:NOT]->(r)
+_
+		}
+		elsif ($role =~ m/^sudo=reset$/) {
+			my $t = $self->neo4j->session->run(<<_, code => "$code");
+MATCH (c:AccessCode)-[d:NOT|ROLE]->()
+WHERE c.code = {code}
+DELETE d
+_
+		}
+		elsif ($role =~ m/^sudo=all-roles$/) {
+			my $t = $self->neo4j->session->begin_transaction;
+			$t->run(<<_, code => "$code");
+MATCH (c:AccessCode)-[d:NOT|ROLE]->()
+WHERE c.code = {code}
+DELETE d
+_
+			$t->run(<<_, code => "$code");
+MATCH (a:AccessCode), (r:Role)
+WHERE a.code = {code}
+CREATE (a)-[:ROLE]->(r)
+_
+			$t->commit;
+		}
+	}
+	$self->redirect_to('auth', code_placeholder=>$code);
+}
+
+
+sub _tree {
+	my ($self) = @_;
+	
+	my $user = $self->skgb->session->user;
 	my $param = $self->stash('code_placeholder');
 	
 	my ($code, @codes) = $self->neo4j->get_persons($Q->{code}, code => $param);
 #	say Data::Dumper::Dumper $code;
 	$code and not @codes or die;
-	@codes = ($self->_code( $code, $code->get('person') ));
+#	@codes = ($self->_code( $code, $code->get('person') ));
+	@codes = ( SKGB::Intern::AccessCode->new(
+		code => $code->get('c'),
+		user => $code->get('person'),
+		app => $self->app,
+	));
+	
+	return $self->_modify_roles($codes[0]) if $self->param('action') && $self->param('action') eq 'modify-roles';
 	
 	my @roles;
 # 	my @roles = $self->neo4j->session->run(<<_, code => $param);

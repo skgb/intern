@@ -55,3 +55,12 @@ die 'a' if md5_sum($digest_line) ne Digest::MD5::md5_hex($digest_line);
 
  
 1;
+
+
+__END__
+
+Userinfo (i.e., username and password) are now disallowed in HTTP and
+HTTPS URIs, because of security issues related to their transmission
+on the wire.
+
+https://tools.ietf.org/html/rfc7230#page-18
