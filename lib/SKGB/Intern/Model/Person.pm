@@ -249,7 +249,22 @@ sub membership {
 	return $self->{membership} if $joined && $joined gt $date || $leaves && $leaves lt $date;
 	
 	my $regular = $self->_property('regularContributor', $path);
-	my $status = $self->_property('name', $path, 1);  # hack: path item 0 is the :Person
+	my $status = $self->_property('role', $path, 1);  # hack: path item 0 is the :Person
+	if ($status eq 'active-member') {
+		$status = "Aktiv"
+	}
+	elsif ($status eq 'passive-member') {
+		$status = "Passiv"
+	}
+	elsif ($status eq 'youth-member') {
+		$status = "Jugend"
+	}
+	elsif ($status eq 'honorary-member') {
+		$status = "Ehrenmitglied"
+	}
+	else {  # shouldn't happen
+		$status = $self->_property('name', $path, 1);
+	}
 	$self->{membership}->{status} = $status;
 	$self->{membership}->{regular} = $regular;
 	$self->{membership}->{guest} = $self->_property('_type', $path) eq 'GUEST';

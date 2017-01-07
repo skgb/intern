@@ -24,13 +24,13 @@ use SKGB::Intern::Model::Person;
 
 my $Q = {
   searchname => REST::Neo4p::Query->new(<<QUERY),
-MATCH (p:Person)-[:ROLE|GUEST]->(:Role)-[:ACCESS]->(:Resource {urls:['/login']})
+MATCH (p:Person)-[:ROLE|GUEST*..3]->(:Role)-[:MAY]->(:Right {right:'login'})
  WHERE p.name =~ {query} OR p.userId =~ {query} OR (p.userId + '\@skgb.de') =~ {query}
  RETURN p
  LIMIT 2  // we need to know whether there are 0, 1 or multiple results
 QUERY
   searchmail => REST::Neo4p::Query->new(<<QUERY),
-MATCH (a:Address {type:'email'})-[:FOR]->(p:Person)-[:ROLE|GUEST]->(:Role)-[:ACCESS]->(:Resource {urls:['/login']})
+MATCH (a:Address {type:'email'})-[:FOR]->(p:Person)-[:ROLE|GUEST*..3]->(:Role)-[:MAY]->(:Right {right:'login'})
  WHERE a.address =~ {query}
  RETURN p, a
 QUERY

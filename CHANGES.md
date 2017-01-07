@@ -88,3 +88,8 @@ various hidden/internal changes:
 - initial very rough implementation of downgrade and sudo (buggy)
 - some work towards budget report
 - minor fixes
+
+2.0.0-a18, 2017-01-07
+- regression fix: a minor roles change in 2.0.0-a17 made it impossible to order new access codes in the key factory
+- regression fix: a minor roles change in 2.0.0-a17 made the membership status hard to read in some of the list views
+- restrict access to association password

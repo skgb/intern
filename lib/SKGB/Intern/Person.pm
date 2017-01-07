@@ -239,8 +239,22 @@ sub membership {
 	return $self->{membership} if $joined && $joined gt $date || $leaves && $leaves lt $date;
 	
 	my $regular = $self->_property('regularContributor', relationship => undef);
-#	my $status = $self->_property('name', $path, 1);  # hack: path item 0 is the :Person
-	my $status = $self->_property('name', node => undef);  # bug: matches any node
+	my $status = $self->_property('role', node => undef);  # bug: matches any node
+	if ($status eq 'active-member') {
+		$status = "Aktiv"
+	}
+	elsif ($status eq 'passive-member') {
+		$status = "Passiv"
+	}
+	elsif ($status eq 'youth-member') {
+		$status = "Jugend"
+	}
+	elsif ($status eq 'honorary-member') {
+		$status = "Ehrenmitglied"
+	}
+	else {  # probably not a member
+		$status = $self->_property('name', node => undef);
+	}
 	$self->{membership}->{status} = $status;
 	$self->{membership}->{regular} = $regular;
 #	$self->{membership}->{guest} = $self->_property('_type', $path) eq 'IS_A_GUEST';
@@ -254,7 +268,7 @@ sub membership {
 	if ($self->{membership}->{guest}) {
 		$status .=  ", Gastmitglied";
 	}
-	$self->{membership}->{status_long} = $status;
+	$status and $self->{membership}->{status_long} = $status;
 #	say Dumper $self;
 #	die;
 	
