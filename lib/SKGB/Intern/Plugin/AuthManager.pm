@@ -138,12 +138,12 @@ sub _may {
 	return undef if ! $key;
 	$right ||= "mojo:" . $c->current_route;
 	
-	my $rights = $c->stash('rights');
+	my $rights = $c->stash("rights:$key");  # possible bug: $key not sanitized?
 	if (! $rights) {
 		my @rights = $c->neo4j->session->run($Q->{may}, code => $key);
 		my %rights = map { $_->get => 1 } @rights;
 		$rights = \%rights;
-		$c->stash(rights => $rights);
+		$c->stash("rights:$key" => $rights);
 		
 #		say "$key:";
 #		say Data::Dumper::Dumper $rights;

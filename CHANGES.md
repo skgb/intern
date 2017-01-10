@@ -93,3 +93,7 @@ various hidden/internal changes:
 - regression fix: a minor roles change in 2.0.0-a17 made it impossible to order new access codes in the key factory
 - regression fix: a minor roles change in 2.0.0-a17 made the membership status hard to read in some of the list views
 - restrict access to association password
+
+2.0.0-a19, 2017-01-10
+- fix may for other users
+- fix board column in 'stegdienstliste' query

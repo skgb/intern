@@ -35,10 +35,10 @@
 <li><%= link_auth_to stegdienstliste => begin %>Stegdienstliste erzeugen<% end %>
 </ul>
 
-<p>Systemdienste und Sonstiges:
+<p>Systemdienste und Experimente:
 <ul>
 <li><%= link_auth_to export1 => begin %>Export nach SKGB-intern 1 (GS-Verein–Schnittstelle)<% end %> (lädt langsam)
-<li><%== $self->skgb->may('sudo') ? '<a href=/auth?all>' : '<a href=/auth>' %>Auth</a>
+<li><%== $self->skgb->may('sudo') ? '<a href=/auth/?all>Auth</a>' : link_auth_to auth => begin %>Auth<% end %>
 <li><%= link_auth_to list_person => begin %>Personenliste<% end %>
 <li><%= link_auth_to wikiview => begin %>Wiki<% end %>
 </ul>
