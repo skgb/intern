@@ -11,7 +11,7 @@ use Data::Dumper;
 
 use overload '""' => \&code;
 
-use SKGB::Intern::Model::Person;
+#use SKGB::Intern::Person::Neo4p;
 
 
 my $TIME_FORMAT = '%Y-%m-%dT%H:%M:%SZ';

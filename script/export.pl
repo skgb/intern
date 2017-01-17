@@ -14,7 +14,7 @@ use Pod::Usage;
 use Try::Tiny;
 use REST::Neo4p;
 use SKGB::Intern::Controller::Export;
-use SKGB::Intern::Model::Person;
+#use SKGB::Intern::Person::Neo4p;
 
 our $VERSION = 0.10;
 

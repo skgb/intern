@@ -9,32 +9,32 @@
 <li>Liegeplatzgebühren: <%= $total->{berth} %>,– €
 <li>Bootsnutzungbeiträge (Jugend): <%= $total->{usage} %>,– €
 </ul>
-<p>Bekannter Fehler: <strong>Ausgetretene Mitglieder werden hier mitgezählt!</strong>
 
 <h2><%= title %></h2>
 
-<p>Mitglieder mit ungewöhnlichen Beträgen sind gelb hervorgehoben (insgesamt sind ca. <%= $total->{max_error} %>,– € zweifelhaft). Mögliche Deutungen:
+<p>Mitglieder mit ungewöhnlichen Daten sind gelb hervorgehoben (insgesamt sind ca. <%= $total->{max_error} %>,– € zweifelhaft). Mögliche Deutungen:
 <ul>
 <li>bisher unvollständige Implementierung in SKGB-intern
 <br>(insbesondere sind mehrere Liegeplätze für ein Mitglied noch nicht unterstützt)
 <li>zwischen Mitglied und Vorstand vereinbarte Sonderregelung
+<li>Lastschriftmandat fehlt
 <li>inkonsistente Mitgliederdaten
 </ul>
-<p>In allen diesen Fällen hat die Spalte „Abbuchung“ <em>wahrscheinlich</em> den richtigen Wert.
-<p>Bekannter Fehler: <strong>Ausgetretene Mitglieder sind hier enthalten!</strong>
+<!--<p>In allen diesen Fällen hat die Spalte „Abbuchung“ <em>wahrscheinlich</em> den richtigen Wert.-->
 
 <table id=membertable class="compact">
 <thead>
-<tr><th>Name<th>Mitgliedschaft<th>Liegeplatz<th>Bootsnutzung<th>Summe<th>Abbuchung<th>Sortierschlüssel
+<tr><th>Name<th>Mitgliedschaft<th>Liegeplatz<th>Bootsnutzung<th>Summe<th>Abbuchung<th>Mandat<th>Sortierschlüssel
 </thead>
 % foreach my $member (@$members) {
-<tr<%== ($member->{sum} != $member->{debit_base}) && ' style="background:yellow"' %>>
+<tr<%== ($member->{possible_error} > 0) && ' style="background:yellow"' %>>
 <td><%= link_auth_to person => {person_placeholder => $member->{person}->handle} => begin %><%= $member->{person}->name %><% end %>
 <td><span class=euro><%=$member->{membership} %></span>
 <td><%== $member->{berth} ? "<span class=euro>$member->{berth}</span>" : "<span class=null></span>" %>
 <td><%== $member->{usage} ? "<span class=euro>$member->{usage}</span>" : "<span class=null></span>" %>
 <td><strong class=euro><%=$member->{sum} %></strong>
 <td><%== $member->{debit_base} ? "<span class=euro>$member->{debit_base}</span>" : "<span class=null></span>" %>
+<td><%= $member->{mandate} %>
 <td><%= fc($member->{person}->name_sortable) %>
 % }
 </table>

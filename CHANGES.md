@@ -97,3 +97,8 @@ various hidden/internal changes:
 2.0.0-a19, 2017-01-10
 - fix may for other users
 - fix board column in 'stegdienstliste' query
+
+2.0.0-a20, 2017-01-17
+- implemented budget report / member fee list view
+- moved SKGB::Intern::Model::Person -> SKGB::Intern::Person::Neo4p for clarity
+- refactored membership code out of SKGB::Intern::Person into SKGB::Intern::Model::Membership

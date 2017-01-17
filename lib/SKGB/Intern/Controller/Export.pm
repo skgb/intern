@@ -3,7 +3,7 @@ use Mojo::Base 'Mojolicious::Controller';
 
 use utf8;
 use REST::Neo4p;
-use SKGB::Intern::Model::Person;
+use SKGB::Intern::Person::Neo4p;
 
 
 my $Q = {
@@ -70,7 +70,7 @@ sub _intern1 {
 	$Q->{sepa}->execute();
 	ROW: while ( my $result = $Q->{sepa}->fetch ) {
 		my ($p) = @$result;
-		$p = SKGB::Intern::Model::Person->new($p);
+		$p = SKGB::Intern::Person::Neo4p->new($p);
 		my @rels_o = $p->{_node}->get_outgoing_relationships();
 		my @rels_i = $p->{_node}->get_incoming_relationships();
 		my @row = ();
@@ -236,7 +236,7 @@ sub _listen {
 		if ($r->get_property('leaves') && $r->get_property('leaves') lt $targetDate || $r->get_property('joined') && $r->get_property('joined') gt $targetDate) {
 			next;
 		}
-		$p = SKGB::Intern::Model::Person->new($p);
+		$p = SKGB::Intern::Person::Neo4p->new($p);
 		
 		my @rels_o = $p->{_node}->get_outgoing_relationships();
 		my @rels_i = $p->{_node}->get_incoming_relationships();

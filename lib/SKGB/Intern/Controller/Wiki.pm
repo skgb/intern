@@ -5,7 +5,7 @@ use Mojo::Base 'Mojolicious::Controller';
 use POSIX qw();
 use Text::WordDiff qw();
 
-use SKGB::Intern::Model::Person;
+use SKGB::Intern::Person::Neo4p;
 
 
 has main_page_slug => 'Hauptseite';
@@ -148,7 +148,7 @@ sub _save {
 	
 	return $self->render(text => 'Bad CSRF token!', status => 403) if $self->validation->csrf_protect->has_error('csrf_token');
 	
-	my $user = SKGB::Intern::Model::Person->new( $self->skgb->session->user );
+	my $user = SKGB::Intern::Person::Neo4p->new( $self->skgb->session->user );
 	
 	my $article = $self->_article($slug);
 	if (! $article) {

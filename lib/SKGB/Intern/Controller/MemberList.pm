@@ -4,7 +4,9 @@ use 5.016;
 
 use Regexp::Common qw /number/;
 
-use SKGB::Intern::Model::Person;
+use SKGB::Intern::Person::Neo4p;
+use List::Util qw(max);
+use Data::Dumper;
 
 
 my $Q = {
@@ -117,7 +119,7 @@ sub list {
 	my @rows = $self->neo4j->execute_memory($Q->{memberships_fast}, 1000, ());
 #my $end_time   = new Benchmark;
 	foreach my $row (@rows) {
-		push @persons, SKGB::Intern::Model::Person->new_membership( $row );
+		push @persons, SKGB::Intern::Person::Neo4p->new_membership( $row );
 	}
 #my $difference = timediff($end_time, $start_time);
 #	@persons = sort {fc($a->name_sortable) cmp fc($b->name_sortable)} @persons;
@@ -144,7 +146,7 @@ sub postal {
 		my @address = split m/\n/, $row->[1]->get_property('address');
 		$max_address_lines = scalar @address if scalar @address > $max_address_lines;
 		push @list, {
-			person => SKGB::Intern::Model::Person->new( $row->[0] ),
+			person => SKGB::Intern::Person::Neo4p->new( $row->[0] ),
 			address => \@address,
 		};
 	}
@@ -162,21 +164,12 @@ sub list_person {
 		return $self->render(template => 'key_manager/forbidden', status => 403);
 	}
 	
-#	my @persons = $self->neo4j->get_persons($Q->{all_persons}, column => 0);
 	my @persons = $self->neo4j->get_persons(<<END);
 MATCH (p:Person)
 OPTIONAL MATCH (p)-[r:ROLE|GUEST]->(m:Role)-[:ROLE]->(:Role {role:'member'})
 RETURN [p, r, m]
 END
-#	use Data::Dumper;
-#	say Dumper \@persons;
-#	die;
 	
-#	foreach my $person (@persons) {
-#	}
-#	my @codes = ($self->_code( $code, SKGB::Intern::Model::Person->new($code->get(1)) ));
-	
-#	return $self->render(text => "" . $self->stash('person'));
 	return $self->render(template => 'member_list/list_person', members => \@persons);
 }
 
@@ -225,28 +218,35 @@ sub list_budget {
 MATCH (p:Person)-[rm:ROLE|GUEST]->(m:Role)-[rn:ROLE]->(:Role {role:'member'})
 OPTIONAL MATCH (p)--(:Boat)--(b:Berth)
 WHERE b.ref <> 'Jollenwiese'
-RETURN p, rn, b
+RETURN p, rn, b, [rm, m], (:Mandate)-[:DEBITOR]->(p) AS s
 _
 	my @members = ();
 	my %total = (membership => 0, berth => 0, usage => 0, max_error => 0);
 	for my $record (@records) {
+		my $person = $record->get('p');
+		next if ! $person->membership->{status};
 		my $member = {
-			person => $record->get('p'),
+			person => $person,
 			membership => $record->get('rn')->{fee},
-			berth => $record->get('b') && 65 || 0,  # BUG: hard-coded fee
+			berth => $record->get('b') && 65 || 0,  # BUG: hard-coded fee "Stegliegeplatz"
 			debit_base => $record->get('p')->_property('debitBase'),
 		};
-#		next if ! $member->{person}->membership->{status};
-		$member->{berth} = 0 if $member->{membership} == 0;  # BUG: hard-coded condition
-		$member->{berth} = 0 if $member->{person}->gs_verein_id eq '085' || $member->{person}->gs_verein_id eq '090';  # BUG: hard-coded condition
-		$member->{usage} = $member->{membership} == 35 ? 55 : 0;  # BUG: hard-coded condition and fee
+		foreach my $mandate ( @{$record->get('s')} ) {
+			$mandate->[0]->{terminated} and next;
+			$member->{mandate} && $member->{mandate} > $mandate->[0]->{umr} and next;  # BUG: this simply assumes that the newest SEPA mandate should be used, but that isn't necessarily true
+			$member->{mandate} = $mandate->[0]->{umr};
+		}
+		$member->{berth} = 0 if $member->{person}->gs_verein_id eq '085' || $member->{person}->gs_verein_id eq '090' || $member->{person}->gs_verein_id eq '374';  # BUG: hard-coded condition "gekaufte Boxen"
+		$member->{usage} = $member->{membership} == 35 ? 55 : 0;  # BUG: hard-coded condition and fee "Jugendbootsnutzung"
 		$member->{sum} = $member->{membership} + $member->{berth} + $member->{usage};
+		$member->{possible_error} = abs($member->{sum} - $member->{debit_base});
+		$member->{possible_error} = max($member->{sum}, $member->{debit_base}) if ! $member->{possible_error} && ! $member->{mandate} && max($member->{sum}, $member->{debit_base}) > 0;
 		
 		push @members, $member;
 		$total{membership} += $member->{membership};
 		$total{berth} += $member->{berth};
 		$total{usage} += $member->{usage};
-		$total{max_error} += abs($member->{sum} - $member->{debit_base});
+		$total{max_error} += $member->{possible_error};
 	}
 	
 	return $self->render(template => 'member_list/list_budget', members => \@members, total => \%total);
@@ -262,14 +262,14 @@ sub node {
 	if ($node) {
 		$person = $self->neo4j->execute_memory($Q->{member}, 1, (node => 0 + $node))->[0];
 	}
-	$person = SKGB::Intern::Model::Person->new( $person );
+	$person = SKGB::Intern::Person::Neo4p->new( $person );
 	
 	my @all_related = ();
 	# TODO: add indirect relations (shared phone numbers, debitors etc.)
 	@rows = $self->neo4j->execute_memory($Q->{related_indirect}, 100, (node => $person->node_id));
 	foreach my $row (@rows) {
 		my $related = {
-			person => SKGB::Intern::Model::Person->new( $row->[0] ),
+			person => SKGB::Intern::Person::Neo4p->new( $row->[0] ),
 			indirect => 1,
 			related_through => {},
 		};
@@ -300,7 +300,7 @@ sub node {
 			last if $row->[0]->id == $a;
 		}
 		$all_related[$i] ||= {
-			person => SKGB::Intern::Model::Person->new( $row->[0] ),
+			person => SKGB::Intern::Person::Neo4p->new( $row->[0] ),
 		};
 		$all_related[$i]->{direct} = 1;
 		$all_related[$i]->{relation} = $row->[1];

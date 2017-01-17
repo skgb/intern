@@ -21,6 +21,7 @@
 <li><%= link_auth_to _ => begin %>Jugendliste<% end %>
 <li><%= link_auth_to postliste => begin %>Anschriftenliste<% end %>
 <li><%= link_auth_to list_leaving => begin %>Austrittsliste<% end %>
+<li><%= link_auth_to list_budget => begin %>Einnahmenliste<% end %>
 </ul>
 
 <p>Vereinsverwaltung:

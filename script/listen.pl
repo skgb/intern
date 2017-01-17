@@ -16,7 +16,7 @@ use Carp;
 
 use Try::Tiny;
 use REST::Neo4p;
-use SKGB::Intern::Model::Person;
+use SKGB::Intern::Person::Neo4p;
 
 our $VERSION = 0.00;
 
@@ -84,7 +84,7 @@ while ( my $row = $Q->{export}->fetch ) {
 	if ($r->get_property('leaves') && $r->get_property('leaves') lt $targetDate || $r->get_property('joined') && $r->get_property('joined') gt $targetDate) {
 		next;
 	}
-	$p = SKGB::Intern::Model::Person->new($p);
+	$p = SKGB::Intern::Person::Neo4p->new($p);
 	
 	# Abteilung
 	my @rels;

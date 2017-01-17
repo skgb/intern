@@ -19,7 +19,7 @@ use Mojo::Util qw(trim);
 use List::MoreUtils qw( all );
 
 use SKGB::Intern::AccessCode;
-use SKGB::Intern::Model::Person;
+use SKGB::Intern::Person::Neo4p;
 
 
 my $Q = {
@@ -88,7 +88,7 @@ sub factory {
 	my @rows = $self->neo4j->execute_memory($Q->{searchmail}, 1000, (query => $query));
 	if (@rows) {
 		foreach my $row (@rows) {
-			push @persons, SKGB::Intern::Model::Person->new( $row->[0] );
+			push @persons, SKGB::Intern::Person::Neo4p->new( $row->[0] );
 		}
 		$email = $rows[0]->[1]->get_property('email');
 #		say "address '$query' found for $#persons+1 persons";
@@ -98,7 +98,7 @@ sub factory {
 		@rows = $self->neo4j->execute_memory($Q->{searchname}, 2, (query => $query));
 		$rows[0] or return $self->render(user_unknown => 1, user_ambiguous => 0);
 		$rows[1] and return $self->render(user_unknown => 1, user_ambiguous => 1);
-		@persons = ( SKGB::Intern::Model::Person->new($rows[0]->[0]) );
+		@persons = ( SKGB::Intern::Person::Neo4p->new($rows[0]->[0]) );
 #		say "name/id '$query' found for $#persons+1 persons";
 	}
 	

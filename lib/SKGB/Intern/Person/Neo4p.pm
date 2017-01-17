@@ -1,9 +1,8 @@
-package SKGB::Intern::Model::Person;
+package SKGB::Intern::Person::Neo4p;
 
 use 5.012;
 use utf8;
 use Carp qw( croak );
-use List::MoreUtils qw( none );
 use REST::Neo4p;
 use SKGB::Intern::Plugin::Neo4j;
 use Data::Dumper;
@@ -37,7 +36,7 @@ sub new {
 		name_salutation => undef,
 		membership => undef,
 	};
-	if ( ref $neo4jNode eq "SKGB::Intern::Person" || ref $neo4jNode eq "SKGB::Intern::Model::Person" ) {
+	if ( ref $neo4jNode eq "SKGB::Intern::Person" || ref $neo4jNode eq "SKGB::Intern::Person::Neo4p" ) {
 		$instance->{_node} = SKGB::Intern::Plugin::Neo4j::execute_memory($Q->{node_id}, 1, (node => $neo4jNode->node_id))->[0];
 	}
 	elsif ( ref $neo4jNode eq "REST::Neo4p::Node" ) {
@@ -51,7 +50,7 @@ sub new {
 		croak "Neo4j node required, got " . ref $neo4jNode;
 		return undef;
 	}
-	print Carp::shortmess 'SKGB::Intern::Model::Person->new deprecated';
+	print Carp::shortmess 'SKGB::Intern::Person::Neo4p->new deprecated';
 	return bless $instance, $class;
 }
 
@@ -81,7 +80,7 @@ sub new_membership {
 #	my $instance = $class->new( ($neo4jPath->nodes)[0] );
 	$instance->{_simple} = $neo4jPath->[0];
 	$instance->membership($neo4jPath);
-	print Carp::shortmess 'SKGB::Intern::Model::Person->new_membership deprecated';
+	print Carp::shortmess 'SKGB::Intern::Person::Neo4p->new_membership deprecated';
 #	say Data::Dumper::Dumper $instance;
 	return $instance;
 }

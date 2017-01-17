@@ -109,20 +109,7 @@ sub register {
 		return wantarray ? @$persons : $persons;
 	});
 	
-	
-	$app->helper('neo4j.get_memberships' => sub {
-		my ($c, $filter) = @_;
-		
-#		my $session = $c->neo4j->session->graph;
-#		my $result = $driver->session->graph->run($query, @params);
-#		say Data::Dumper::Dumper $result;
-		die;
-		
-#		SKGB::Intern::Plugin::Neo4j::execute_memory($query, $limit, @params);
-	});
-	
 }
-#(_231)-[:IS_A {joined:'2003-03-25', regularContributor:true, courses:['2003']}]->(passiveMember),
 
 
 sub execute_memory {
