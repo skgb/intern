@@ -52,7 +52,7 @@ various hidden/internal changes:
 - implemented REST-style URL for individual profile pages (just as a redirect for now)
 
 2.0.0-a12, 2016-11-18
-- brand new Neo4j driver set to replace Neo4p, including plug-in support
+- brand new Neo4j driver set to replace Neo4p, including plug-in support (API not finalised)
 - deprecated SKGB::Intern::Model::Person, replacement SKGB::Intern::Person is not yet fully compatible and still has Neo4p dependencies that have to be removed
 - limited implementation of new auth framework based on named rights rather than URLs (AuthManager: link\_auth_to() and may(); SessionManager: access query (for compatibility); node.ep (dev mode only) and Auth.pm: incomplete experimental clients)
 - new /person/* endpoint allowing RESTful addressing (so far used for permalinks and a full list view of all persons including non-members)
@@ -102,3 +102,13 @@ various hidden/internal changes:
 - implemented budget report / member fee list view
 - moved SKGB::Intern::Model::Person -> SKGB::Intern::Person::Neo4p for clarity
 - refactored membership code out of SKGB::Intern::Person into SKGB::Intern::Model::Membership
+
+2.0.0-a21, 2017-01-28
+- login limitation ('fail2ban' concept)
+- refactor send mail code
+- refactor AccessCode (key/session expiration and access time update)
+- fix long-standing login failure for valid keys with expired sessions
+- custom exception and not-found pages
+- not found redirect mechanism
+- implement Perl boolean support in Neo4j driver
+- implement includeStats support in Neo4j driver/plugin

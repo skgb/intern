@@ -1,0 +1,51 @@
+% layout 'intern1';
+% title "$status " . $c->res->default_message($status);
+% my $referrer = $c->req->headers->referrer;
+
+<h2 style="font-size:2em"><%= title %></h2>
+
+% if ($status == 404) {
+
+<p>Der angeforderte URL konnte auf diesem Server nicht gefunden werden.
+
+% if ($referrer) {
+<p>Der Link auf der <a href="<%= $referrer %>">verweisenden Seite</a> scheint falsch oder nicht mehr aktuell zu sein. Bitte informiere den Autor <a href="<%= $referrer %>">jener Seite</a> über den Fehler.
+% } else {
+<p>Sofern du den URL manuell eingegeben hast, überprüfe bitte die Schreibweise und versuche es erneut.
+% }
+
+
+<!--
+<p>The requested URL was not found on this server.
+
+% if ($referrer) {
+<p>The link on the <a href="<%= $referrer %>">referring page</a> seems to be wrong or outdated. Please inform the author of <a href="<%= $referrer %>">that page</a> about the error.
+% } else {
+<p>If you entered the URL manually please check your spelling and try again.
+% }
+-->
+
+
+% } if ($status == 410) {
+
+<p>Der angeforderte URL existiert auf dem Server nicht mehr und wurde dauerhaft entfernt. Eine Weiterleitungsadresse ist nicht verfügbar.
+
+% if ($referrer) {
+<p>Bitte informiere den Autor der <a href="<%= $referrer %>">verweisenden Seite</a>, dass der Link nicht mehr aktuell ist.
+% } else {
+<p>Falls du einem Link von einer anderen Seite gefolgt bist, informiere bitte den Autor jener Seite hierüber.
+% }
+
+
+<!--
+<p>The requested URL is no longer available on this server and there is no forwarding address.
+
+% if ($referrer) {
+<p> Please inform the author of the <a href="<%= $referrer %>">referring page</a> that the link is outdated.
+% } else {
+<p>If you followed a link from a foreign page, please contact the author of that page.
+% }
+-->
+
+
+% }

@@ -44,19 +44,19 @@ document.getElementById("key").focus();
 % if (param 'key') {
 
 %  if ($session && $session->{code}) {
-%   my $expired = $session->expired;
+%   my $expired = $session->session_expired;
 %say "expired: $expired" if ($expired);
 %   if ($expired) {
 %    require Time::Date;
 <p><b>→ This key has expired <%= Time::Date->new_epoch($expired)->natural %>.</b>
-<p>You need to <%= link_to 'get a new key', 'keyfactory' %>. It's easy!
+<p>You need to <%= link_to 'get a new key', url_for('keyfactory')->query($target_query) %>. It's easy!
 %#= form_for login => begin
 %#<p><input type=text name=key value="<%= $session->{code} %>"><input type=submit value="Get New Key">
 %# end
 %   }
 %  } else {
 <p><b>→ Key invalid, please try again.</b>
-<p>You may wish to <%= link_to 'get a new key', 'keyfactory' %>. It's easy!
+<p>You may wish to <%= link_to 'get a new key', url_for('keyfactory')->query($target_query) %>. It's easy!
 %  }
 
 % }
@@ -64,20 +64,18 @@ document.getElementById("key").focus();
 
 %#  if ('keyinvalid' eq param 'reason') {
 %#<p><b>→ Your session expired.</b> (Meaning, the cookie vanished. This might be a coding error.)
-%#<p>You need to <%= link_to 'get a new key', 'keyfactory' %>. It's easy!
+%#<p>You need to <%= link_to 'get a new key', url_for('keyfactory')->query($target_query) %>. It's easy!
 %#  }
 %  my $reason = flash('reason') || '';
 %  if ($reason eq 'key') {
 <p><b>→ Your key expired.</b>
-<p>You need to <%= link_to 'get a new key', 'keyfactory' %>. It's easy!
+<p>You need to <%= link_to 'get a new key', url_for('keyfactory')->query($target_query) %>. It's easy!
 %  }
 %  elsif ($reason eq 'session') {
 <p><b>→ Your session timed out.</b>
-<p>You need to log in again. You may use the same key you used last time, or alternatively <%= link_to 'get a new key', 'keyfactory' %>. It's easy!
-%# todo: implement a grace period to give user time to enter the key without it expiring in the meantime
+<p>You need to log in again. You may use the same key you used last time, or alternatively <%= link_to 'get a new key', url_for('keyfactory')->query($target_query) %>. It's easy!
 %  }
 %  else {
-<!--p>You can <%= link_to 'get a new key', url_for('keyfactory')->query($target_query) %> at any time. It's easy!-->
 %  }
 
 % }

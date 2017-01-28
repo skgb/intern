@@ -3,7 +3,7 @@
 <title><%= title %> (SKGB-intern 2)</title>
 <style>@import url("/intern1.css?a12");<%== defined $self->stash('styles') ? $self->stash('styles') : '' %></style>
 <link rel="stylesheet" type="text/css" href="/DataTables/datatables.css"/>
-<!--link rel=icon href=/icon.png type=image/png sizes="16x16"-->
+<link rel=icon href=/favicon.ico type=image/vnd.microsoft.icon>
 <body id=intern-skgb-de>
 <div id=head><h1><a href=/>SKGB<em>-intern 2</em> Preview</a></h1></div>
 

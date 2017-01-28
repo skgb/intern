@@ -1,6 +1,7 @@
 package SKGB::Intern::Controller::KeyManager;
 use Mojo::Base 'Mojolicious::Controller';
 
+use utf8;
 use REST::Neo4p;
 use String::Random;
 use POSIX qw();
@@ -106,35 +107,24 @@ sub factory {
 	# send each of these persons an individual access code. The easiest way to
 	# do this is to send multiple emails. OTOH a single person might have
 	# several email addresses, so if the user queried a name, we first need to
-	# determine the primary/default email address(es) -- happening in _send_mail.
+	# determine the primary/default email address(es) -- happening in _send_key_mail.
 	foreach my $person (@persons) {
 		
 		my $code = $self->_generate_luhn( $self->config->{keyfactory}->{length_on_request} );
 	#	my $r1 = REST::Neo4p::Relationship->new($code => $person, 'IDENTIFIES');  # bug in Neo4p: is_a() instead of isa()
-	#	my $timestr = POSIX::strftime('%Y-%m-%dT%H:%M:%SZ', gmtime( time() + $self->config->{key_expiry} ));
-	# 	my $timestr = $self->skgb->session->new_expiration_time();
-	# 	$code->set_property({
-	# #		create_time => (time()),
-	# #		expire_time => (time() + $self->config->{key_expiry}),
-	# 		expire_time => ( $self->skgb->session->new_expiration_time() ),
-	# 	});
 		$code->set_property({ creation => SKGB::Intern::AccessCode::new_time() });
-	#	$code->set_property( $self->skgb->session->new_expiration_times() );	
 		my $r1 = $code->relate_to($person->{_node}, 'IDENTIFIES');
 		
 		my $code_string = $code->get_property('code');
 #		$self->skgb->legacy->digestauth( $person, $code_string );
-		$self->_send_mail($person, $code_string, $email);
+		$self->_send_key_mail($person, $code_string, $email);
 	}
 	
 	return $self->render(user_unknown => 0, user_ambiguous => 0);
 }
 
 
-
-# BUG: when TLS is used to connect to the MSA, only one mail can be sent at a time
-
-sub _send_mail {
+sub _send_key_mail {
 	my ($self, $person, $code, $email) = @_;
 	
 	# Q-encode headers only where necessary
@@ -163,46 +153,14 @@ sub _send_mail {
 		$to_header = $primary_header;
 		$to = \@primary_emails;
 	}
-	
-	my $from = 'webmaster@skgb.de';
-#	my $from_name = '';
-	
 	$to_header or warn "No recipient address found" and return;
 	
-# 	my $textbody= 'Novosibirsk (Russian: Новосибирск; IPA: [nəvəsʲɪˈbʲirsk]) '. #(Russian: Новосибирск; IPA: [nəvəsʲɪˈbʲirsk]) 
-# 			'is the third most populous city in Russia after Moscow and '.
-# 			'St. Petersburg and the most populous city in Asian Russia';
-# 	
-# # 	my $msg = Email::Stuffer->new();
-# # 	$msg->to("$to_name <$to>");
-# # 	$msg->from("$from_name <$from>");
-# # 	$msg->text_body($textbody);
-# #	$msg->attach_file('choochoo.gif');
-# #		->send;
-# 	my $msgL = MIME::Lite->new(
-# 		Type    => 'text',
-# 		From    => "$from_name <$from>",
-# 		To      => "$to_name <$to>",
-# 		Subject => Encode::encode('MIME-Q', 'Test äöüßÄÖÜ'),
-# 		Data    => Encode::encode('UTF-8', $textbody),
-# 	);
-# 	$msgL->attr('content-type.charset' => 'UTF-8');
-	
-	# NB: Mojo::SMTP::Client seems to be kind of unmaintained, while
-	# Email::Sender & Friends keep getting upgrades. Perhaps this is the
-	# wrong module to use?
+	# BUG: when TLS is used to connect to the MSA, only one mail can be sent at a time
 	
 	my @query = (key => $code);
 	push @query, (target => $self->param('target')) if $self->param('target');
 	my $link = $self->url_for('login')->query(@query)->to_abs;
 	$link = $link->scheme('https') if $self->app->mode ne 'development';
-	
-	my $smtp = Mojo::SMTP::Client->new(
-		address => $self->config->{msa}->{host},
-		port => $self->config->{msa}->{port},
-		tls => $self->config->{msa}->{port} == 465,
-		hello => $self->config->{msa}->{helo},
-	);
 	
 	my $mail = Encode::encode('UTF-8', $self->render_to_string('key_manager/factorymail',
 		format => 'rfc822',
@@ -215,41 +173,43 @@ sub _send_mail {
 	my @mail = split(m/^/, $mail);
 	my @lines = ();
 	
-#	my $headers = 1;
 	while (my $line = shift @mail) {
 		chomp $line;
 		last if $line eq '';
-#		if ($line =~ m/^([^:]*):( ?)(.*)$/) {
-# Regression in Encode 2.78 to 2.83 <https://metacpan.org/changes/distribution/Encode>
-#			$line = "$1:$2" . Encode::encode('MIME-Q', $3);
-#			$line =~ s/ =\?UTF-8\?Q\?=20\?=</ </g;
-#			$line =~ s/=20\?=</?= </g;
-#		}
 		push @lines, $line;
 	}
-#	say join $CRLF, @lines;
 	my $lines = join($CRLF, @lines, $CRLF . join('', @mail)) . $CRLF;
-#	my $lines = join('', @mail) . $CRLF;
 	
-#	print "'$lines'\n";
-#	print Data::Dumper::Dumper $to;
+	say "Sending code $code to " . $person->name if $self->app->mode eq 'development';
+	$self->_send_mail($to, $lines);
+}
+
+
+sub _send_mail {
+	my ($self, $to, $lines) = @_;
+	
+	# NB: Mojo::SMTP::Client seems to be kind of unmaintained, while
+	# Email::Sender & Friends keep getting upgrades. Perhaps this is the
+	# wrong module to use?
+	
+	my $smtp = Mojo::SMTP::Client->new(
+		address => $self->config->{msa}->{host},
+		port => $self->config->{msa}->{port},
+		tls => $self->config->{msa}->{port} == 465,
+		hello => $self->config->{msa}->{helo},
+	);
 	
 	my @smtp_auth = ();
 	@smtp_auth = (auth => {login => $self->config->{msa}->{user}, password => $self->config->{msa}->{pass}}) if $self->config->{msa}->{user};
 	$smtp->send(
 		@smtp_auth,
-		from => $from,
+		from => $self->config->{msa}->{from},
 		to   => $to,
 		data => $lines,
 		quit => 1,
 		sub {
 			my ($smtp, $resp) = @_;
-			if ($self->app->mode eq 'development') {
-				warn $resp->error ? "Failed to send code $code: ".$resp->error : "Sent successfully (code $code)";
-			}
-			else {
-				warn $resp->error ? "Failed to send: ".$resp->error : "Sent successfully";
-			}
+			warn $resp->error ? "Failed to send: ".$resp->error : "Sent successfully";
 		},
 	);
 }
@@ -351,7 +311,7 @@ sub logged_in {
 	my ($self) = @_;
 	
 	my $session = $self->skgb->session;
-	if ($session->user) {
+	if ( $session->valid ) {
 		if ( $self->skgb->may ) {
 			return 1;
 		}
@@ -372,12 +332,13 @@ sub logged_in {
 		say "hello2, '$session'";
 		if (! $session->code) {
 			# this means we have a session cookie, but not the corresponding key => always either a coding error or an attempted attack, but treat as new user -- no error msg
+			$self->_count_failed_login;
 		}
-		elsif ($session->key_expired) {
+		elsif ($session->expired) {
 			$self->flash(reason => 'key');
 #			@reason = (reason => 'key');
 		}
-		elsif ($session->expired) {
+		elsif ($session->session_expired) {
 			$self->flash(reason => 'session');
 #			@reason = (reason => 'session');
 		}
@@ -394,6 +355,52 @@ sub logged_in {
 }
 
 
+sub _count_failed_login {
+	my ($self) = @_;
+	
+	my $config = $self->config->{login_fails};
+	my $record = $self->neo4j->run_stats(<<_, $config)->single;
+MATCH (s:System)
+SET s.shortLoginFails = s.shortLoginFails + 1, s.longLoginFails = s.longLoginFails + 1
+RETURN s.shortLoginFails > {short_limit} AS shortFail, s.longLoginFails > {long_limit} AS longFail, s.shortLoginReport, s.longLoginReport
+_
+	$record->stats->{properties_set} or warn 'Incrementing login failure counters failed';
+	if ($record->get_bool('shortFail') && ! $record->get('s.shortLoginReport')) {
+		$self->neo4j->session->run("MATCH (s:System) SET s.shortLoginReport = {now}", now => SKGB::Intern::AccessCode::new_time);
+		$self->_send_report_mail($config->{report}, 'short');
+	}
+	elsif ($record->get_bool('longFail') && ! $record->get('s.longLoginReport')) {
+		$self->neo4j->session->run("MATCH (s:System) SET s.longLoginReport = {now}", now => SKGB::Intern::AccessCode::new_time);
+		$self->_send_report_mail($config->{report}, 'long');
+		# TODO: shut down the application server?
+	}
+}
+
+
+sub _send_report_mail {
+	my ($self, $to, $stage) = @_;
+	my $subject = "too many login failures; denying login access ($stage)";
+	say $subject;
+	return if ! $to;
+	
+	my @headers = (
+		'Content-Type: text/plain; charset=UTF-8',
+		"X-Mailer: SKGB-intern/$SKGB::Intern::VERSION Mojo::SMTP::Client/$Mojo::SMTP::Client::VERSION Perl/" . substr($^V, 1),
+		'Message-ID: ' . Email::MessageID->new(host => 'intern.skgb.de')->in_brackets,
+		'Date: ' . POSIX::strftime('%a, %d %b %Y %H:%M:%S %z', localtime),
+		'From: login@intern.skgb.de.invalid',
+		"To: $to",
+		"Subject: $subject",
+		'MIME-Version: 1.0',
+	);
+	my $mail = "SKGB-intern on ".`hostname`."$CRLF$subject$CRLF$CRLF";
+	$mail .= Dumper $self->neo4j->session->run("MATCH (s:System) RETURN s")->single->{row}->[0];
+	my $lines = join($CRLF, @headers) . $CRLF . $CRLF . $mail . $CRLF;
+	
+	$self->_send_mail($to, $lines);
+}
+
+
 # The Login page.
 sub login {
 	my ($self) = @_;
@@ -401,8 +408,16 @@ sub login {
 	if ($self->param('logout')) {
 		$self->session(expires => 1);
 		my $target = $self->param('target') || 'index';
-		$self->redirect_to($target);
-		return undef;
+		return $self->redirect_to($target);
+	}
+	
+	my $result = $self->neo4j->session->run(<<_, $self->config->{login_fails});
+MATCH (s:System)
+RETURN (s.shortLoginFails > {short_limit} OR s.longLoginFails > {long_limit}) AS fail
+_
+	if ($result->single->get_bool('fail')) {
+		$self->_count_failed_login if $self->param('key');
+		return $self->reply->exception('too many login failures; denying login access');
 	}
 	
 	my $key = $self->param('key');
@@ -412,21 +427,24 @@ sub login {
 	}
 	
 	my $session;
-	my $may_login = $self->skgb->may('login', $key);
+	my $may_login = $self->skgb->may('login', $key) && ! $self->flash('reason');
 	if ($may_login) {
-		$session = $self->skgb->session( $key );
+		$session = $self->skgb->session( $key );  # set the session cookie
 		$may_login = $session && $session->user && $self->skgb->may('login');
 		if ($may_login) {
 			
 			my $target = $self->param('target') || 'index';
 			$target = 'index' if $target eq $self->url_for('getkey');
-			$self->redirect_to($target);
-			return undef;
+			return $self->redirect_to($target);
 		}
 	}
+	# not logged in
 	
-	if ($self->flash('reason')) {
-		$self->session(expires => 1);
+	if ($self->flash('reason')) {  # because of key expiration or session time-out
+		$self->session(expires => 1);  # delete the cookie
+	}
+	if ($self->param('key')) {  # failed login attempt
+		$self->_count_failed_login;
 	}
 	
 	my @status = ();

@@ -17,7 +17,6 @@ use Carp qw(croak);
 sub new {
 	my ($class, $result) = @_;
 	
-	croak "No columns in Neo4j response (syntax error?)" if ! $result->{columns};
 	my $columns = $result->{columns};
 	my $column_keys = {};
 #	say "[[[[ ", Data::Dumper::Dumper $columns;

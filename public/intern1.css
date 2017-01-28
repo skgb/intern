@@ -316,6 +316,8 @@ DT.odd:before {
 	background: #eee;
 }
 
+/* SKGB-intern 2 adaption below */
+
 a.no-access:after {
 	color: black;
 	font-weight: bold;

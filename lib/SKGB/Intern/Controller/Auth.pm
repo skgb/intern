@@ -32,33 +32,6 @@ END
 };
 
 
-# sub list {
-# 	my ($self) = @_;
-# 	
-# 	my @codes = ();
-# 	my @rows = $self->neo4j->execute_memory($Q->{codelist}, 1000, (code => $self->session('key')));
-# 	foreach my $row (@rows) {
-# 		push @codes, $self->_code( $row->[0] );
-# 	}
-# 	@codes = sort {$b->{creation} cmp $a->{creation}} @codes;
-# 	
-# 	my $user = $self->skgb->session->user;
-# 	return $self->render(template => 'key_manager/codelist', logged_in => $user, codes => \@codes);
-# }
-# 
-# 
-# sub tree {
-# 	my ($self) = @_;
-# 	
-# 	my $row = $self->neo4j->execute_memory($Q->{code}, 1000, (code => $self->stash('code_placeholder')));
-# 	my @codes = ( $self->_code( $row->[0] ) );
-# 	$row->[1]->id eq $self->skgb->session->user->node_id or die 'not authorized';
-# 	
-# 	my $user = $self->skgb->session->user;
-# 	return $self->render(template => 'key_manager/authtree', logged_in => $user, codes => \@codes);
-# }
-
-
 sub auth {
 	my ($self) = @_;
 	
@@ -75,13 +48,6 @@ sub auth {
 	$query = $Q->{codelist_all_debug} if defined $self->param('all');  # debug
 	
 	my @codes = ();
-# 	my @rows = $self->neo4j->execute_memory($query, 1000, (code => $param));
-# 	foreach my $row (@rows) {
-# #		push @codes, $self->_code( $row->[0], $user );
-# #		$row->[1]->id eq $user->node_id or die 'not authorized';  # assertion
-# 		push @codes, $self->_code( $row->[0], SKGB::Intern::Model::Person->new($row->[1]) );  # debug
-# 	}
-# 	@codes = sort {$b->{creation} cmp $a->{creation}} @codes;
 	my @rows = $self->neo4j->get_persons($query, code => $param);
 #	say Data::Dumper::Dumper \@rows;
 	foreach my $row (@rows) {
@@ -91,7 +57,6 @@ sub auth {
 			app => $self->app,
 		);
 #		$row->[1]->id eq $user->node_id or die 'not authorized';  # assertion
-#		push @codes, $self->_code( $row->[0], SKGB::Intern::Model::Person->new($row->[1]) );  # debug
 	}
 	@codes = sort {$b->creation cmp $a->creation} @codes;
 	
@@ -99,22 +64,10 @@ sub auth {
 }
 
 
-sub _code {
-	my ($self, $node, $for) = @_;
-	my $code = $node->get('c');
-	$code->{this_session} = 1 if $code->{code} eq $self->session('key');
-	$code->{expiration} = POSIX::strftime($TIME_FORMAT, gmtime( DateTime::Format::ISO8601->parse_datetime($code->{creation})->epoch() + $self->config->{ttl}->{key} ));
-	$code->{this_expired} = POSIX::strftime($TIME_FORMAT, gmtime( time )) gt $code->{expiration};
-	$code->{for} = $for if $for;
-#	$code->{this_expired} = $self->skgb->session->key_expired($node);
-	return $code;
-}
-
-
 sub _may_modify_role {
 	my ($self, $code) = @_;
 	# despite the name this condition is currently only valid for deletion, not for addition!
-	return $code && ! $code->expired && ($code->user->equals($self->skgb->session->user) || $self->skgb->may('sudo'));
+	return $code && ! $code->session_expired && ($code->user->equals($self->skgb->session->user) || $self->skgb->may('sudo'));
 }
 
 
@@ -168,7 +121,6 @@ sub _tree {
 	my ($code, @codes) = $self->neo4j->get_persons($Q->{code}, code => $param);
 #	say Data::Dumper::Dumper $code;
 	$code and not @codes or die;
-#	@codes = ($self->_code( $code, $code->get('person') ));
 	@codes = ( SKGB::Intern::AccessCode->new(
 		code => $code->get('c'),
 		user => $code->get('person'),

@@ -3,15 +3,11 @@ package SKGB::Intern::AccessCode;
 use 5.012;
 use utf8;
 use Carp qw( croak );
-use List::Util qw();
-use REST::Neo4p;
 use POSIX qw();
 use DateTime::Format::ISO8601;
 use Data::Dumper;
 
 use overload '""' => \&code;
-
-#use SKGB::Intern::Person::Neo4p;
 
 
 my $TIME_FORMAT = '%Y-%m-%dT%H:%M:%SZ';
@@ -65,25 +61,8 @@ _
 
 sub invalidate {
 	my ($self) = @_;
-	delete $self->{_node};
 	delete $self->{code};
 	delete $self->{user};
-}
-
-
-sub _code_node {
-	my ($self) = @_;
-	if (! $self->{_node} && $self->{code}) {
-		my @rows = $self->app->neo4j->execute_memory(<<_, 1, ( code => $self->{code}->{code} ));
-MATCH (c:AccessCode)
-WHERE c.code = {code}
-RETURN c
-_
-		if ($rows[0]) {
-			$self->{_node} = $rows[0]->[0];
-		}
-	}
-	return $self->{_node};
 }
 
 
@@ -119,7 +98,11 @@ sub access {
 
 sub expiration {
 	my ($self) = @_;
-	return $self->creation && POSIX::strftime($TIME_FORMAT, gmtime( DateTime::Format::ISO8601->parse_datetime($self->creation)->epoch() + $self->app->config->{ttl}->{key} )) || '';
+	if (! $self->{expiration}) {
+		my $ttl = $self->app->config->{ttl}->{key};
+		$self->{expiration} = $self->creation && POSIX::strftime($TIME_FORMAT, gmtime( DateTime::Format::ISO8601->parse_datetime($self->creation)->epoch + $ttl )) || '';
+	}
+	return $self->{expiration};
 }
 
 
@@ -130,59 +113,104 @@ sub app {
 
 
 sub new_time {
-	return POSIX::strftime($TIME_FORMAT, gmtime( time() ));
+	return POSIX::strftime($TIME_FORMAT, gmtime( time ));
+}
+
+
+# A valid AccessCode is one that positively identifies a user and is not
+# expired in any way. In particular, an AccessCode is not valid if it has
+# a key that is not expired but a session that is.
+# In other words, this method returns a TRUE value iff a valid user is
+# currently logged in and may immediately use the system.
+sub valid {
+	my ($self) = @_;
+	return $self->user && ! $self->session_expired;
 }
 
 
 # Verify that neither the key nor the session is expired.
-# Expects either a 'session hash' or the key node.
 # Returns a TRUE value iff the session hash should be treated as expired,
 # specifically one of:
-#   -1: The session hash didn't contain a key.
+#   -1: The access code is invalid.
 #   a unix epoch: The date on which the session did expire.
-sub expired {
+sub session_expired {
 	my ($self) = @_;
-	return -1 if ! $self->{code};  # -1 is a true value
-	my @expired = ( $self->key_expired );
-	if ( my $access = $self->{code}->{access} ) {
-		my $sessionExpire = DateTime::Format::ISO8601->parse_datetime($access)->epoch() + $self->app->config->{ttl}->{session};
-		# Todo: verify that comparison won't fail when time zones are in use
-		if ( $sessionExpire < time ) {
-			push @expired, $sessionExpire;
-			say "adding $sessionExpire";
-		}
-	}
-#	say Data::Dumper::Dumper List::Util::min(@expired);
-	return List::Util::min(@expired);
+	return $self->expired if $self->expired;
+	my $expiration = $self->access && DateTime::Format::ISO8601->parse_datetime($self->access)->epoch + $self->app->config->{ttl}->{session};
+	return $expiration if $expiration && time > $expiration;
+	return undef;
 }
 
 
 # Verify that the key TTL would allow logging in.
-# Expects either a 'session hash' or the key node.
 # Returns a TRUE value iff the key should be treated as expired,
 # specifically one of:
-#   -1: The session hash didn't contain a key.
+#   -1: The access code is invalid.
 #   a unix epoch: The date on which the key did expire.
-sub key_expired {
+sub expired {
 	my ($self) = @_;
-	return (-1) if ! $self->{code};  # -1 is a true value
-	my $keyCreation = $self->{code}->{creation};
-	my $keyExpire = DateTime::Format::ISO8601->parse_datetime($keyCreation)->epoch() + $self->app->config->{ttl}->{key};
-	# Todo: verify that comparison won't fail when time zones are in use
-	return () if $keyExpire >= time;  # key is not expired
-	say "key expiration $keyExpire";
-	return ($keyExpire);
+	return -1 if ! $self->{code} || ! $self->expiration;  # -1 is a true value
+	return undef if $self->new_time le $self->expiration;
+	return DateTime::Format::ISO8601->parse_datetime($self->expiration);
 }
 
 
 # Updates the AccessCode node in the database with the current access time.
 sub update {
 	my ($self) = @_;
-	return if ! $self->_code_node;
-	$self->_code_node->set_property({ access => SKGB::Intern::AccessCode::new_time() });
-	$self->_code_node->set_property({ first_use => SKGB::Intern::AccessCode::new_time() }) unless $self->_code_node->get_property('first_use');
+	my $now = $self->new_time;
+	return if $self->access && $self->access eq $now;
+	my $query = <<_;
+MATCH (c:AccessCode {code:{code}})
+SET c.access = {now}
+_
+	$query .= ', c.first_use = {now}' if ! $self->first_use;
+	my $result = $self->app->neo4j->run_stats($query, code => $self->code, now => $now);
+	$result->stats->{properties_set} or warn 'Updating access time for '.$self->code.' failed';
 }
 
 
 
 1;
+
+
+__END__
+
+=pod
+
+=head1 NAME
+
+SKGB::Intern::AccessCode
+
+=head1 SYNOPSIS
+
+ my $key = $c->session('key');
+ my $session = SKGB::Intern::AccessCode->new( code => $key, app => $c );
+
+=head1 EXPIRATION TIME MODEL
+
+The "session TTL" protects against the "internet cafe" scenario of a user
+forgetting to log out of the system on a shared workstation. For this to work,
+the session TTL needs to be rather short. Re-login is possible using the same
+access code. However, insecure shared workstations are most likely unusual for
+our users, so this feature is not high concern right now.
+
+The "cookie TTL" is the HTTP cookie's expiration time. It should be in the same
+ball-park as the session TTL, but slightly longer, so that a session time-out
+can be signalled to the user. In practice, this should probably always be a
+session cookie for interoperability, except for "high security" keys.
+
+The "key TTL" is the access code's own time-to-live. For regular keys sent via
+email, the biggest threat is probably an attack on the email account, which
+might happen at any time. To prevent access codes in ancient emails from
+working, the codes must expire. For ease of use the validity period should
+probably not be too short. A maximum of about a week seems sensible, although
+they should be significantly shorter by default, perhaps a little longer than
+one day.
+
+=head1 AUTHOR
+
+Copyright (c) 2017 THAWsoftware, Arne Johannessen.
+All rights reserved.
+
+=cut

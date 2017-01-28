@@ -11,7 +11,7 @@
 <p>for: <%= $code->user->name %>
 <p>issued: <%= $code->creation %>
 <p>expiration: <%= $code->expiration %>
-<p>access: first <%= $code->first_use %>, last <%= $code->access %>
+<p>access: <%= $code->access ? "first ".$code->first_use.", last ".$code->access : "none" %>
 %#<p><input type=submit name=edit value="view/edit rights"<%= $this_expired && ' disabled' %>> <input type=submit name=delete value="delete<%= $this_session && ' and log out' %>" disabled>
 
 <h3>Roles</h3>

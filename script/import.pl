@@ -26,7 +26,7 @@ my %options = (
 	dev => undef,
 	mandate_file => undef,
 #	cypher_file => 'out.cypher.txt',
-	infra_file => undef,
+	resources_file => undef,
 	roles_file => undef,
 	roles_dev_file => undef,
 	intern_dir => 'conf',
@@ -36,7 +36,7 @@ GetOptions(
 	'man' => \$options{man},
 	'mandates|m' => \$options{mandate_file},
 #	'cypher|c=s' => \$options{cypher_file},
-	'infrastructure|f=s' => \$options{infra_file},
+	'resources|s=s' => \$options{resources_file},
 	'roles|r=s' => \$options{roles_file},
 	'roles-dev-file=s' => \$options{roles_dev_file},
 	'intern|i=s' => \$options{intern_dir},
@@ -56,7 +56,7 @@ my $alles_file = $ARGV[0];
 # if ($options{cypher_file} && ! $options{intern_dir}) {
 # 	pod2usage(-exitstatus => 5, -verbose => 0, -message => 'Cannot create Cypher code without SKGB-intern legacy ("red") DB directory.');
 # }
-$options{infra_file} = "$options{intern_dir}/infrastructure.cypher" if (! defined $options{infra_file});
+$options{resources_file} = "$options{intern_dir}/resources.cypher" if (! defined $options{resources_file});
 $options{roles_file} = "$options{intern_dir}/roles.cypher" if (! defined $options{roles_file});
 $options{roles_dev_file} = "$options{intern_dir}/roles.development.cypher" if (! defined $options{roles_dev_file});
 
@@ -288,7 +288,7 @@ sub length_value {
 
 
 # copy initial berth configuration
-cat_file $options{infra_file};
+cat_file $options{resources_file};
 
 my %boats = ();
 foreach my $member (@members) {

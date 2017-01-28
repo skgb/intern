@@ -37,3 +37,6 @@ CREATE
 (berthK7:Berth {ref:'K7', width:1.9}),
 (berthPontoon:Berth {comment:'neben der Optikiste'}),
 (berthShore:Berth {ref:'Jollenwiese'})
+
+CREATE
+(:System {shortLoginFails:0, shortLoginReset:'', shortLoginReport:'', longLoginFails:0, longLoginReset:'', longLoginReport:''})

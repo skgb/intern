@@ -1,0 +1,18 @@
+% layout 'intern1', styles => 'small{display:block;padding-top:2em;font-family:sans-serif;color:#bbb;}';
+% title "$status " . $c->res->default_message($status);
+
+<h2 style="font-size:2em"><%= title %></h2>
+
+<p>Die Anfrage kann nicht beantwortet werden, da im Server ein interner Fehler aufgetreten ist. Möglicherweise ist der Server überlastet oder hat einen Softwarefehler. Bitte versuche es später erneut.
+
+
+<!--
+<p>The server encountered an internal error and was unable to complete your request. Possibly the server is overloaded or there is a software bug. Please try again later.
+-->
+
+
+% eval {
+%  if ($c->skgb->session->valid) {
+<p><small><%= $exception->message %></small>
+%  }
+% };

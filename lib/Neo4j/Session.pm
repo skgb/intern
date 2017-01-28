@@ -43,13 +43,6 @@ sub run {
 }
 
 
-sub graph {
-	my ($self, $graph) = @_;
-	$self->{return_graph} = $graph // 1;
-	return $self;
-}
-
-
 sub close {
 }
 

@@ -5,13 +5,11 @@ use Mojo::Log;
 use SemVer;
 
 #our $VERSION = Perl::Version->new( '2.0.0_5' );
-our $VERSION = SemVer->new( '2.0.0-a20' );
+our $VERSION = SemVer->new( '2.0.0-a21' );
 
 
 sub startup {
 	my ($app) = @_;
-	
-#	$ENV{MOJO_REVERSE_PROXY} = 1;
 	
 	$app->moniker('skgb-intern');
 	$app->plugin('Config');# => {file => 'conf/' . $app->moniker . '.' . $app->mode . '.conf'});
@@ -38,6 +36,7 @@ sub startup {
 	);
 	
 	$app->setup_routing;
+	$app->routes->get('/*not_found')->to('not_found#redirect');
 	
 	print "SKGB-intern $VERSION (", $app->mode(), ")\n";
 }
@@ -49,25 +48,25 @@ sub setup_routing {
 	
 	$r->any([qw(GET POST)] => '/neues-kennwort')->to('key_manager#factory')->name('keyfactory');
 	
-	$r->any('/wetter')->to('content#wetter')->name('wetter');
+	$r->get('/wetter')->to('content#wetter')->name('wetter');
 	
-	$r->any('/login')->to('key_manager#login');
-	$r->any('/')->to('content#index')->name('index');
+	$r->any([qw(GET POST)] => '/login')->to('key_manager#login');
+	$r->get('/')->to('content#index')->name('index');
 	
 	my $logged_in = $r->under('/')->to('key_manager#logged_in');
-	$logged_in->any('/profile')->to('member_list#node')->name('mglpage');
-	$logged_in->any('/person/(#person_placeholder)')->to('member_list#person')->name('person');
-	$logged_in->any('/person/')->to('member_list#list_person')->name('list_person');
-	$logged_in->any('/budgetliste')->to('member_list#list_budget')->name('list_budget');
-	$logged_in->any('/austrittsliste')->to('member_list#list_leaving')->name('list_leaving');
-	$logged_in->any('/mitgliederliste')->to('member_list#list')->name('mglliste');
-	$logged_in->any('/anschriftenliste')->to('member_list#postal')->name('postliste');
-	$logged_in->any('/jugendliste')->to('member_list#youth')->name('jgdliste');
-	$logged_in->any('/export/intern1')->to('export#intern1')->name('export1');
-	$logged_in->any('/export/listen')->to('export#listen')->name('exportlisten');
-	$logged_in->any('/dosb')->to('stats#dosb')->name('dosb');
+	$logged_in->get('/profile')->to('member_list#node')->name('mglpage');
+	$logged_in->get('/person/(#person_placeholder)')->to('member_list#person')->name('person');
+	$logged_in->get('/person/')->to('member_list#list_person')->name('list_person');
+	$logged_in->get('/budgetliste')->to('member_list#list_budget')->name('list_budget');
+	$logged_in->get('/austrittsliste')->to('member_list#list_leaving')->name('list_leaving');
+	$logged_in->get('/mitgliederliste')->to('member_list#list')->name('mglliste');
+	$logged_in->get('/anschriftenliste')->to('member_list#postal')->name('postliste');
+	$logged_in->get('/jugendliste')->to('member_list#youth')->name('jgdliste');
+	$logged_in->get('/export/intern1')->to('export#intern1')->name('export1');
+	$logged_in->get('/export/listen')->to('export#listen')->name('exportlisten');
+	$logged_in->get('/dosb')->to('stats#dosb')->name('dosb');
 	
-	$logged_in->any('/stegdienst/erzeugen')->to('content#stegdienstliste')->name('stegdienstliste');
+	$logged_in->get('/stegdienst/erzeugen')->to('content#stegdienstliste')->name('stegdienstliste');
 	$app->plugin(Mount => {'/stegdienst/drucken' => 'script/stegdienst.cgi'});
 	
 	$logged_in->route('/regeln/:moniker_placeholder')->to('regeln#regeln', moniker_placeholder => undef)->name('regeln');

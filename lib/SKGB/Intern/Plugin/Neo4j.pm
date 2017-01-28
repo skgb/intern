@@ -40,6 +40,15 @@ sub register {
 	});
 	
 	
+	# Runs a Cypher query using the Neo4j driver, returning the result with stats.
+	$app->helper('neo4j.run_stats' => sub {
+		my ($c, @args) = @_;
+		my $t = $self->session->begin_transaction;
+		$t->{return_stats} = 1;
+		return $t->_commit(@args);  # the Neo4j::* interfaces aren't finalised
+	});
+	
+	
 	# Execute a query in memory and return a list of records as the result,
 	# using the Neo4j driver. This method automatically converts any :Person
 	# nodes returned by the query to blessed Person objects. However, it
@@ -56,7 +65,9 @@ sub register {
 		my ($c, $query, @params) = @_;
 		
 		my $params = ref $params[0] eq 'HASH' ? $params[0] : {@params};
-		my $result = $driver->session->graph->run($query, $params);
+		my $t = $self->session->begin_transaction;
+		$t->{return_graph} = 1;
+		my $result = $t->_commit($query, $params);  # the Neo4j::* interfaces aren't finalised
 		
 		my $persons = [];
 		my $column_keys = $result->_column_keys;
