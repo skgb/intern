@@ -19,7 +19,9 @@ Mitgliedsstatus:  <%= $person->membership->{status_long} %>
 Jahresbeitrag:  <%= $may_payment_data ? ($person->_property('debitBase') || 0) . " €" : "🔒" %>
 Lastschriftmandate:   <%= $may_payment_data ? scalar @$mandates ? join ', ', @$mandates : "keine" : "🔒" %>
 Debitorenstammnummer:  <%= $may_payment_data ? $person->_property('debitorSerial') : "🔒" %>
-GS-Verein-Nummer / MNr-alt:  <%= $person->gs_verein_id %>  <%= $person->gs_verein_id && $person->gs_verein_id gt '396' ? "(nicht in GS-Verein)" : "" %>
+% my $gsVereinLink = $person->gs_verein_id && $person->gs_verein_id le '396' ? $c->url_for('paradox', person_placeholder => $person->handle) : undef;
+% my $gsVereinExplanation = $gsVereinLink ? $self->skgb->may('mojo:paradox') ? "" : "Rechte nicht ausreichend für GS-Verein" : "nicht in GS-Verein";
+GS-Verein-Nummer / MNr-alt:  <%= $person->gs_verein_id %>  <input type=button value="in GS-Verein anzeigen" <%== ! $gsVereinExplanation ? "onclick=\"document.location.href='$gsVereinLink'\"" : "disabled title=\"$gsVereinExplanation\"" %>>
 Eintritt:  <%= $person->membership->{joined} && $person->membership->{joined} eq '1967-09-01' ? 'Gründungsmitglied 1967' : $person->membership->{joined} %>
 Austritt:  <%= $person->membership->{leaves} || ( $person->membership->{joined} ? '–' : '' ) %>
 
@@ -32,7 +34,7 @@ eigene Boote:
 % foreach my $boat (@$boats) {
 %  my $class = $boat->{class};
 %  $class = $boat->{comment} if ! $class && ! $boat->{mark};
-<%= $class %> <span style="text-transform: uppercase"><%= $boat->{mark} %></span> (<%= $boat->{_berth} ? "Liegeplatz: $boat->{_berth}" : "kein Liegeplatz" %>)
+<%= $class %> <span style="text-transform: uppercase"><%= $boat->{mark} %></span> (<%= $boat->{_berth} ? "Liegeplatz: " . ($boat->{_berth} eq 'W' ? "auf der Jollenwiese" : $boat->{_berth} eq 'U' ? "umgedreht auf dem Steg" : $boat->{_berth}) : "kein Liegeplatz" %>)
 %#=  dumper $boat
 % }
 <%= "keine\n" if ! scalar @$boats;

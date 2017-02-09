@@ -40,6 +40,8 @@
 
 <p>Die Boote ohne Liegeplatz sind oft Boote von „Karteileichen“, die noch existieren könnten oder auch nicht. Teilweise sind es aber auch Boote von Mitgliedern, die feste Liegeplätze an anderen Gewässern haben. Solche Feinheiten können im DSV-Formular nicht sinnvoll eingetragen werden, deshalb wurde die Zahl der Boote ohne Liegeplatz in der Vergangenheit oft der Einfachheit halber mit der Gewichtung 0,5 in der Gesamtrechnung inkludiert.
 
+<p>Die <%= link_auth_to list_berth => begin %>Liegeplatzliste<% end %> mag helfen, sich eine Übersicht über die privaten Boote zu verschaffen.
+
 <!--
 <p>Rechenbeispiel 2016:
 <br>16 + 7 + 4 + 7 = 34 Segelboote insgesamt:

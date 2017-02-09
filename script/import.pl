@@ -14,6 +14,9 @@ use Text::Trim;
 use Data::Dumper;
 use Carp;
 
+use XML::LibXML 1.70 qw();
+use File::Slurp qw();
+
 our $VERSION = 0.00;
 
 
@@ -22,7 +25,7 @@ our $VERSION = 0.00;
 my $verbose = 0;
 my %options = (
 	man => undef,
-#	test => undef,
+	test => undef,
 	dev => undef,
 	mandate_file => undef,
 #	cypher_file => 'out.cypher.txt',
@@ -30,6 +33,9 @@ my %options = (
 	roles_file => undef,
 	roles_dev_file => undef,
 	intern_dir => 'conf',
+	create_paradox => undef,
+	paradox_no_privacy => undef,
+	paradox_file => undef,
 );
 GetOptions(
 	'verbose|v+' => \$verbose,
@@ -40,7 +46,10 @@ GetOptions(
 	'roles|r=s' => \$options{roles_file},
 	'roles-dev-file=s' => \$options{roles_dev_file},
 	'intern|i=s' => \$options{intern_dir},
-#	'test|t' => \$options{test},
+	'gs-verein' => \$options{create_paradox},
+	'no-gs-verein-privacy' => \$options{paradox_no_privacy},
+	'gs-verein-file=s' => \$options{paradox_file},
+	'test|t' => \$options{test},
 	'dev|d' => \$options{dev},
 ) or pod2usage(2);
 pod2usage(-exitstatus => 0, -verbose => 2) if $options{man};
@@ -59,6 +68,7 @@ my $alles_file = $ARGV[0];
 $options{resources_file} = "$options{intern_dir}/resources.cypher" if (! defined $options{resources_file});
 $options{roles_file} = "$options{intern_dir}/roles.cypher" if (! defined $options{roles_file});
 $options{roles_dev_file} = "$options{intern_dir}/roles.development.cypher" if (! defined $options{roles_dev_file});
+$options{paradox_file} = "$options{intern_dir}/archive/2016-12-31/gs-verein-archive.cypher" if (! defined $options{paradox_file});
 
 
 
@@ -68,9 +78,17 @@ $options{roles_dev_file} = "$options{intern_dir}/roles.development.cypher" if (!
 my @members = ();
 my @keys;
 
+sub din_date {
+	my $iso_date = shift;
+	$iso_date or return $iso_date;
+	$iso_date =~ m/^'?(\d{4})-([01][0-9])-([0123][0-9])'?$/ or carp 'not an ISO date';
+	return sprintf '%02d.%02d.%04d', $3, $2, $1;
+}
+
 open(my $fh, '< :crlf :encoding(windows1252)', $alles_file) or die "Could not open file '$alles_file' $!";
 while (my $row = <$fh>) {
 	chomp $row;
+	$row =~ m/^<\?xml version="1\.0"/ and last;
 	$row =~ s/c´/ć/g;  # windows1252_ingo
 	my @row = split m/\t/, $row;
 	
@@ -86,7 +104,70 @@ while (my $row = <$fh>) {
 	push @members, $member;
 }
 close $fh;
-#	print Encode::encode 'UTF-8', "'$row'\n";
+
+if (! @members) {
+	# no members might mean it's a Paradox (pxtools) XML file, so try that
+	my $paradox_alles = File::Slurp::read_file($alles_file, binmode => ':raw') or die "Could not read file '$alles_file' $!";
+	$paradox_alles =~ s{^<\?xml version="1\.0"\?>}{<?xml version="1.0" encoding="windows-1252"?>};  # encoding not declared in prolog; bug in pxtools
+	$paradox_alles =~ s{&([a-z0-9#]+);\n}{&$1;}g;  # extra linebreak after entities; bug in pxtools
+	$paradox_alles =~ s{< name="BILD">|</>}{}g;  # WTF?; bug in pxtools
+	$paradox_alles =~ s{<([^@>]+)\@([^@>]+)>}{&lt;$1\@$2&gt;}g;  # XML not wellformed if <> are included in blobs; bug in pxtools
+	foreach my $paradox_row ( XML::LibXML->new->load_xml(string => $paradox_alles)->documentElement->childNodes ) {
+		next if ! $paradox_row->isa('XML::LibXML::Element');
+		
+		if (! @keys) {  # seems to be unnecessary, but let's do it anyway
+			foreach my $node ( $paradox_row->childNodes ) {
+				next if ! $node->isa('XML::LibXML::Element');
+				my ($key) = grep {$_->nodeName eq "name"} $node->attributes;
+				push @keys, ucfirst lc $key->textContent;
+			}
+		}
+		
+		my $member = {};
+		foreach my $node ( $paradox_row->childNodes ) {
+			next if ! $node->isa('XML::LibXML::Element');
+			my ($key) = grep {$_->nodeName eq "name"} $node->attributes;
+			$key = ucfirst lc $key->textContent;
+			$member->{$key} = $node->string_value;
+			$member->{$key} =~ s/c´/ć/g;  # windows1252_ingo
+			$member->{$key} =~ s/\n+$//;
+			# mirror ALLES.ASC syntax:
+			$member->{$key} =~ s/^0$/Falsch/ if $key =~ m/^(?:AKTIV|BUCHEURO|ZAHLFREMD|ZAHLANFANG)$/i;
+			$member->{$key} =~ s/^1$/Wahr/ if $key =~ m/^(?:AKTIV|BUCHEURO|ZAHLFREMD|ZAHLANFANG)$/i;
+			$member->{$key} = 0 + $member->{$key} if $member->{$key} && $key =~ m/^(?:NUMMER|RECHEN1|RECHEN2)$/i;
+			$member->{$key} = din_date $member->{$key} if $key =~ m/^(?:GEBURT|MITSEIT|AUSTRITT)$/i;
+			$member->{$key} = (0 + ($member->{$key} || 0)) . ",00" if $key =~ m/^(?:GBETRAG)$/i;
+		}
+		push @members, $member;
+	}
+}
+
+
+
+# testing (for making sure the switch to Paradox XML import doesn't change the data in any way)
+
+if ($options{test}) {
+	@members = sort {$a->{Mitnum} cmp $b->{Mitnum}} @members;
+	@members or exit;
+	my @skip = qw(Email Fanum Rechen1 Rechen2 Satz02 Satz03 Satz04 Satz05 Satz06 Satz07 Satz08 Satz09 Satz10 Titel01 Titel02 Titel03 Titel04 Titel05 Titel06 Titel07 Titel08 Titel09 Titel10 Web);  # useless fields that are present in both the pxtools export and the ALLES export
+	@skip = (@skip, qw(Alter AlterAktJahr Dauer DauerAktJahr Leistung LM LJ MonatAlter MonatDauer NM NJ TagAlter TagDauer));  # useless fields that are present in one export, but not the other
+#	@skip = (@skip, qw(Nummer Bemerk));  # useful fields that are not present in both exports
+	my @line = ();
+	foreach my $key (sort keys %{$members[0]}) {
+		push @line, ucfirst lc $key unless grep m/^$key$/i, @skip;
+	}
+	print Encode::encode('UTF-8', join "\t", @line), "\n";
+	foreach my $member (@members) {
+		@line = ();
+		foreach my $key (sort keys %$member) {
+			my $value = $member->{$key};
+			$value =~ s/\n/¬/g;
+			push @line, $value unless grep m/^$key$/i, @skip;
+		}
+		print Encode::encode('UTF-8', join "\t", @line), "\n";
+	}
+	exit 0;
+}
 
 
 
@@ -194,6 +275,95 @@ foreach my $member (@members) {
 # 	}
 # }
 # close $fhr;
+
+
+
+# write out full unmodified data table in cypher
+
+if ($options{create_paradox}) {
+	@members = sort {$a->{Mitnum} cmp $b->{Mitnum}} @members;
+	@members or exit;
+	my @skip = qw(Email Fanum Rechen1 Rechen2 Satz02 Satz03 Satz04 Satz05 Satz06 Satz07 Satz08 Satz09 Satz10 Titel01 Titel02 Titel03 Titel04 Titel05 Titel06 Titel07 Titel08 Titel09 Titel10 Web);  # useless fields that are present in both the pxtools export and the ALLES export
+	@skip = (@skip, qw(Alter AlterAktJahr Dauer DauerAktJahr Leistung LM LJ MonatAlter MonatDauer NM NJ TagAlter TagDauer));  # useless fields that are present in one export, but not the other
+	my @keys = qw(Nummer Mitnum Fanum Anrede Titel Name Vorname Zusatz Strasse Land Plz Ort Telefon Telefon2 Telefax Geburt Mitseit Austritt Bemerk Leistung Bild Geschlecht Zu1 Zu2 Zu3 Zu4 Zu5 Zu6 Zu7 Zu8 Zu9 Zu10 Zu11 Zu12 Zu13 Zu14 Zu15 Zu16 Rechen1 Rechen2 Funktion Abteilung Betreuer Aktiv Satz Gbetrag Ktonr Blz Bank Ktoinhaber Zahlart Zahlweise Nm Nj Lm Lj Bucheuro Zahlfremd Famstand Branrede Debinr Post1 Post2 Post3 Post4 Post5 Post6 Email Web Satz02 Satz03 Satz04 Satz05 Satz06 Satz07 Satz08 Satz09 Satz10 Titel01 Titel02 Titel03 Titel04 Titel05 Titel06 Titel07 Titel08 Titel09 Titel10 Zahlanfang);  # this is the order these fields are defined in Paradox
+	my @logical = qw(Aktiv Bucheuro Zahlfremd Zahlanfang);
+	my @numeric = qw(Nummer Rechen1 Rechen2 Gbetrag);
+	my %comments = (
+		Zu1 => "Mobiltelefon",
+		Zu2 => "EMail",
+		Zu3 => "sonstige Tel., etc.",
+		Zu4 => "eigenes Boot?",
+		Zu5 => "Bootsname/Sglnr.",
+		Zu6 => "Klasse (o.ä.)",
+		Zu7 => "Mandat (Ref, Dat)",
+		Zu8 => "[ex:Winterl.]  frei",
+		Zu9 => "Stegplatz - Nr.",
+		Zu10 => "Box gekauft?/Jahr",
+		Zu11 => "Schlüsselnr./Pfand",
+		Zu12 => "Beruf/Branche",
+		Zu13 => "Trainingsgruppe",
+		Zu14 => "TN Ausb.-Kurs in",
+		Zu15 => "Bemerkung",
+		Zu16 => "Bem. f. Mitgl.Vers.",
+	);
+	foreach my $member (@members) {
+		my $id = $member->{Mitnum};
+#		my @lines = ("CREATE (_$id)-[:PARADOX]->(_${id}_gsv:Paradox)");
+#		$lines[0] .= "  //-- " . $member->{user} if $member->{user};
+		print Encode::encode 'UTF-8', "CREATE (_$id)-[:PARADOX]->(:Paradox {";
+		print Encode::encode 'UTF-8', "  //-- " . $member->{user} if $member->{user};
+		foreach my $key (@keys) {
+			next if grep m/^$key$/i, @skip;
+			my $value = $member->{$key} // '';
+			if (grep m/^$key$/i, @logical) {
+				$value = $value eq "Wahr" ? "true" : $value eq "Falsch" ? "false" : "null";
+			}
+			elsif (grep m/^$key$/i, @numeric) {
+				$value =~ s/^([0-9,\.]*).*/$1/;
+				$value =~ s/,/./g;
+				$value = 0 + ($value || 0);
+			}
+			else {
+				$value =~ s/\n/\\n/g;
+				$value =~ s/'/\\'/g;
+				$value = "'$value'";
+			}
+			my $comment = $comments{$key} ? "  //-- $comments{$key}" : "";
+			
+			unless ($options{paradox_no_privacy}) {
+				if ($key eq "Geburt") {
+					$value =~ s/^'\d\d\./'/;
+					$value =~ s/^'\d\d\./'/ if $member->{Abteilung} !~ m/^Jugend/i;
+					$comment = "  //-- [Daten geschützt]";
+				}
+				elsif ($key eq "Zu7") {  # Mandat (Ref, Dat)
+					$value =~ s/\d\d\d\d-\d\d-\d\d'$/'/;
+					$comment .= " [Daten geschützt]";
+				}
+				elsif ($key eq "Ktonr") {
+					$value =~ s/^'\S+((?: [A-Z]{2}[0-9]{2})?)'/'$1'/;
+					$comment = "  //-- [Daten geschützt]";
+				}
+				elsif ($key eq "Bank") {
+					$value = length $value > ($member->{Ktonr} =~ m/ [A-Z]{2}[0-9]{2}$/ ? 13 : 2) ? "true" : "false";
+					$comment = "  //-- [Daten geschützt]";
+				}
+				elsif ($key eq "Blz" || $key eq "Ktoinhaber") {
+					$value = length $value > 2 ? "true" : "false";
+					$comment = "  //-- [Daten geschützt]";
+				}
+			}
+			
+#			push @lines, "SET _${id}_gsv.$key = $value$comment";
+			print Encode::encode 'UTF-8', "\n$key: $value";
+			print Encode::encode 'UTF-8', \$key == \$keys[-1] ? " })" : ",";
+			print Encode::encode 'UTF-8', "$comment";
+		}
+#		print Encode::encode('UTF-8', join "\n", @lines), "\n\n";
+		print "\n\n";
+	}
+	exit 0;
+}
 
 
 
@@ -549,6 +719,9 @@ foreach my $member (@members) {
 	}
 	print "\n";
 }
+
+print "\n\n";
+cat_file $options{paradox_file};
 
 
 if ($options{dev}) {

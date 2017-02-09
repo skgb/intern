@@ -1,0 +1,828 @@
+/* fake window */
+form.gsv {
+	background: rgb(236,233,216);
+	background-position: center;
+	width: 603px;
+	height: 413px;
+	position: relative;
+	font-family: "MS Sans Serif", "Microsoft Sans Serif", "Arial", "Helvetica", sans-serif;
+	font-size: 12px;
+	border: 2px solid #06e;
+	padding: 2px;
+	margin: 1em;
+}
+form.gsv h3 {
+	background: #06e;
+	color: white;
+	top: 0;
+	left: 0;
+	width: 601px;
+	height: 16px;
+	padding: 1px 3px;
+	font-size: .9em;
+}
+form.gsv .frame {
+	border: 1px inset white;
+}
+form.gsv div.outer {
+	top: 25px;
+	left: 7px;
+	width: 591px;
+	height: 356px;
+}
+form.gsv h4 {
+	background: rgb(122,150,223);
+	color: white;
+	top: 25px;
+	left: 8px;
+	width: 581px;
+	height: 16px;
+	padding: 2px 5px;
+	font-size: 1em;
+	z-index: 1;
+}
+
+
+/* tabs */
+form.gsv div.tabframe {
+	border: 2px outset white;
+	top: 72px;
+	left: 13px;
+	width: 576px;
+	height: 300px;
+	z-index: 1;
+}
+form.gsv .tab {
+	border: 2px outset white;
+	border-bottom-style: none;
+	padding: 2px;
+	background-color: inherit;
+	text-align: center;
+	z-index: 0;
+	bottom: 345px;
+}
+form.gsv .tab:hover {
+	text-decoration: underline;
+}
+form.gsv .tab:active {
+	z-index: 2;
+	border-bottom: 2px solid rgb(236,233,216);
+	bottom: 343px;
+}
+form.gsv .tab1 {
+	left: 15px;
+	width: 84px;
+}
+form.gsv .tab2 {
+	left: 107px;
+	width: 84px;
+}
+form.gsv .tab3 {
+	left: 199px;
+	width: 79px;
+}
+form.gsv .tab4 {
+	left: 286px;
+	width: 59px;
+}
+form.gsv .tab5 {
+	left: 353px;
+	width: 88px;
+}
+form#gsv1 .tab1, form#gsv2 .tab2, form#gsv3 .tab3, form#gsv4 .tab4, form#gsv5 .tab5 {
+	z-index: 1;
+	margin-left: -1px;
+	padding: 4px 3px;
+	bottom: 343px;
+}
+
+
+/* close buttons */
+form.gsv .close, form.gsv .tab {
+	cursor: default !important;
+}
+form.gsv h3 .close {
+	top: 2px;
+	right: 2px;
+	width: 13px;
+	height: 13px;
+	backgroundd: rgb(231,96,53);
+	background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACcAAAANCAYAAAAqlHdlAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAABBZJREFUeNqUlV9oHFUUxr87M7ub7W6yqVXBYoNSpFIfxKKIiC%2BCClrbF%2F8gghEio0krKP4pSdqmTU0kRvugYtugYhFKbRTbgpoXwUIf%2BxYfzEMR0myTLXF3s9nZ3dmd2et372xmdt%2Bay16YuTvn3t985ztngGN5O5v35O2M7H%2BexHDWHr1UtuUmxuHZgj2%2F1NhUzPwN1xbZgi%2Fv%2BnsO%2FuIC%2FEIOqFUgGy7ge0DTh6xXId0y%2FNIt1Pfsg%2F%2FSCLbfYQLXrgLLi0CpANRrnPUgRs06490qUF6D%2B9DjSLw%2BCDV%2BnhjBP7NfImEaSFoCmZgFwwC6TIGYmsLQz92%2FfwgPHhyDUJTuha%2BAnm1oEk6uFwnEzRs80Cdcg3DVAO7mSha7zy%2FoDfD7Bcb0Eq4IVMoRoFcPYisVgHsVcyvoPXVRh0zu6cHObgtpy9RwcdPkFDBJaAoJCP3T4%2BFfs7DUhZ%2FPwaBKydfe13%2BUJ2zI2johHfRMXdZrhQNPAqaFcCjFBLd6%2FpXgfmYK4Eso5XHoi2DtyEBHTJIgKYI9cXBC31%2F%2F7iihBAxI9PWP6bWlH0%2BEgFpH6ZTQLOXDTdKjMzykFIKpIfw6WYwIToE469G9fShQbwNMbywhjChGpU8ptjF2DoxruL43x8I1Q0T%2FB3AufVZ14Ey%2FG%2F7RPf1beL028AAfqlHdRnRwjSCMwQ8no7WPpqPr8beABD1lRXBbCJZgKq9%2Ffyxc29EGtnJuUntQtAADOJWKGr1FM5fH%2B9E%2Byu%2FsoidcgvGZZq1NOYLVOBv02KkTHTH45mNgazeQ6oIZj9IaYyEojynxbpw93hGyOvsprLgJM8bZeqEW3JquSlCZ9NGzHUHp0wstuCJMr9imXPBC8Fidg0c64YY%2BAzIpmizGg2SUVoNgnIJzR%2F9YR8idLw%2FDIphFZQ2jXTmnQFHKSI98Gz5cGX0uMvKZHEQjD%2BGudXpOtYvBw9HaT21%2Be%2BMT7t6EKb1wyaJqKm19bWCrs1Phde%2F%2BDyFMIyzZAK7KQ6uRKuXhF9hCaqh%2B8Eh0WF15E53KVZzo%2Fgx91KAnf2nzXasNhXAsKNG2Re78pAYpXvw8KjxW7kbh6T63%2Buo2GN33QmzpbQU3tMcM34GoL2tveWTJsqB3X2mlaWgvc56hrKmgXSQT9Bhngg0aVIuNG8UiqotZJE%2F%2FpUPmnr0b96Ri%2BnBVlUpF7TGm0tSVIFngku%2FoY9e5f2FlKZr51Nu49cfXMBIZ3bsMpkJQqpgkTUMqVu37rr3v4WZBYvtWAffRZ%2BBcuQwRJ5ARGFnEY2DT52FCN2LPKcN77MVQlfv2HYD754wWQEE0m%2FSfz%2F2lD1%2F4hDW41kTm6YFWxElpLxVv73uXLTQljtft4bnmpr6TI5c8e37Z39y3dcm3%2FxdgAGgMtaBWznhnAAAAAElFTkSuQmCC") 0 0 no-repeat;
+}
+form.gsv h3 .close:hover {
+	background-position: -13px 0;
+}
+form.gsv h3 .close:active {
+	background-position: -26px 0;
+}
+form.gsv div.close {
+	border: 2px outset white;
+	top: 389px;
+	left: 531px;
+	width: 62px;
+	height: 15px;
+	padding: 2px;
+	text-align: center;
+}
+form.gsv div.close:hover {
+	text-decoration: underline;
+}
+form.gsv div.close:active {
+	border-style: inset;
+}
+
+
+/* general */
+form.gsv label, form.gsv input, form.gsv select, form.gsv textarea, form.gsv h3, form.gsv h4, form.gsv a, form.gsv label, form.gsv div, form.gsv dl {
+	display: block;
+	position: absolute;
+	margin: 0;
+}
+form.gsv dl {
+	padding: 0;
+	border: none;
+}
+form.gsv label {
+	text-align: right;
+	padding: 2px 0;
+	height: 15px;
+	z-index: 1;
+}
+form.gsv input, form.gsv select, form.gsv textarea {
+	z-index: 2;
+}
+form.gsv input[type=text] {
+	height: 15px;
+}
+
+
+/* Stammdaten */
+#gsv1div1 {
+	top: 79px;
+	left: 22px;
+	width: 560px;
+	height: 206px;
+}
+#gsv1div2 {
+	top: 290px;
+	left: 22px;
+	width: 560px;
+	height: 78px;
+}
+
+
+/* Stammdaten left */
+label[for=Mitnum] {
+	top: 6px;
+	left: -16px;
+	width: 90px;
+}
+#Mitnum {
+	top: 6px;
+	left: 79px;
+	width: 123px;
+}
+label[for=Anrede] {
+	top: 29px;
+	left: -16px;
+	width: 90px;
+}
+#Anrede {
+	top: 29px;
+	left: 79px;
+	width: 123px;
+}
+label[for=Titel] {
+	top: 52px;
+	left: -16px;
+	width: 90px;
+}
+#Titel {
+	top: 52px;
+	left: 79px;
+	width: 123px;
+}
+label[for=Name] {
+	top: 87px;
+	left: -16px;
+	width: 90px;
+}
+#Name {
+	top: 87px;
+	left: 79px;
+	width: 213px;
+}
+label[for=Vorname] {
+	top: 110px;
+	left: -16px;
+	width: 90px;
+}
+#Vorname {
+	top: 110px;
+	left: 79px;
+	width: 213px;
+}
+label[for=Zusatz] {
+	top: 133px;
+	left: -16px;
+	width: 90px;
+}
+#Zusatz {
+	top: 133px;
+	left: 79px;
+	width: 213px;
+}
+label[for=Strasse] {
+	top: 156px;
+	left: -16px;
+	width: 90px;
+}
+#Strasse {
+	top: 156px;
+	left: 79px;
+	width: 213px;
+}
+label[for=Land] {
+	top: 179px;
+	left: -16px;
+	width: 90px;
+}
+#Land {
+	top: 179px;
+	left: 79px;
+	width: 31px;
+}
+#Plz {
+	top: 179px;
+	left: 129px;
+	width: 65px;
+}
+#Ort {
+	top: 179px;
+	left: 205px;
+	width: 233px;
+}
+
+
+/* Stammdaten right */
+label[for=Geschlecht] {
+	top: 6px;
+	left: 287px;
+	width: 120px;
+}
+#Geschlecht {
+	top: 6px;
+	left: 431px;
+	width: 112px;
+}
+label[for=Famstand] {
+	top: 29px;
+	left: 287px;
+	width: 120px;
+}
+#Famstand {
+	top: 29px;
+	left: 431px;
+	width: 112px;
+}
+label[for=Debinr] {
+	top: 52px;
+	left: 287px;
+	width: 120px;
+}
+#Debinr {
+	top: 52px;
+	left: 431px;
+	width: 88px;
+}
+
+
+/* Stammdaten bottom */
+label[for=Geburt] {
+	top: 6px;
+	left: -16px;
+	width: 90px;
+}
+#Geburt {
+	top: 6px;
+	left: 79px;
+	width: 86px;
+}
+label[for=Mitseit] {
+	top: 29px;
+	left: -16px;
+	width: 90px;
+}
+#Mitseit {
+	top: 29px;
+	left: 79px;
+	width: 86px;
+}
+label[for=Austritt] {
+	top: 52px;
+	left: -16px;
+	width: 90px;
+}
+#Austritt {
+	top: 52px;
+	left: 79px;
+	width: 86px;
+}
+label[for=Telefon] {
+	top: 6px;
+	left: 187px;
+	width: 70px;
+}
+#Telefon {
+	top: 6px;
+	left: 262px;
+	width: 112px;
+}
+label[for=Telefon2] {
+	top: 29px;
+	left: 187px;
+	width: 70px;
+}
+#Telefon2 {
+	top: 29px;
+	left: 262px;
+	width: 112px;
+}
+label[for=Telefax] {
+	top: 52px;
+	left: 187px;
+	width: 70px;
+}
+#Telefax {
+	top: 52px;
+	left: 262px;
+	width: 112px;
+}
+
+
+/* Vereinsdaten */
+#gsv2div1 {
+	top: 86px;
+	left: 22px;
+	width: 380px;
+	height: 108px;
+}
+#gsv2div2 {
+	top: 86px;
+	left: 409px;
+	width: 174px;
+	height: 273px;
+}
+#gsv2div3 {
+	top: 200px;
+	left: 22px;
+	width: 380px;
+	height: 89px;
+}
+#gsv2div4 {
+	top: 295px;
+	left: 22px;
+	width: 380px;
+	height: 64px;
+}
+#gsv2div2 label, #gsv2div3 label, #gsv2div4 label {
+	text-align: left;
+}
+
+
+/* Vereinsdaten left top */
+label[for=Ktonr] {
+	top: 7px;
+	left: -15px;
+	width: 138px;
+}
+#Ktonr {
+	top: 7px;
+	left: 129px;
+	width: 199px;
+}
+label[for=Blz] {
+	top: 31px;
+	left: -15px;
+	width: 138px;
+}
+#Blz {
+	top: 31px;
+	left: 129px;
+	width: 95px;
+}
+label[for=Bank] {
+	top: 55px;
+	left: -15px;
+	width: 138px;
+}
+#Bank {
+	top: 55px;
+	left: 129px;
+	width: 239px;
+}
+label[for=Ktoinhaber] {
+	top: 79px;
+	left: -15px;
+	width: 138px;
+}
+#Ktoinhaber {
+	top: 79px;
+	left: 129px;
+	width: 214px;
+}
+
+
+/* Vereinsdaten right */
+#BeitragLD {
+	bottom: 253px;
+	left: 8px;
+}
+label[for=BeitragLD] {
+	bottom: 251px;
+	left: 27px;
+	width: 145px;
+}
+#BeitragMD {
+	bottom: 232px;
+	left: 8px;
+}
+label[for=BeitragMD] {
+	bottom: 230px;
+	left: 27px;
+	width: 170px;
+}
+#BeitragSatz {
+	bottom: 211px;
+	left: 8px;
+}
+label[for=Satz] {
+	bottom: 209px;
+	left: 27px;
+	width: 120px;
+}
+#Satz {
+	top: 65px;
+	left: 27px;
+	width: 97px;
+}
+#Satz+label[for=Satz] {
+	top: 88px;
+	width: 170px;
+	overflow: hidden;
+}
+label[for=Gbetrag] {
+	bottom: 124px;
+	left: 17px;
+	width: 160px;
+}
+#Gbetrag {
+	top: 151px;
+	left: 17px;
+	width: 116px;
+}
+label[for=Zahlweise] {
+	bottom: 81px;
+	left: 17px;
+	width: 100px;
+}
+#Zahlweise {
+	top: 191px;
+	left: 17px;
+	width: 140px;
+}
+label[for=Zahlart] {
+	bottom: 43px;
+	left: 17px;
+	width: 70px;
+}
+#Zahlart {
+	top: 229px;
+	left: 17px;
+	width: 140px;
+}
+label[for=ZahlanfangWahr] {
+	top: 253px;
+	left: 17px;
+	width: 42px;
+}
+#ZahlanfangWahr {
+	top: 255px;
+	left: 43px;
+}
+#ZahlanfangWahr+label[for=ZahlanfangWahr] {
+	top: 253px;
+	left: 60px;
+	width: 35px;
+}
+#ZahlanfangFalsch {
+	top: 255px;
+	left: 79px;
+}
+label[for=ZahlanfangFalsch] {
+	top: 253px;
+	left: 96px;
+	width: 80px;
+}
+
+
+/* Vereinsdaten left center */
+label[for=Betreuer] {
+	bottom: 71px;
+	left: 10px;
+	width: 120px;
+}
+#Betreuer {
+	top: 19px;
+	left: 10px;
+	width: 137px;
+}
+label[for=Abteilung] {
+	bottom: 27px;
+	left: 10px;
+	width: 110px;
+}
+#Abteilung {
+	top: 63px;
+	left: 10px;
+	width: 137px;
+}
+label[for=Funktion] {
+	bottom: 27px;
+	left: 222px;
+	width: 70px;
+}
+#Funktion {
+	top: 63px;
+	left: 222px;
+	width: 142px;
+}
+label[for=Aktiv] {
+	top: 13px;
+	left: 242px;
+	width: 110px;
+}
+#Aktiv {
+	top: 15px;
+	left: 221px;
+}
+
+
+/* Vereinsdaten left bottom */
+label[for=Zahlfremd] {
+	top: 3px;
+	left: 27px;
+	width: 155px;
+	height: 30px !important;
+}
+#Zahlfremd {
+	top: 5px;
+	left: 6px;
+}
+label[for=Bucheuro] {
+	bottom: 3px;
+	left: 27px;
+	width: 110px;
+}
+#Bucheuro {
+	bottom: 5px;
+	left: 6px;
+}
+
+
+/* Zusatzdaten */
+#gsv3div1 {
+	top: 89px;
+	left: 23px;
+	width: 562px;
+	height: 224px;
+}
+
+
+/* Zusatzdaten left */
+label[for=Zu1] {
+	top: 7px;
+	left: -15px;
+	width: 118px;
+}
+#Zu1 {
+	top: 7px;
+	left: 108px;
+	width: 164px;
+}
+label[for=Zu2] {
+	top: 33px;
+	left: -15px;
+	width: 118px;
+}
+#Zu2 {
+	top: 33px;
+	left: 108px;
+	width: 164px;
+}
+label[for=Zu3] {
+	top: 59px;
+	left: -15px;
+	width: 118px;
+}
+#Zu3 {
+	top: 59px;
+	left: 108px;
+	width: 164px;
+}
+label[for=Zu4] {
+	top: 85px;
+	left: -15px;
+	width: 118px;
+}
+#Zu4 {
+	top: 85px;
+	left: 108px;
+	width: 164px;
+}
+label[for=Zu5] {
+	top: 111px;
+	left: -15px;
+	width: 118px;
+}
+#Zu5 {
+	top: 111px;
+	left: 108px;
+	width: 164px;
+}
+label[for=Zu6] {
+	top: 137px;
+	left: -15px;
+	width: 118px;
+}
+#Zu6 {
+	top: 137px;
+	left: 108px;
+	width: 164px;
+}
+label[for=Zu7] {
+	top: 163px;
+	left: -15px;
+	width: 118px;
+}
+#Zu7 {
+	top: 163px;
+	left: 108px;
+	width: 164px;
+}
+label[for=Zu8] {
+	top: 189px;
+	left: -15px;
+	width: 118px;
+}
+#Zu8 {
+	top: 189px;
+	left: 108px;
+	width: 164px;
+}
+
+
+/* Zusatzdaten right */
+label[for=Zu9] {
+	top: 7px;
+	left: 263px;
+	width: 118px;
+}
+#Zu9 {
+	top: 7px;
+	left: 386px;
+	width: 164px;
+}
+label[for=Zu10] {
+	top: 33px;
+	left: 263px;
+	width: 118px;
+}
+#Zu10 {
+	top: 33px;
+	left: 386px;
+	width: 162px;
+}
+label[for=Zu11] {
+	top: 59px;
+	left: 263px;
+	width: 118px;
+}
+#Zu11 {
+	top: 59px;
+	left: 386px;
+	width: 162px;
+}
+label[for=Zu12] {
+	top: 85px;
+	left: 263px;
+	width: 118px;
+}
+#Zu12 {
+	top: 85px;
+	left: 386px;
+	width: 162px;
+}
+label[for=Zu13] {
+	top: 111px;
+	left: 263px;
+	width: 118px;
+}
+#Zu13 {
+	top: 111px;
+	left: 386px;
+	width: 162px;
+}
+label[for=Zu14] {
+	top: 137px;
+	left: 263px;
+	width: 118px;
+}
+#Zu14 {
+	top: 137px;
+	left: 386px;
+	width: 162px;
+}
+label[for=Zu15] {
+	top: 163px;
+	left: 263px;
+	width: 118px;
+}
+#Zu15 {
+	top: 163px;
+	left: 386px;
+	width: 162px;
+}
+label[for=Zu16] {
+	top: 189px;
+	left: 263px;
+	width: 118px;
+}
+#Zu16 {
+	top: 189px;
+	left: 386px;
+	width: 162px;
+}
+
+
+/* Anschrift */
+#gsv4div1 {
+	top: 81px;
+	left: 235px;
+	width: 347px;
+	height: 276px;
+}
+label[for=Branrede] {
+	bottom: 302px;
+	left: 244px;
+	width: 100px;
+	text-align: left !important;
+}
+#Branrede {
+	top: 116px;
+	left: 244px;
+	width: 289px;
+}
+#Post1 {
+	top: 154px;
+	left: 244px;
+	width: 289px;
+}
+#Post2 {
+	top: 178px;
+	left: 244px;
+	width: 289px;
+}
+#Post3 {
+	top: 202px;
+	left: 244px;
+	width: 289px;
+}
+#Post4 {
+	top: 226px;
+	left: 244px;
+	width: 289px;
+}
+#Post5 {
+	top: 250px;
+	left: 244px;
+	width: 289px;
+}
+#Post6 {
+	top: 274px;
+	left: 244px;
+	width: 289px;
+}
+
+
+/* Bemerkungen */
+#Bemerk {
+	top: 83px;
+	left: 22px;
+	width: 554px;
+	min-width: 554px;
+	max-width: 554px;
+	height: 240px;
+	min-height: 240px;
+	max-height: 275px;
+}

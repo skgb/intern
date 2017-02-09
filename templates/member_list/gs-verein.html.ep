@@ -1,0 +1,430 @@
+% layout 'intern1', styles => '@import url(../gs-verein.css);';
+% title $person->name . " in GS-Verein";
+%
+% use Mojo::Util qw(xml_escape);
+% my $fake_window_title = "Mitgliedsdaten";
+% my $fake_window_header = "Datenansicht · " . $paradox->{Name} . ", " . $paradox->{Vorname} . " · " . $paradox->{Mitnum};
+%
+% sub paradox_option {
+%  return '<option value="' . (xml_escape $_[1]) . ($_[1] eq $_[0] ? '" selected>' : '">') . (xml_escape $_[2] // $_[1]) . '</option>';
+% }
+%
+% sub paradox_select {
+%  my $value = shift;
+%  my (%hash, @keys) = ();
+%  if (ref $_[0] eq 'ARRAY') {
+%   @keys = @{$_[0]};
+%  } else {
+%   for (my $i = 0; $i < @_; $i += 2) {
+%    push @keys, $_[$i];
+%   }
+%   %hash = (@_);
+%  }
+%  my @out = ();
+%  foreach my $key (@keys) {
+%   push @out, paradox_option $value, $key, %hash ? $hash{$key} : undef;
+%  }
+%  if (! grep m/^$value$/, @keys) {
+%   push @out, '<option value="' . (xml_escape $value) . '" disabled selected>' . (xml_escape $value) . '</option>';
+%  }
+%  return join "\n", @out;
+% }
+
+<script src=../gs-verein.js></script>
+
+<h2>Archivansicht von GS-Verein Ende 2016</h2>
+
+<!-- NUMMER <%= $paradox->{Nummer} %> -->
+
+
+
+<form class=gsv id=gsv1>
+
+<h3><%= $fake_window_title %> <a href="./" class=close></a></h3>
+
+<h4><%= $fake_window_header %></h4>
+
+<div class="frame outer"></div>
+<div class=tabframe id=gsv1tabframe></div>
+<div class="tab tab1" id=gsv1tab1>Stammdaten</div>
+<div class="tab tab2" id=gsv1tab2>Vereinsdaten</div>
+<div class="tab tab3" id=gsv1tab3>Zusatzdaten</div>
+<div class="tab tab4" id=gsv1tab4>Anschrift</div>
+<div class="tab tab5" id=gsv1tab5>Bemerkungen</div>
+
+<dl class=frame id=gsv1div1>
+
+<dt><label for=Mitnum>Nummer</label></dt>
+<dd><input type=text id=Mitnum value="<%= $paradox->{Mitnum} %>" readonly></dd>
+
+<dt><label for=Anrede>Anrede</label></dt>
+<dd><select id=Anrede disabled>
+%== paradox_select $paradox->{Anrede}, ["Firma", "Frau", "Herr"]
+</select></dd>
+
+<dt><label for=Titel>Titel</label></dt>
+<dd><select id=Titel disabled>
+%== paradox_select $paradox->{Titel}, ["", "Dipl-.Ing.", "Dr.", "Dr. med.", "Prof."]
+</select></dd>
+
+<dt><label for=Name>Name</label></dt>
+<dd><input type=text id=Name value="<%= $paradox->{Name} %>" readonly></dd>
+
+<dt><label for=Vorname>Vorname</label></dt>
+<dd><input type=text id=Vorname value="<%= $paradox->{Vorname} %>" readonly></dd>
+
+<dt><label for=Zusatz>Adresszusatz</label></dt>
+<dd><input type=text id=Zusatz value="<%= $paradox->{Zusatz} %>" readonly></dd>
+
+<dt><label for=Strasse>Straße</label></dt>
+<dd><input type=text id=Strasse value="<%= $paradox->{Strasse} %>" readonly></dd>
+
+<dt><label for=Land>Land PLZ Ort</label></dt>
+<dd>
+<input type=text id=Land value="<%= $paradox->{Land} %>" readonly>
+<input type=text id=Plz value="<%= $paradox->{Plz} %>" readonly>
+<input type=text id=Ort value="<%= $paradox->{Ort} %>" readonly>
+</dd>
+
+<dt><label for=Geschlecht>Geschlecht</label></dt>
+<dd><select id=Geschlecht disabled>
+% my @Geschlecht = (
+%	M => "männlich",
+%	W => "weiblich",
+%	L => "<LEER>",
+% );
+%== paradox_select $paradox->{Geschlecht}, @Geschlecht
+</select></dd>
+
+<dt><label for=Famstand>Familienstand</label></dt>
+<dd><select id=Famstand disabled>
+% my $Famstand = [
+%	"ledig",
+%	"verheiratet",
+%	"geschieden",
+%	"verwitwet",
+%	"<LEER>",
+% ];
+%== paradox_select $paradox->{Famstand}, $Famstand
+</select></dd>
+
+<dt><label for=Debinr>Debitorennummer</label></dt>
+<dd><input type=text id=Debinr value="<%= $paradox->{Debinr} %>" readonly></dd>
+
+</dl>
+<dl class=frame id=gsv1div2>
+
+<dt><label for=Geburt>Geburtstag</label></dt>
+<dd><input type=text id=Geburt value="<%= length $paradox->{Geburt} == 4 && "██." %><%= length $paradox->{Geburt} <= 7 && "██." %><%= $paradox->{Geburt} %>" readonly></dd>
+
+<dt><label for=Mitseit>Eintritt</label></dt>
+<dd><input type=text id=Mitseit value="<%= $paradox->{Mitseit} %>" readonly></dd>
+
+<dt><label for=Austritt>Austritt</label></dt>
+<dd><input type=text id=Austritt value="<%= $paradox->{Austritt} %>" readonly></dd>
+
+<dt><label for=Telefon>Telefon 1</label></dt>
+<dd><input type=text id=Telefon value="<%= $paradox->{Telefon} %>" readonly></dd>
+
+<dt><label for=Telefon2>Telefon 2</label></dt>
+<dd><input type=text id=Telefon2 value="<%= $paradox->{Telefon2} %>" readonly></dd>
+
+<dt><label for=Telefax>Telefax</label></dt>
+<dd><input type=text id=Telefax value="<%= $paradox->{Telefax} %>" readonly></dd>
+
+</dl>
+
+<div class=close>Schließen</div>
+
+</form>
+
+
+
+<form class=gsv id=gsv2>
+
+<h3><%= $fake_window_title %> <a href="./" class=close></a></h3>
+
+<h4><%= $fake_window_header %></h4>
+
+<div class="frame outer"></div>
+<div class=tabframe id=gsv2tabframe></div>
+<div class="tab tab1" id=gsv2tab1>Stammdaten</div>
+<div class="tab tab2" id=gsv2tab2>Vereinsdaten</div>
+<div class="tab tab3" id=gsv2tab3>Zusatzdaten</div>
+<div class="tab tab4" id=gsv2tab4>Anschrift</div>
+<div class="tab tab5" id=gsv2tab5>Bemerkungen</div>
+
+<dl class=frame id=gsv2div1>
+
+<dt><label for=Ktonr>Konto-/Kartennummer</label></dt>
+<dd><input type=text id=Ktonr value="<%= $paradox->{Blz} eq "true" && "██████████" %><%= $paradox->{Ktonr} %>" readonly></dd>
+
+<dt><label for=Blz>Bankleitzahl/Gültigkeit</label></dt>
+<dd><input type=text id=Blz value="<%= $paradox->{Blz} eq "true" && "████████" %>" readonly></dd>
+
+<dt><label for=Bank>Bank-/Kartenname</label></dt>
+<dd><input type=text id=Bank value="<%= $paradox->{Ktonr} && $paradox->{Blz} && "███████████ " %><%= $paradox->{Bank} eq "true" && "███ ████" %>" readonly></dd>
+
+<dt><label for=Ktoinhaber>Inhaber Konto/Karte</label></dt>
+<dd><input type=text id=Ktoinhaber value="<%= $paradox->{Blz} eq "true" && "█" x length $person->name %>" readonly></dd>
+
+</dl>
+<div class=frame id=gsv2div2>
+
+<p><input type=radio name=Beitrag id=BeitragLD value=LD <%= $paradox->{Satz} eq "LD" && "checked" %> disabled>
+<label for=BeitragLD>Beitrag altersabhängig</label>
+<input type=radio name=Beitrag id=BeitragMD value=MD <%= $paradox->{Satz} eq "MD" && "checked" %> disabled>
+<label for=BeitragMD>Beitrag nach Mitgliedsdauer</label>
+<input type=radio name=Beitrag id=BeitragSatz value=Satz <%= $paradox->{Satz} !~ m/^[LM]D$/ && "checked" %> disabled>
+<label for=Satz>fester Beitragssatz</label>
+<select id=Satz disabled>
+% my @Satz = (
+%	"01" => "01 aktiv         [120,00 EUR]",
+%	"02" => "02 passiv        [36,00 EUR]",
+%	"03" => "03 Jugend (bis 19J.)   [35,00 EUR]",
+%	"04" => "04 aktiv, in Ausbildung   [60,00 EUR]",
+%	"05" => "05 Ehrenmitglied   [0,00 EUR]",
+%	"06" => "06 aktiv mit Stegbox   [185,00 EUR]",
+%	"07" => "07 aktiv mit Bootsnutzung (nicht ÜL)   [120,00 EUR]",
+%	"08" => "08 aktiv in Ausb. mit Stegbox   [125,00 EUR]",
+%	"09" => "09 aktiv in Ausb. m. Bootsnutzung(nicht ÜL)   [60,00 EUR]",
+%	"10" => "10 Jugend mit Bootsnutzung (nicht ÜL)   [90,00 EUR]",
+%	"11" => "11 Sondervereinbarung   [99999,99 EUR]",
+%	"12" => "12 (gestrichen, jetzt Satz 09)   [99999,99 EUR]",
+%	"13" => "13 Aktiv mit 2 Stegboxen   [250,00 EUR]",
+%	"14" => "14 Aktiv mit 1/2 Stegbox (Eignergemeinsch.)   [152,50 EUR]",
+%	"15" => "15 Aktiv m. Boxen f. 2 Boote (davon 1 Kanu)   [205,00 EUR]",
+%	"16" => "16 Jugend mit Stegbox   [100,00 EUR]",
+%	"17" => "17 Nichtmitglied   [0,00 EUR]",
+% );
+%== paradox_select $paradox->{Satz}, @Satz
+</select>
+<label for=Satz id=SatzInfo></label>
+
+<p><label for=Gbetrag>Grundbetrag (pro Intervall)</label>
+% my $Gbetrag = sprintf("%.2f", $paradox->{Gbetrag}) . " EUR";
+% $Gbetrag =~ s/\./,/;
+<input type=text id=Gbetrag value="<%= $Gbetrag %>" readonly>
+
+<p><label for=Zahlart>Zahlungsweise</label>
+<select id=Zahlart disabled>
+%== paradox_select $paradox->{Zahlart}, ["", "Bankeinzug", "Bar/Scheck", "Kreditkarte", "Überweisung"]
+</select>
+
+<p><label for=Zahlweise>Intervall</label>
+<select id=Zahlweise disabled>
+%== paradox_select $paradox->{Zahlweise}, ["", "jährlich", "halbjährlich", "quartalsweise", "monatlich"]
+</select>
+
+<p><label for=ZahlanfangWahr>zum</label>
+<input type=radio name=Zahlanfang id=ZahlanfangWahr value=Wahr <%= $paradox->{Zahlanfang} eq "true" && "checked" %> disabled>
+<label for=ZahlanfangWahr>1.</label>
+<input type=radio name=Zahlanfang id=ZahlanfangFalsch value=Falsch <%= $paradox->{Zahlanfang} eq "false" && "checked" %> disabled>
+<label for=ZahlanfangFalsch>15.   zahlbar</label>
+
+</div>
+<dl class=frame id=gsv2div3>
+
+<dt><label for=Betreuer>Beauftragt für/als:</label></dt>
+<dd><select id=Betreuer disabled>
+% my $Betreuer = [
+%	"",
+%	"Arbeitsstd. u. Stegdienstliste",
+%	"Chronik",
+%	"IT",
+%	"Liegeplatz-Verwaltung",
+%	"Poststelle Eingang",
+%	"Schaukasten",
+%	"stv. Vereinsb. VAYU",
+%	"Übungsleiter",
+%	"Vereinsb. JAN VAN GALEN",
+%	"Vereinsb. VAYU",
+%	"Wassermarken",
+% ];
+%== paradox_select $paradox->{Betreuer}, $Betreuer
+</select></dd>
+
+<dt><label for=Abteilung>Mitgliedsstatus</label></dt>
+<dd><select id=Abteilung disabled>
+% my $Abteilung = [
+%	"Aktiv",
+%	"Aktiv, Ehrenmitglied",
+%	"Aktiv, Gastmitglied",
+%	"Jugend",
+%	"Jugend, Gastmitglied",
+%	"Nichtmitglied",
+%	"Nichtmitglied, Kontoinhaber",
+%	"Passiv",
+%	"Passiv, Ehrenmitglied",
+%	"Passiv, Gastmitglied",
+%	"Passiv, zuvor Aktiv",
+% ];
+%== paradox_select $paradox->{Abteilung}, $Abteilung
+</select></dd>
+
+<dt><label for=Aktiv>aktives Mitglied</label></dt>
+<dd><input type=checkbox id=Aktiv <%= $paradox->{Aktiv} eq "true" && "checked" %> disabled></dd>
+
+<dt><label for=Funktion>Funktion</label></dt>
+<dd><select id=Funktion disabled>
+% my $Funktion = [
+%	"",
+%	"1. Sportwart",
+%	"1. Steg- & Zeugwart",
+%	"1. Vorsitzender",
+%	"2. Schatzmeister",
+%	"2. Sportwart",
+%	"2. Steg- & Zeugwart",
+%	"Ehrenvorsitzender",
+%	"Geschäftsführer",
+%	"Pressewart",
+%	"Schatzmeister",
+% ];
+%== paradox_select $paradox->{Funktion}, $Funktion
+</select></dd>
+
+</dl>
+<dl class=frame id=gsv2div4>
+
+<dt><label for=Zahlfremd>Beitragsdaten bei diesem Mitglied nicht abrechnen</label></dt>
+<dd><input type=checkbox id=Zahlfremd <%= $paradox->{Zahlfremd} eq "true" && "checked" %> disabled></dd>
+
+<dt><label for=Bucheuro>in EUR buchen</label></dt>
+<dd><input type=checkbox id=Bucheuro <%= $paradox->{Bucheuro} eq "true" && "checked" %> disabled></dd>
+
+</dl>
+
+<div class=close>Schließen</div>
+
+</form>
+
+
+
+<form class=gsv id=gsv3>
+
+<h3><%= $fake_window_title %> <a href="./" class=close></a></h3>
+
+<h4><%= $fake_window_header %></h4>
+
+<div class="frame outer"></div>
+<div class=tabframe id=gsv3tabframe></div>
+<div class="tab tab1" id=gsv3tab1>Stammdaten</div>
+<div class="tab tab2" id=gsv3tab2>Vereinsdaten</div>
+<div class="tab tab3" id=gsv3tab3>Zusatzdaten</div>
+<div class="tab tab4" id=gsv3tab4>Anschrift</div>
+<div class="tab tab5" id=gsv3tab5>Bemerkungen</div>
+
+<dl class=frame id=gsv3div1>
+
+<dt><label for=Zu1>Mobiltelefon</label></dt>
+<dd><input type=text id=Zu1 value="<%= $paradox->{Zu1} %>" readonly></dd>
+
+<dt><label for=Zu2>EMail</label></dt>
+<dd><input type=text id=Zu2 value="<%= $paradox->{Zu2} %>" readonly></dd>
+
+<dt><label for=Zu3>sonstige Tel, etc.</label></dt>
+<dd><input type=text id=Zu3 value="<%= $paradox->{Zu3} %>" readonly></dd>
+
+<dt><label for=Zu4>eigenes Boot?</label></dt>
+<dd><input type=text id=Zu4 value="<%= $paradox->{Zu4} %>" readonly></dd>
+
+<dt><label for=Zu5>Bootsname/Sglnr.</label></dt>
+<dd><input type=text id=Zu5 value="<%= $paradox->{Zu5} %>" readonly></dd>
+
+<dt><label for=Zu6>Klasse (o. ä.)</label></dt>
+<dd><input type=text id=Zu6 value="<%= $paradox->{Zu6} %>" readonly></dd>
+
+<dt><label for=Zu7>Mandat (Ref, Dat)</label></dt>
+<dd><input type=text id=Zu7 value="<%= $paradox->{Zu7} %><%= $paradox->{Zu7} =~ m/, $/ && "██████████" %>" readonly></dd>
+
+<dt><label for=Zu8>[ex: Winterl.]   frei</label></dt>
+<dd><input type=text id=Zu8 value="<%= $paradox->{Zu8} %>" readonly></dd>
+
+<dt><label for=Zu9>Stegplatz - Nr.</label></dt>
+<dd><input type=text id=Zu9 value="<%= $paradox->{Zu9} %>" readonly></dd>
+
+<dt><label for=Zu10>Box gekauft?/Jahr</label></dt>
+<dd><input type=text id=Zu10 value="<%= $paradox->{Zu10} %>" readonly></dd>
+
+<dt><label for=Zu11>Schlüsselnr./Pfand</label></dt>
+<dd><input type=text id=Zu11 value="<%= $paradox->{Zu11} %>" readonly></dd>
+
+<dt><label for=Zu12>Beruf/Branche</label></dt>
+<dd><input type=text id=Zu12 value="<%= $paradox->{Zu12} %>" readonly></dd>
+
+<dt><label for=Zu13>Trainingsgruppe</label></dt>
+<dd><input type=text id=Zu13 value="<%= $paradox->{Zu13} %>" readonly></dd>
+
+<dt><label for=Zu14>TN Ausb.-Kurs in</label></dt>
+<dd><input type=text id=Zu14 value="<%= $paradox->{Zu14} %>" readonly></dd>
+
+<dt><label for=Zu15>Bemerkung</label></dt>
+<dd><input type=text id=Zu15 value="<%= $paradox->{Zu15} %>" readonly></dd>
+
+<dt><label for=Zu16>Bem. f. Mitgl.Vers.</label></dt>
+<dd><input type=text id=Zu16 value="<%= $paradox->{Zu16} %>" readonly></dd>
+
+</dl>
+
+<div class=close>Schließen</div>
+
+</form>
+
+
+
+<form class=gsv id=gsv4>
+
+<h3><%= $fake_window_title %> <a href="./" class=close></a></h3>
+
+<h4><%= $fake_window_header %></h4>
+
+<div class="frame outer"></div>
+<div class=frame id=gsv4div1></div>
+<div class=tabframe id=gsv4tabframe></div>
+<div class="tab tab1" id=gsv4tab1>Stammdaten</div>
+<div class="tab tab2" id=gsv4tab2>Vereinsdaten</div>
+<div class="tab tab3" id=gsv4tab3>Zusatzdaten</div>
+<div class="tab tab4" id=gsv4tab4>Anschrift</div>
+<div class="tab tab5" id=gsv4tab5>Bemerkungen</div>
+
+<p><label for=Branrede>Briefanrede</label>
+<input type=text id=Branrede value="<%= $paradox->{Branrede} %>" readonly>
+
+<p><input type=text id=Post1 value="<%= $paradox->{Post1} %>" readonly>
+<br><input type=text id=Post2 value="<%= $paradox->{Post2} %>" readonly>
+<br><input type=text id=Post3 value="<%= $paradox->{Post3} %>" readonly>
+<br><input type=text id=Post4 value="<%= $paradox->{Post4} %>" readonly>
+<br><input type=text id=Post5 value="<%= $paradox->{Post5} %>" readonly>
+<br><input type=text id=Post6 value="<%= $paradox->{Post6} %>" readonly>
+
+<div class=close>Schließen</div>
+
+</form>
+
+
+
+<form class=gsv id=gsv5>
+
+<h3><%= $fake_window_title %> <a href="./" class=close></a></h3>
+
+<h4><%= $fake_window_header %></h4>
+
+<div class="frame outer"></div>
+<div class=tabframe id=gsv5tabframe></div>
+<div class="tab tab1" id=gsv5tab1>Stammdaten</div>
+<div class="tab tab2" id=gsv5tab2>Vereinsdaten</div>
+<div class="tab tab3" id=gsv5tab3>Zusatzdaten</div>
+<div class="tab tab4" id=gsv5tab4>Anschrift</div>
+<div class="tab tab5" id=gsv5tab5>Bemerkungen</div>
+
+<textarea id=Bemerk rows=15 cols=66 readonly><%= $paradox->{Bemerk} %></textarea>
+
+<div class=close>Schließen</div>
+
+</form>
+
+
+
+<p>Einige Feldnamen verfügen über Tooltips, welche das Format oder die Bedeutung des Felds beschreiben. Diese Tooltips erläutern die Business-Logik der SKGB und existierten nicht in GS-Verein.
+
+<p>Die hier gezeigten Daten sind auf dem Stand von Ende 2016 eingefroren. In der Übergangsphase von GS-Verein zu SKGB-intern 2 wird es als nützlich erachtet, diese Daten verfügbar zu halten. Nachdem sichergestellt ist, dass die Daten in SKGB-intern 2 vollständig sind, und nachdem die neue Benutzerschnittstelle Akzeptanz beim Vorstand gefunden hat, wird diese Archivansicht abgeschaltet. Gegenwärtig (Februar 2017) wird dies nicht mehr für 2017 erwartet.

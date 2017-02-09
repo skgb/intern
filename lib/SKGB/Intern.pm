@@ -5,7 +5,7 @@ use Mojo::Log;
 use SemVer;
 
 #our $VERSION = Perl::Version->new( '2.0.0_5' );
-our $VERSION = SemVer->new( '2.0.0-a21' );
+our $VERSION = SemVer->new( '2.0.0-a22' );
 
 
 sub startup {
@@ -57,8 +57,10 @@ sub setup_routing {
 	$logged_in->get('/profile')->to('member_list#node')->name('mglpage');
 	$logged_in->get('/person/(#person_placeholder)')->to('member_list#person')->name('person');
 	$logged_in->get('/person/')->to('member_list#list_person')->name('list_person');
+	$logged_in->get('/person/(#person_placeholder)/gs-verein')->to('member_list#gsverein')->name('paradox');
 	$logged_in->get('/budgetliste')->to('member_list#list_budget')->name('list_budget');
 	$logged_in->get('/austrittsliste')->to('member_list#list_leaving')->name('list_leaving');
+	$logged_in->get('/boxenliste')->to('member_list#list_berth')->name('list_berth');
 	$logged_in->get('/mitgliederliste')->to('member_list#list')->name('mglliste');
 	$logged_in->get('/anschriftenliste')->to('member_list#postal')->name('postliste');
 	$logged_in->get('/jugendliste')->to('member_list#youth')->name('jgdliste');
@@ -71,7 +73,7 @@ sub setup_routing {
 	
 	$logged_in->route('/regeln/:moniker_placeholder')->to('regeln#regeln', moniker_placeholder => undef)->name('regeln');
 	
-	$logged_in->any('/auth/:code_placeholder')->to('auth#auth', code_placeholder => undef)->name('auth');
+	$logged_in->any('/auth')->to('auth#auth')->name('auth');
 	
 	my $wiki_action = $logged_in->route;
 	$wiki_action->pattern->placeholder_start('%');  # the ':' is the default placeholder start and cannot be used as a literal unless we reassign this

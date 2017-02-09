@@ -4,8 +4,6 @@ use Mojo::Base 'Mojolicious::Controller';
 #use Data::Dumper;
 
 
-my @REDIRECT_STATUS = (301, 302, 303, 305, 307, 308);
-
 our $redirect_file = 'conf/not_found.conf';
 our %error_template = ( '4xx' => 'not_found.production', '5xx' => 'exception.production' );
 our %default = ( redirect => 301, error => 410 );

@@ -359,3 +359,9 @@ ul.auth code {
 	color: inherit;
 	padding: .12em .5em;
 }
+
+i.bootsname {
+	font-style: normal;
+	text-transform: uppercase;
+	font-size: 93%;
+}

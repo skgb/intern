@@ -35,8 +35,8 @@ CREATE
 (berthK5:Berth {ref:'K5', width:1.9}),
 (berthK6:Berth {ref:'K6', width:1.9}),
 (berthK7:Berth {ref:'K7', width:1.9}),
-(berthPontoon:Berth {comment:'neben der Optikiste'}),
-(berthShore:Berth {ref:'Jollenwiese'})
+(berthPontoon:Berth {ref:'U', comment:'neben der Optikiste'}),
+(berthShore:Berth {ref:'W', comment:'Jollenwiese'})
 
 CREATE
 (:System {shortLoginFails:0, shortLoginReset:'', shortLoginReport:'', longLoginFails:0, longLoginReset:'', longLoginReport:''})

@@ -13,20 +13,20 @@ my $TIME_FORMAT = '%Y-%m-%dT%H:%M:%SZ';
 my $Q = {
   codelist => <<END,
 MATCH (c:AccessCode {code:{code}})-[:IDENTIFIES]->(p:Person)
- RETURN c, p
+ RETURN c, p, id(c) as id
  UNION
- MATCH (c:AccessCode {code:{code}})-[:IDENTIFIES]->(p:Person)<-[:IDENTIFIES]-(a:AccessCode)
- RETURN a AS c, p
+ MATCH (:AccessCode {code:{code}})-[:IDENTIFIES]->(p:Person)<-[:IDENTIFIES]-(a:AccessCode)
+ RETURN a AS c, p, id(a) as id
  ORDER BY c.creation DESC
 END
   codelist_all_debug => <<END,
 MATCH (c:AccessCode)-[:IDENTIFIES]->(p:Person)
- RETURN c, p
+ RETURN c, p, id(c) as id
  ORDER BY c.creation DESC
 END
   code => <<END,
 MATCH (c:AccessCode)-[:IDENTIFIES]->(p:Person)
- WHERE c.code = {code}
+ WHERE id(c) = {code}
  RETURN c,p
 END
 };
@@ -40,7 +40,7 @@ sub auth {
 		return $self->render(template => 'key_manager/forbidden', status => 403);
 	}
 	
-	return $self->_tree if $self->stash('code_placeholder');
+	return $self->_tree if $self->param('node');
 	
 	my $template = 'key_manager/codelist';
 	my $param = $self->session('key');
@@ -51,11 +51,13 @@ sub auth {
 	my @rows = $self->neo4j->get_persons($query, code => $param);
 #	say Data::Dumper::Dumper \@rows;
 	foreach my $row (@rows) {
-		push @codes, SKGB::Intern::AccessCode->new(
+		my $code = SKGB::Intern::AccessCode->new(
 			code => $row->get('c'),
 			user => $row->get('person'),
 			app => $self->app,
 		);
+		$code->{id} = $row->get('id');
+		push @codes, $code;
 #		$row->[1]->id eq $user->node_id or die 'not authorized';  # assertion
 	}
 	@codes = sort {$b->creation cmp $a->creation} @codes;
@@ -108,7 +110,7 @@ _
 			$t->commit;
 		}
 	}
-	$self->redirect_to('auth', code_placeholder=>$code);
+	$self->redirect_to( $self->url_for('auth')->query(node => $code->{id}) );
 }
 
 
@@ -116,7 +118,7 @@ sub _tree {
 	my ($self) = @_;
 	
 	my $user = $self->skgb->session->user;
-	my $param = $self->stash('code_placeholder');
+	my $param = 0 + $self->param('node');
 	
 	my ($code, @codes) = $self->neo4j->get_persons($Q->{code}, code => $param);
 #	say Data::Dumper::Dumper $code;
@@ -126,6 +128,7 @@ sub _tree {
 		user => $code->get('person'),
 		app => $self->app,
 	));
+	$codes[0]->{id} = $param;
 	
 	return $self->_modify_roles($codes[0]) if $self->param('action') && $self->param('action') eq 'modify-roles';
 	
@@ -157,17 +160,17 @@ sub _tree {
 # _
 	my %role_negation = map { $_->get => 1 } $self->neo4j->session->run(<<_, code => $param);
 MATCH (c:AccessCode)-[a:GUEST|ROLE|NOT*..3]->(r:Role)
-WHERE c.code = {code} AND type(head(a)) = 'NOT'
+WHERE id(c) = {code} AND type(head(a)) = 'NOT'
 RETURN r.role
 _
 	foreach my $role ( $self->neo4j->session->run(<<_, code => $param) ) {
 MATCH (c:AccessCode)-[:IDENTIFIES]->(p:Person)-[:GUEST|ROLE*..3]->(r:Role)
-WHERE c.code = {code}
+WHERE id(c) = {code}
 RETURN r, not((p)--(r)) AS indirect, false AS special
 ORDER BY r.name, r.role
 UNION
 MATCH (c:AccessCode)-[:ROLE*..3]->(r:Role)
-WHERE c.code = {code}
+WHERE id(c) = {code}
 RETURN r, not((c)--(r)) AS indirect, true AS special
 ORDER BY r.name, r.role
 _
@@ -184,19 +187,19 @@ _
 	my @privs;
 	my %priv_negation = map { $_->get => 1 } $self->neo4j->session->run(<<_, code => $param);
 MATCH (c:AccessCode)-[a:GUEST|ROLE|NOT|MAY|ACCESS*..4]->(s:Right)
-WHERE c.code = {code} AND type(head(a)) = 'NOT'
+WHERE id(c) = {code} AND type(head(a)) = 'NOT'
 RETURN s.right
 _
 	foreach my $priv ( $self->neo4j->session->run(<<_, code => $param) ) {
 MATCH (c:AccessCode)-[:IDENTIFIES]->(:Person)-[:GUEST|ROLE*..3]->(r:Role)
-WHERE c.code = {code}
+WHERE id(c) = {code}
 MATCH (r)-[:MAY|ACCESS]->(s)
 WHERE (s:Right) OR (s:Resource)
 RETURN s, false AS special, (s:Right) AS new
 ORDER BY s.name, s.right
 UNION
 MATCH (c:AccessCode)-[:GUEST|ROLE*..3]->(r:Role)
-WHERE c.code = {code}
+WHERE id(c) = {code}
 MATCH (r)-[:MAY]->(s)
 WHERE (s:Right)
 RETURN s, true AS special, true AS new

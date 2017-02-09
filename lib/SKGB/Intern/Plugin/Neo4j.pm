@@ -59,8 +59,10 @@ sub register {
 	# column name or index of the column(s) containing the :Person node, and
 	# that column will afterwards contain the blessed Person object; otherwise
 	# the blessed Person object will be appended as last column with the name
-	# 'person'. If there is only one column, a list of Person objects is
+	# 'person'.
+	# As a special case, if there is only one column, a list of Person objects is
 	# returned in lieu of a list of records.
+	# TODO: is this useful or confusing?
 	$app->helper('neo4j.get_persons' => sub {
 		my ($c, $query, @params) = @_;
 		
@@ -106,7 +108,7 @@ sub register {
 				}
 			}
 			
-			$person = SKGB::Intern::Person->new($person, \@relationships);
+			$person = SKGB::Intern::Person->new($person, \@relationships) if $person;
 			if ($column_count eq 1) {
 				push @$persons, $person;
 			}

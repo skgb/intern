@@ -1,0 +1,88 @@
+% layout 'intern1';
+% title 'Liste der Liegeplätze';
+% use 5.016;
+
+<h2><%= title %></h2>
+<p>(provisorisch – angestrebt ist eine kartographische Darstellung)
+<p><strong style=background:yellow>Vereinsboote werden noch nicht dargestellt!</strong>
+
+<table id=membertable class="compact">
+<thead>
+<tr><th>Liegeplatz<th>Boot<th>Bootseigner<th><th>
+</thead>
+% foreach my $row (@$berths) {
+%  my $member = $row->get('p');
+%  my $berth = $row->get('b')->{ref};
+%  $berth .= " (" . $row->get('b')->{comment} . ")" if $row->get('b')->{comment};
+%  $berth = $row->get('b')->{comment} if $row->get('b')->{ref} eq 'U' || $row->get('b')->{ref} eq 'W';
+%  my $class = $row->get('s') && $row->get('s')->{class};
+%  my $name = $row->get('s') && $row->get('s')->{name};
+%  my $sail = $row->get('s') && $row->get('s')->{sailnumber};
+<tr>
+<td><%= $berth %>
+<td><%= $class ? "$class " : "" %><%== $name ? "<i class=bootsname>" : "" %><%= $name ? $name : "" %><%== $name ? "</i>" : "" %><%= $sail ? " $sail" : "" %><%= $row->get('s') ? "" : "–" %>
+%  if ($member) {
+<td><%= link_auth_to person => {person_placeholder => $member->handle} => begin %><%= $member->name %><% end %>
+<td><%= fc($member->name_sortable) %>
+%  } else {
+<td>–
+<td>
+%  }
+<td><%= $row->get('b')->{ref} %>
+% }
+</table>
+
+<script type="text/javascript" src="/DataTables/datatables.js"></script>
+<script>
+// https://datatables.net/
+$(document).ready(function() {
+	var cols = $('#membertable tr')[0].childElementCount;
+	var exportOptions = {columns: ':visible'};
+	$('#membertable').DataTable( {
+		"columnDefs": [{
+			targets: cols - 1,
+			visible: false,
+			searchable: false
+		},{
+			targets: cols - 2,
+			visible: false,
+			searchable: false
+		},{
+			targets: 2,
+			orderData: [ cols - 2 ]
+		},{
+			targets: 0,
+			orderData: [ cols - 1 ]
+		}],
+		order: [[ 0, 'asc' ]],
+		colReorder: true,
+		lengthMenu: [[20, 50, -1], [20, 50, "All"]],
+		iDisplayLength: -1,
+		stateSave: true,
+		dom: 'lBfrtip',
+		buttons: [
+			{extend: 'copy', exportOptions: exportOptions},
+			{extend: 'csv', exportOptions: exportOptions},
+			{extend: 'pdf', exportOptions: exportOptions},
+			{extend: 'print', exportOptions: exportOptions, autoPrint: false, text: 'Print View'},
+		]
+	} );
+} );
+</script>
+
+<h3>Boote ohne Liegeplatz</h3>
+<ul>
+% foreach my $boat (@$boats) {
+%  my $member = $boat->get('p');
+%  next if ! $member->membership->{status};
+%  my $class = $boat->get('s')->{class};
+%  my $name = $boat->get('s')->{name};
+%  my $sail = $boat->get('s')->{sailnumber};
+%  
+<li>
+<%= $class ? "$class " : "" %><%== $name ? "<i class=bootsname>" : "" %><%= $name ? $name : "" %><%== $name ? "</i>" : "" %><%= $sail ? " $sail" : "" %>
+%  if ($member) {
+(Eigner <%= link_auth_to person => {person_placeholder => $member->handle} => begin %><%= $member->name %><% end %>)
+%  }
+% }
+</ul>

@@ -112,3 +112,10 @@ various hidden/internal changes:
 - not found redirect mechanism
 - implement Perl boolean support in Neo4j driver
 - implement includeStats support in Neo4j driver/plugin
+
+2.0.0-a22, 2017-02-09
+- implement berth list view
+- GS-Verein/Paradox view
+- change import.pl to accept pxtools XML instead of ALLES input format
+- security fix: auth code no longer leaks into the URL
+- bugfix in Neo4j plugin: get-persons works when the person column has NULL values (for OPTIONAL MATCH queries)

@@ -197,6 +197,21 @@ END
 }
 
 
+sub gsverein {
+	my ($self) = @_;
+	
+	my $handle = $self->param('person_placeholder');
+	my @result = $self->neo4j->get_persons(<<END, handle => $handle);
+MATCH (p:Person)-->(g:Paradox)
+WHERE p.userId = {handle} OR id(p) = {handle}
+RETURN p, g
+LIMIT 1
+END
+	$result[0] or return $self->reply->not_found;
+	return $self->render(template => 'member_list/gs-verein', person => $result[0]->get('person'), paradox => $result[0]->get('g'));
+}
+
+
 sub list_leaving {
 	my ($self) = @_;
 	
@@ -217,7 +232,7 @@ sub list_budget {
 	my @records = $self->neo4j->get_persons(<<_, column => 'p');
 MATCH (p:Person)-[rm:ROLE|GUEST]->(m:Role)-[rn:ROLE]->(:Role {role:'member'})
 OPTIONAL MATCH (p)--(:Boat)--(b:Berth)
-WHERE b.ref <> 'Jollenwiese'
+WHERE b.ref <> 'W' AND b.ref <> 'U'
 RETURN p, rn, b, [rm, m], (:Mandate)-[:DEBITOR]->(p) AS s
 _
 	my @members = ();
@@ -250,6 +265,29 @@ _
 	}
 	
 	return $self->render(template => 'member_list/list_budget', members => \@members, total => \%total);
+}
+
+
+sub list_berth {
+	my ($self) = @_;
+	
+	my @berths = $self->neo4j->get_persons(<<END, column => 'p');
+MATCH (b:Berth)
+OPTIONAL MATCH (b)--(s:Boat)--(p:Person)
+OPTIONAL MATCH (p)-[rm:ROLE|GUEST]->(m:Role)-[:ROLE]->(:Role {role:'member'})
+RETURN p, [rm, m], b, s
+ORDER BY b.ref, s.mark, p.name
+END
+	my @boats = $self->neo4j->get_persons(<<END, column => 'p');
+MATCH (s:Boat)
+WHERE NOT (s)--(:Berth)
+OPTIONAL MATCH (s)--(p:Person)
+OPTIONAL MATCH (p)-[rm:ROLE|GUEST]->(m:Role)-[:ROLE]->(:Role {role:'member'})
+RETURN p, [rm, m], s
+ORDER BY s.mark, p.name
+END
+	
+	return $self->render(template => 'member_list/list_berth', berths => \@berths, boats => \@boats);
 }
 
 

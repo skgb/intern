@@ -22,6 +22,7 @@
 <li><%= link_auth_to postliste => begin %>Anschriftenliste<% end %>
 <li><%= link_auth_to list_leaving => begin %>Austrittsliste<% end %>
 <li><%= link_auth_to list_budget => begin %>Einnahmenliste<% end %>
+<li><%= link_auth_to list_berth => begin %>Liegeplatzliste<% end %>
 <!--<li><%= link_auth_to _ => begin %>Schlüsselliste<% end %>-->
 </ul>
 
