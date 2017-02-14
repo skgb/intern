@@ -116,6 +116,9 @@ various hidden/internal changes:
 2.0.0-a22, 2017-02-09
 - implement berth list view
 - GS-Verein/Paradox view
-- change import.pl to accept pxtools XML instead of ALLES input format
+- change import.pl to accept pxtools XML as well as ALLES input format
 - security fix: auth code no longer leaks into the URL
 - bugfix in Neo4j plugin: get-persons works when the person column has NULL values (for OPTIONAL MATCH queries)
+
+2.0.0-a23, 2017-02-14
+- regression fix: refactoring AccessCode in 2.0.0-a21 lead to a run-time error in calculating the elapsed time since a key expired

@@ -151,7 +151,7 @@ sub expired {
 	my ($self) = @_;
 	return -1 if ! $self->{code} || ! $self->expiration;  # -1 is a true value
 	return undef if $self->new_time le $self->expiration;
-	return DateTime::Format::ISO8601->parse_datetime($self->expiration);
+	return DateTime::Format::ISO8601->parse_datetime($self->expiration)->epoch;
 }
 
 
