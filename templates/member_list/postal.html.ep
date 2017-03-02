@@ -23,19 +23,22 @@ document.getElementById("allsubmit").outerHTML = '';
 <!-- colspan=<%= $address_cols %> doesn't seem to work with DataTables; testing required -->
 <tr>
 <th>Name
+<th>Status
 %  for (my $i = 0; $i < $address_cols; $i++) {
 <th>Zeile <%= $i + 1 %>
 %  }
 <th>Sortierschlüssel
 </thead>
-%# my $user = $self->skgb->session->user;
 % foreach my $row (@$list) {
+%  my $person = $row->{person};
+%  my @address = @{$row->{address}};
 <tr>
-<td><%= link_auth_to person => {person_placeholder => $row->{person}->handle} => begin %><%= $row->{person}->name %><% end %>
+<td><%= link_auth_to person => {person_placeholder => $person->handle} => begin %><%= $person->name %><% end %>
+<td><%= $person->membership->{status} ? "Mitglied" : "Nichtmitglied" %>
 %  for (my $i = 0; $i < $address_cols; $i++) {
-<td><%= $row->{address}->[$i] || '' %>
+<td><%= $address[$i] || '' %>
 %  }
-<td><%= fc($row->{person}->name_sortable) %>
+<td><%= $row->{sortkey} %>
 % }
 </table>
 
@@ -53,6 +56,7 @@ $(document).ready(function() {
 			targets: 0,
 			orderData: [ cols - 1 ]
 		}],
+		order: [[ 1, 'asc' ], [ 0, 'asc' ]],
 		colReorder: true,
 		lengthMenu: [[20, 50, -1], [20, 50, "All"]],
 		iDisplayLength: 50,

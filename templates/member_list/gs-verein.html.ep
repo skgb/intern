@@ -34,7 +34,10 @@
 
 <h2>Archivansicht von GS-Verein Ende 2016</h2>
 
-<!-- NUMMER <%= $paradox->{Nummer} %> -->
+<!--
+NUMMER <%= $paradox->{Nummer} %>
+(interne Paradox-Datenbank-ID; nicht in GS-Verein sichtbar)
+-->
 
 
 
@@ -54,7 +57,7 @@
 
 <dl class=frame id=gsv1div1>
 
-<dt><label for=Mitnum>Nummer</label></dt>
+<dt><label for=Mitnum title="GS-Verein-Nummer (keine echte Mitgliedsnummer) / „MNr-alt“">Nummer</label></dt>
 <dd><input type=text id=Mitnum value="<%= $paradox->{Mitnum} %>" readonly></dd>
 
 <dt><label for=Anrede>Anrede</label></dt>
@@ -67,16 +70,16 @@
 %== paradox_select $paradox->{Titel}, ["", "Dipl-.Ing.", "Dr.", "Dr. med.", "Prof."]
 </select></dd>
 
-<dt><label for=Name>Name</label></dt>
+<dt><label for=Name title="Nachname">Name</label></dt>
 <dd><input type=text id=Name value="<%= $paradox->{Name} %>" readonly></dd>
 
-<dt><label for=Vorname>Vorname</label></dt>
+<dt><label for=Vorname title="Vorname; leer für juristische Personen">Vorname</label></dt>
 <dd><input type=text id=Vorname value="<%= $paradox->{Vorname} %>" readonly></dd>
 
-<dt><label for=Zusatz>Adresszusatz</label></dt>
+<dt><label for=Zusatz title="Adresszusatz; z. B. Ortsteil, Straße (statt Postfach) oder c/o">Adresszusatz</label></dt>
 <dd><input type=text id=Zusatz value="<%= $paradox->{Zusatz} %>" readonly></dd>
 
-<dt><label for=Strasse>Straße</label></dt>
+<dt><label for=Strasse title="Straße (oder Postfach)">Straße</label></dt>
 <dd><input type=text id=Strasse value="<%= $paradox->{Strasse} %>" readonly></dd>
 
 <dt><label for=Land>Land PLZ Ort</label></dt>
@@ -108,28 +111,28 @@
 %== paradox_select $paradox->{Famstand}, $Famstand
 </select></dd>
 
-<dt><label for=Debinr>Debitorennummer</label></dt>
+<dt><label for=Debinr title="Debitorennummer; benutzt zur Bildung der initialen SEPA-Mandatsreferenz">Debitorennummer</label></dt>
 <dd><input type=text id=Debinr value="<%= $paradox->{Debinr} %>" readonly></dd>
 
 </dl>
 <dl class=frame id=gsv1div2>
 
 <dt><label for=Geburt>Geburtstag</label></dt>
-<dd><input type=text id=Geburt value="<%= length $paradox->{Geburt} == 4 && "██." %><%= length $paradox->{Geburt} <= 7 && "██." %><%= $paradox->{Geburt} %>" readonly></dd>
+<dd><input type=text id=Geburt value="<%= length $paradox->{Geburt} == 4 ? "██.██." : length $paradox->{Geburt} == 7 ? "██." : "" %><%= $paradox->{Geburt} %>" readonly></dd>
 
-<dt><label for=Mitseit>Eintritt</label></dt>
+<dt><label for=Mitseit title="Beginn der Mitgliedschaft; 01.09.1967 = Gründungsmitglied">Eintritt</label></dt>
 <dd><input type=text id=Mitseit value="<%= $paradox->{Mitseit} %>" readonly></dd>
 
-<dt><label for=Austritt>Austritt</label></dt>
+<dt><label for=Austritt title="Ende der Mitgliedschaft; in 1967 = genaues Datum unbekannt; nicht am 31.12. = Vereinsausschluss oder verstorben">Austritt</label></dt>
 <dd><input type=text id=Austritt value="<%= $paradox->{Austritt} %>" readonly></dd>
 
-<dt><label for=Telefon>Telefon 1</label></dt>
+<dt><label for=Telefon title="Telefon privat">Telefon 1</label></dt>
 <dd><input type=text id=Telefon value="<%= $paradox->{Telefon} %>" readonly></dd>
 
-<dt><label for=Telefon2>Telefon 2</label></dt>
+<dt><label for=Telefon2 title="Telefon beruflich">Telefon 2</label></dt>
 <dd><input type=text id=Telefon2 value="<%= $paradox->{Telefon2} %>" readonly></dd>
 
-<dt><label for=Telefax>Telefax</label></dt>
+<dt><label for=Telefax title="Telefax: (p) = privat, (b)/(g) = beruflich">Telefax</label></dt>
 <dd><input type=text id=Telefax value="<%= $paradox->{Telefax} %>" readonly></dd>
 
 </dl>
@@ -156,13 +159,13 @@
 
 <dl class=frame id=gsv2div1>
 
-<dt><label for=Ktonr>Konto-/Kartennummer</label></dt>
+<dt><label for=Ktonr title="Kontonummer; bei IBAN: Stellen 13–22, dann Leerzeichen, gefolgt von Stellen 1–4">Konto-/Kartennummer</label></dt>
 <dd><input type=text id=Ktonr value="<%= $paradox->{Blz} eq "true" && "██████████" %><%= $paradox->{Ktonr} %>" readonly></dd>
 
-<dt><label for=Blz>Bankleitzahl/Gültigkeit</label></dt>
+<dt><label for=Blz title="BLZ / Stellen 5–12 der IBAN">Bankleitzahl/Gültigkeit</label></dt>
 <dd><input type=text id=Blz value="<%= $paradox->{Blz} eq "true" && "████████" %>" readonly></dd>
 
-<dt><label for=Bank>Bank-/Kartenname</label></dt>
+<dt><label for=Bank title="SWIFT-BIC und/oder Institutsbezeichnung im Klartext">Bank-/Kartenname</label></dt>
 <dd><input type=text id=Bank value="<%= $paradox->{Ktonr} && $paradox->{Blz} && "███████████ " %><%= $paradox->{Bank} eq "true" && "███ ████" %>" readonly></dd>
 
 <dt><label for=Ktoinhaber>Inhaber Konto/Karte</label></dt>
@@ -176,7 +179,7 @@
 <input type=radio name=Beitrag id=BeitragMD value=MD <%= $paradox->{Satz} eq "MD" && "checked" %> disabled>
 <label for=BeitragMD>Beitrag nach Mitgliedsdauer</label>
 <input type=radio name=Beitrag id=BeitragSatz value=Satz <%= $paradox->{Satz} !~ m/^[LM]D$/ && "checked" %> disabled>
-<label for=Satz>fester Beitragssatz</label>
+<label for=Satz title="Beitragsschlüsselnummer">fester Beitragssatz</label>
 <select id=Satz disabled>
 % my @Satz = (
 %	"01" => "01 aktiv         [120,00 EUR]",
@@ -201,12 +204,12 @@
 </select>
 <label for=Satz id=SatzInfo></label>
 
-<p><label for=Gbetrag>Grundbetrag (pro Intervall)</label>
+<p><label for=Gbetrag title="jährlicher Grundbeitrag für Lastschrifteinzug">Grundbetrag (pro Intervall)</label>
 % my $Gbetrag = sprintf("%.2f", $paradox->{Gbetrag}) . " EUR";
 % $Gbetrag =~ s/\./,/;
 <input type=text id=Gbetrag value="<%= $Gbetrag %>" readonly>
 
-<p><label for=Zahlart>Zahlungsweise</label>
+<p><label for=Zahlart title="Zahlungsweise; Überweisung = nicht SEPA-fähig / Selbstzahler">Zahlungsweise</label>
 <select id=Zahlart disabled>
 %== paradox_select $paradox->{Zahlart}, ["", "Bankeinzug", "Bar/Scheck", "Kreditkarte", "Überweisung"]
 </select>
@@ -225,7 +228,7 @@
 </div>
 <dl class=frame id=gsv2div3>
 
-<dt><label for=Betreuer>Beauftragt für/als:</label></dt>
+<dt><label for=Betreuer title="verantwortlich für bestimmte Teilaufgaben oder aktiv in Ausschüssen">Beauftragt für/als:</label></dt>
 <dd><select id=Betreuer disabled>
 % my $Betreuer = [
 %	"",
@@ -244,7 +247,7 @@
 %== paradox_select $paradox->{Betreuer}, $Betreuer
 </select></dd>
 
-<dt><label for=Abteilung>Mitgliedsstatus</label></dt>
+<dt><label for=Abteilung title="Mitgliedsschaftsart nach Satzung; „aktiv/passiv“ für Ehrenmitglieder ist umgangssprachlich (benutzt für die Aktiven-Liste); „passiv, zuvor aktiv“ sind passive Mitglieder mit Stegdienst">Mitgliedsstatus</label></dt>
 <dd><select id=Abteilung disabled>
 % my $Abteilung = [
 %	"Aktiv",
@@ -262,10 +265,10 @@
 %== paradox_select $paradox->{Abteilung}, $Abteilung
 </select></dd>
 
-<dt><label for=Aktiv>aktives Mitglied</label></dt>
+<dt><label for=Aktiv title="„aktiv“ im Sinne von „bringt sich ein“ o. ä., hat nichts mit Mitgliedsstatus „Aktiv/Passiv/Ehren/Jugend“ zu tun">aktives Mitglied</label></dt>
 <dd><input type=checkbox id=Aktiv <%= $paradox->{Aktiv} eq "true" && "checked" %> disabled></dd>
 
-<dt><label for=Funktion>Funktion</label></dt>
+<dt><label for=Funktion title="gewähltes Satzungsamt">Funktion</label></dt>
 <dd><select id=Funktion disabled>
 % my $Funktion = [
 %	"",
@@ -286,7 +289,7 @@
 </dl>
 <dl class=frame id=gsv2div4>
 
-<dt><label for=Zahlfremd>Beitragsdaten bei diesem Mitglied nicht abrechnen</label></dt>
+<dt><label for=Zahlfremd title="ankreuzen, wenn dies entweder ein Nichtmitglied ist oder kein eigenes SEPA-Mandat vorliegt (z. B. bei Kindern, für die ihre Eltern zahlen)">Beitragsdaten bei diesem Mitglied nicht abrechnen</label></dt>
 <dd><input type=checkbox id=Zahlfremd <%= $paradox->{Zahlfremd} eq "true" && "checked" %> disabled></dd>
 
 <dt><label for=Bucheuro>in EUR buchen</label></dt>
@@ -316,52 +319,52 @@
 
 <dl class=frame id=gsv3div1>
 
-<dt><label for=Zu1>Mobiltelefon</label></dt>
+<dt><label for=Zu1 title="Zu1">Mobiltelefon</label></dt>
 <dd><input type=text id=Zu1 value="<%= $paradox->{Zu1} %>" readonly></dd>
 
-<dt><label for=Zu2>EMail</label></dt>
+<dt><label for=Zu2 title="Zu2: E-Mail; mehrere Adressen möglich (getrennt durch Kommata „ , “)">EMail</label></dt>
 <dd><input type=text id=Zu2 value="<%= $paradox->{Zu2} %>" readonly></dd>
 
-<dt><label for=Zu3>sonstige Tel, etc.</label></dt>
+<dt><label for=Zu3 title="Zu3: zusätzliche Kontaktdaten">sonstige Tel, etc.</label></dt>
 <dd><input type=text id=Zu3 value="<%= $paradox->{Zu3} %>" readonly></dd>
 
-<dt><label for=Zu4>eigenes Boot?</label></dt>
+<dt><label for=Zu4 title="Zu4">eigenes Boot?</label></dt>
 <dd><input type=text id=Zu4 value="<%= $paradox->{Zu4} %>" readonly></dd>
 
-<dt><label for=Zu5>Bootsname/Sglnr.</label></dt>
+<dt><label for=Zu5 title="Zu5: Format: „Bootsname / Segelnummer“, evtl. statt Segelnummer sonstiges Unterscheidungszeichen">Bootsname/Sglnr.</label></dt>
 <dd><input type=text id=Zu5 value="<%= $paradox->{Zu5} %>" readonly></dd>
 
-<dt><label for=Zu6>Klasse (o. ä.)</label></dt>
+<dt><label for=Zu6 title="Zu6: Bootstyp oder -klasse, evtl. Breite über alles oder weitere Maße in Klammern">Klasse (o. ä.)</label></dt>
 <dd><input type=text id=Zu6 value="<%= $paradox->{Zu6} %>" readonly></dd>
 
-<dt><label for=Zu7>Mandat (Ref, Dat)</label></dt>
+<dt><label for=Zu7 title="Zu7: früher: Wassermarkennummer (liegt heute beim Schatzmeister); heute: SEPA-Mandatsreferenz und -datum (ISO-Format)"><%= $paradox->{Austritt} && (substr $paradox->{Austritt}, -4) < 2014 ? "Wassermarke Nr." : "Mandat (Ref, Dat)" %></label></dt>
 <dd><input type=text id=Zu7 value="<%= $paradox->{Zu7} %><%= $paradox->{Zu7} =~ m/, $/ && "██████████" %>" readonly></dd>
 
-<dt><label for=Zu8>[ex: Winterl.]   frei</label></dt>
+<dt><label for=Zu8 title="Zu8: einmalige Gebühr für das Winterlager bezahlt (ja/nein)">Winterl. Bootshs.?</label></dt>
 <dd><input type=text id=Zu8 value="<%= $paradox->{Zu8} %>" readonly></dd>
 
-<dt><label for=Zu9>Stegplatz - Nr.</label></dt>
+<dt><label for=Zu9 title="Zu9: Liegeplatzbezeichnung (neu oder alt)">Stegplatz - Nr.</label></dt>
 <dd><input type=text id=Zu9 value="<%= $paradox->{Zu9} %>" readonly></dd>
 
-<dt><label for=Zu10>Box gekauft?/Jahr</label></dt>
+<dt><label for=Zu10 title="Zu10: gekaufte Box; Format: „Boxennummer / Jahr“, jedoch viele Unklarheiten">Box gekauft?/Jahr</label></dt>
 <dd><input type=text id=Zu10 value="<%= $paradox->{Zu10} %>" readonly></dd>
 
-<dt><label for=Zu11>Schlüsselnr./Pfand</label></dt>
+<dt><label for=Zu11 title="Zu11: Schlüssel; Format: „ausgegeben / Pfand eingezogen“; ist eines der beiden Felder leer, dann ist der Vorgang offen; mehrere Schlüssel getrennt durch „ + “">Schlüsselnr./Pfand</label></dt>
 <dd><input type=text id=Zu11 value="<%= $paradox->{Zu11} %>" readonly></dd>
 
-<dt><label for=Zu12>Beruf/Branche</label></dt>
+<dt><label for=Zu12 title="Zu12: Beruf, Branche, Hobbies, Interessen, …">Beruf/Branche</label></dt>
 <dd><input type=text id=Zu12 value="<%= $paradox->{Zu12} %>" readonly></dd>
 
-<dt><label for=Zu13>Trainingsgruppe</label></dt>
+<dt><label for=Zu13 title="Zu13: Trainingsgruppe (Jugend)">Trainingsgruppe</label></dt>
 <dd><input type=text id=Zu13 value="<%= $paradox->{Zu13} %>" readonly></dd>
 
-<dt><label for=Zu14>TN Ausb.-Kurs in</label></dt>
+<dt><label for=Zu14 title="Zu14: Jahre, in denen Segelkurse besucht wurden">TN Ausb.-Kurs in</label></dt>
 <dd><input type=text id=Zu14 value="<%= $paradox->{Zu14} %>" readonly></dd>
 
-<dt><label for=Zu15>Bemerkung</label></dt>
+<dt><label for=Zu15 title="Zu15: Bemerkungen für den Vorstand, z. B. Freistellungen Stegdienst/Arbeiten">Bemerkung</label></dt>
 <dd><input type=text id=Zu15 value="<%= $paradox->{Zu15} %>" readonly></dd>
 
-<dt><label for=Zu16>Bem. f. Mitgl.Vers.</label></dt>
+<dt><label for=Zu16 title="Zu16: Bemerkung für MV-Anwesenheitsliste, z. B. „Anschrift unbekannt (2010) – wer kennt diesen Mann?“ o. ä.">Bem. f. Mitgl.Vers.</label></dt>
 <dd><input type=text id=Zu16 value="<%= $paradox->{Zu16} %>" readonly></dd>
 
 </dl>
@@ -387,7 +390,7 @@
 <div class="tab tab4" id=gsv4tab4>Anschrift</div>
 <div class="tab tab5" id=gsv4tab5>Bemerkungen</div>
 
-<p><label for=Branrede>Briefanrede</label>
+<p><label for=Branrede title="diese Angaben wurden meist von GS-Verein automatisch erzeugt und sind nicht verlässlich">Briefanrede</label>
 <input type=text id=Branrede value="<%= $paradox->{Branrede} %>" readonly>
 
 <p><input type=text id=Post1 value="<%= $paradox->{Post1} %>" readonly>

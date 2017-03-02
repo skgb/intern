@@ -40,7 +40,7 @@ sub auth {
 		return $self->render(template => 'key_manager/forbidden', status => 403);
 	}
 	
-	return $self->_tree if $self->param('node');
+	return $self->_tree if $self->stash('code_placeholder');
 	
 	my $template = 'key_manager/codelist';
 	my $param = $self->session('key');
@@ -51,13 +51,12 @@ sub auth {
 	my @rows = $self->neo4j->get_persons($query, code => $param);
 #	say Data::Dumper::Dumper \@rows;
 	foreach my $row (@rows) {
-		my $code = SKGB::Intern::AccessCode->new(
+		push @codes, SKGB::Intern::AccessCode->new(
 			code => $row->get('c'),
 			user => $row->get('person'),
+			id => $row->get('id'),
 			app => $self->app,
 		);
-		$code->{id} = $row->get('id');
-		push @codes, $code;
 #		$row->[1]->id eq $user->node_id or die 'not authorized';  # assertion
 	}
 	@codes = sort {$b->creation cmp $a->creation} @codes;
@@ -110,7 +109,7 @@ _
 			$t->commit;
 		}
 	}
-	$self->redirect_to( $self->url_for('auth')->query(node => $code->{id}) );
+	$self->redirect_to( $self->url_for('auth', code_placeholder => $code->handle) );
 }
 
 
@@ -118,7 +117,7 @@ sub _tree {
 	my ($self) = @_;
 	
 	my $user = $self->skgb->session->user;
-	my $param = 0 + $self->param('node');
+	my $param = 0 + $self->stash('code_placeholder');
 	
 	my ($code, @codes) = $self->neo4j->get_persons($Q->{code}, code => $param);
 #	say Data::Dumper::Dumper $code;
@@ -126,9 +125,9 @@ sub _tree {
 	@codes = ( SKGB::Intern::AccessCode->new(
 		code => $code->get('c'),
 		user => $code->get('person'),
+		id => $param,
 		app => $self->app,
 	));
-	$codes[0]->{id} = $param;
 	
 	return $self->_modify_roles($codes[0]) if $self->param('action') && $self->param('action') eq 'modify-roles';
 	

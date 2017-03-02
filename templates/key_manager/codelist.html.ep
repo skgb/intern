@@ -8,7 +8,7 @@
 % foreach my $code (@$codes) {
 <li>
 % my $this_session = $code->code eq $self->skgb->session->code;
-%= form_for url_for('auth')->query(node => $code->{id}) => (method => 'POST') => begin
+%= form_for url_for('auth', code_placeholder => $code->handle) => (method => 'POST') => begin
 <p><b><%= $code->code %></b> <%= $this_session && '(current session)' %> <%= $code->expired && '(expired)' %>
 %== defined param('all') ? '<p>for: ' . $code->user->name : '';
 <p>issued: <%= $code->creation %>

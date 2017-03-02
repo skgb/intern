@@ -245,6 +245,8 @@ sub membership {
 	my $date = POSIX::strftime('%Y-%m-%d', localtime);
 	my $joined = $self->_property('joined', $path);
 	my $leaves = $self->_property('leaves', $path);
+	$self->{membership}->{joined} = $joined;
+	$self->{membership}->{leaves} = $leaves;
 	return $self->{membership} if $joined && $joined gt $date || $leaves && $leaves lt $date;
 	
 	my $regular = $self->_property('regularContributor', $path);
@@ -267,8 +269,6 @@ sub membership {
 	$self->{membership}->{status} = $status;
 	$self->{membership}->{regular} = $regular;
 	$self->{membership}->{guest} = $self->_property('_type', $path) eq 'GUEST';
-	$self->{membership}->{joined} = $joined;
-	$self->{membership}->{leaves} = $leaves;
 	
 	if ($self->_property('role', $path) eq 'honorary-member') {
 		$status = $regular ? "Aktiv, $status" : "Passiv, $status";

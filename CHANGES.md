@@ -122,3 +122,12 @@ various hidden/internal changes:
 
 2.0.0-a23, 2017-02-14
 - regression fix: refactoring AccessCode in 2.0.0-a21 lead to a run-time error in calculating the elapsed time since a key expired
+
+2.0.0-a24, 2017-03-02
+- support Paradox archive import
+- include membership status in postal address list view
+- more explicit association statistics guidance
+- tooltips in GS-Verein/Paradox view
+- allow login with leading/trailing white space in access code
+- minor additional robustness improvements
+- regression fix for 2.0.0-a22: auth code in URL is now RESTful and produces stable links even on 403 pages

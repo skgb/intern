@@ -29,7 +29,7 @@
 <p>Vereinsverwaltung:
 <ul>
 <li><%= link_auth_to exportlisten => begin %>Export (Listen-Schnittstelle)<% end %> (lädt langsam)
-<li><%= link_auth_to dosb => begin %>Mitgliederzahlen zur Meldung an die Verbände<% end %>
+<li><%= link_auth_to dosb => begin %>Zugang zu den Verbänden (mit Mitgliederzahlen zur Meldung)<% end %>
 <!--<li><%= link_auth_to _ => begin %>aktuelle Mitgliederzahlen<% end %> (für Vorstandssitzung)-->
 <li><%= link_auth_to stegdienstliste => begin %>Stegdienstliste erzeugen<% end %>
 </ul>

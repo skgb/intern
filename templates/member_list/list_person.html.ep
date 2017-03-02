@@ -50,7 +50,7 @@ $(document).ready(function() {
 		lengthMenu: [[20, 50, -1], [20, 50, "All"]],
 		iDisplayLength: -1,
 //		paging: false,
-//		order: [[ 0, "asc" ]],
+		order: [[ 2, "asc" ], [ 0, "asc" ]],
 		stateSave: true,
 		dom: 'lBfrtip',
 		buttons: [

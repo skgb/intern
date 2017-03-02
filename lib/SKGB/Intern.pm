@@ -5,7 +5,7 @@ use Mojo::Log;
 use SemVer;
 
 #our $VERSION = Perl::Version->new( '2.0.0_5' );
-our $VERSION = SemVer->new( '2.0.0-a23' );
+our $VERSION = SemVer->new( '2.0.0-a24' );
 
 
 sub startup {
@@ -73,7 +73,7 @@ sub setup_routing {
 	
 	$logged_in->route('/regeln/:moniker_placeholder')->to('regeln#regeln', moniker_placeholder => undef)->name('regeln');
 	
-	$logged_in->any('/auth')->to('auth#auth')->name('auth');
+	$logged_in->any('/auth/:code_placeholder')->to('auth#auth', code_placeholder => undef)->name('auth');
 	
 	my $wiki_action = $logged_in->route;
 	$wiki_action->pattern->placeholder_start('%');  # the ':' is the default placeholder start and cannot be used as a literal unless we reassign this

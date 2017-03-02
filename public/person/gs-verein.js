@@ -42,7 +42,8 @@
 		var feeOptions = document.getElementById("Satz").options;
 		for (var i = 0; i < feeOptions.length; i++) {
 			if (! feeOptions.item(i).selected) { continue; }
-			var match = feeOptions.item(i).textContent.match(/\[(.*)\]$/);
+			var itemText = feeOptions.item(i).textContent || feeOptions.item(i).innerText;  // IE
+			var match = itemText.match(/\[(.*)\]$/);
 			if (match) {
 				document.getElementById("SatzInfo").innerHTML = "(z.Zt. "+match[1]+" / Jahr)";
 			}

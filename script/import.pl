@@ -85,63 +85,69 @@ sub din_date {
 	return sprintf '%02d.%02d.%04d', $3, $2, $1;
 }
 
-open(my $fh, '< :crlf :encoding(windows1252)', $alles_file) or die "Could not open file '$alles_file' $!";
-while (my $row = <$fh>) {
-	chomp $row;
-	$row =~ m/^<\?xml version="1\.0"/ and last;
-	$row =~ s/c´/ć/g;  # windows1252_ingo
-	my @row = split m/\t/, $row;
+foreach my $alles_file (@ARGV) {
+	my @file_members = ();
 	
-	if (! @keys) {
-		@keys = @row;
-		next;
-	}
-	
-	my $member = {};
-	for (my $i = 0; $i < scalar @keys; $i++) {
-		$member->{ $keys[$i] } = defined $row[$i] ? $row[$i] : '';
-	}
-	push @members, $member;
-}
-close $fh;
-
-if (! @members) {
-	# no members might mean it's a Paradox (pxtools) XML file, so try that
-	my $paradox_alles = File::Slurp::read_file($alles_file, binmode => ':raw') or die "Could not read file '$alles_file' $!";
-	$paradox_alles =~ s{^<\?xml version="1\.0"\?>}{<?xml version="1.0" encoding="windows-1252"?>};  # encoding not declared in prolog; bug in pxtools
-	$paradox_alles =~ s{&([a-z0-9#]+);\n}{&$1;}g;  # extra linebreak after entities; bug in pxtools
-	$paradox_alles =~ s{< name="BILD">|</>}{}g;  # WTF?; bug in pxtools
-	$paradox_alles =~ s{<([^@>]+)\@([^@>]+)>}{&lt;$1\@$2&gt;}g;  # XML not wellformed if <> are included in blobs; bug in pxtools
-	foreach my $paradox_row ( XML::LibXML->new->load_xml(string => $paradox_alles)->documentElement->childNodes ) {
-		next if ! $paradox_row->isa('XML::LibXML::Element');
+	open(my $fh, '< :crlf :encoding(windows1252)', $alles_file) or die "Could not open file '$alles_file' $!";
+	while (my $row = <$fh>) {
+		chomp $row;
+		$row =~ m/^<\?xml version="1\.0"/ and last;
+		$row =~ s/c´/ć/g;  # windows1252_ingo
+		my @row = split m/\t/, $row;
 		
-		if (! @keys) {  # seems to be unnecessary, but let's do it anyway
-			foreach my $node ( $paradox_row->childNodes ) {
-				next if ! $node->isa('XML::LibXML::Element');
-				my ($key) = grep {$_->nodeName eq "name"} $node->attributes;
-				push @keys, ucfirst lc $key->textContent;
-			}
+		if (! @keys) {
+			@keys = @row;
+			next;
 		}
 		
 		my $member = {};
-		foreach my $node ( $paradox_row->childNodes ) {
-			next if ! $node->isa('XML::LibXML::Element');
-			my ($key) = grep {$_->nodeName eq "name"} $node->attributes;
-			$key = ucfirst lc $key->textContent;
-			$member->{$key} = $node->string_value;
-			$member->{$key} =~ s/c´/ć/g;  # windows1252_ingo
-			$member->{$key} =~ s/\n+$//;
-			# mirror ALLES.ASC syntax:
-			$member->{$key} =~ s/^0$/Falsch/ if $key =~ m/^(?:AKTIV|BUCHEURO|ZAHLFREMD|ZAHLANFANG)$/i;
-			$member->{$key} =~ s/^1$/Wahr/ if $key =~ m/^(?:AKTIV|BUCHEURO|ZAHLFREMD|ZAHLANFANG)$/i;
-			$member->{$key} = 0 + $member->{$key} if $member->{$key} && $key =~ m/^(?:NUMMER|RECHEN1|RECHEN2)$/i;
-			$member->{$key} = din_date $member->{$key} if $key =~ m/^(?:GEBURT|MITSEIT|AUSTRITT)$/i;
-			$member->{$key} = (0 + ($member->{$key} || 0)) . ",00" if $key =~ m/^(?:GBETRAG)$/i;
+		for (my $i = 0; $i < scalar @keys; $i++) {
+			$member->{ $keys[$i] } = defined $row[$i] ? $row[$i] : '';
 		}
-		push @members, $member;
+		push @file_members, $member;
 	}
+	close $fh;
+	
+	if (! @file_members) {
+		# no members might mean it's a Paradox (pxtools) XML file, so try that
+		my $paradox_alles = File::Slurp::read_file($alles_file, binmode => ':raw') or die "Could not read file '$alles_file' $!";
+		$paradox_alles =~ s{^<\?xml version="1\.0"\?>}{<?xml version="1.0" encoding="windows-1252"?>};  # encoding not declared in prolog; bug in pxtools
+		$paradox_alles =~ s{&([a-z0-9#]+);\n}{&$1;}g;  # extra linebreak after entities; bug in pxtools
+		$paradox_alles =~ s{< name="BILD">|</>}{}g;  # WTF?; bug in pxtools
+		$paradox_alles =~ s{<([^@>]+)\@([^@>]+)>}{&lt;$1\@$2&gt;}g;  # XML not wellformed if <> are included in blobs; bug in pxtools
+		foreach my $paradox_row ( XML::LibXML->new->load_xml(string => $paradox_alles)->documentElement->childNodes ) {
+			next if ! $paradox_row->isa('XML::LibXML::Element');
+			
+			if (! @keys) {  # seems to be unnecessary, but let's do it anyway
+				foreach my $node ( $paradox_row->childNodes ) {
+					next if ! $node->isa('XML::LibXML::Element');
+					my ($key) = grep {$_->nodeName eq "name"} $node->attributes;
+					push @keys, ucfirst lc $key->textContent;
+				}
+			}
+			
+			my $member = {};
+			foreach my $node ( $paradox_row->childNodes ) {
+				next if ! $node->isa('XML::LibXML::Element');
+				my ($key) = grep {$_->nodeName eq "name"} $node->attributes;
+				$key = ucfirst lc $key->textContent;
+				$member->{$key} = $node->string_value;
+				$member->{$key} =~ s/c´/ć/g;  # windows1252_ingo
+				$member->{$key} =~ s/\n+$//;
+				# mirror ALLES.ASC syntax:
+				$member->{$key} =~ s/^0$/Falsch/ if $key =~ m/^(?:AKTIV|BUCHEURO|ZAHLFREMD|ZAHLANFANG)$/i;
+				$member->{$key} =~ s/^1$/Wahr/ if $key =~ m/^(?:AKTIV|BUCHEURO|ZAHLFREMD|ZAHLANFANG)$/i;
+				$member->{$key} = 0 + $member->{$key} if $member->{$key} && $key =~ m/^(?:NUMMER|RECHEN1|RECHEN2)$/i;
+				$member->{$key} = din_date $member->{$key} if $key =~ m/^(?:GEBURT|MITSEIT|AUSTRITT)$/i;
+				$member->{$key} = (0 + ($member->{$key} || 0)) . ",00" if $key =~ m/^(?:GBETRAG)$/i;
+			}
+			push @file_members, $member;
+		}
+	}
+	
+	push @members, @file_members;
 }
-
+@members = sort { $a->{'Mitnum'} cmp $b->{'Mitnum'} || ($a->{'Nummer'} && $b->{'Nummer'} && $a->{'Nummer'} <=> $b->{'Nummer'}) } @members;
 
 
 # testing (for making sure the switch to Paradox XML import doesn't change the data in any way)
@@ -178,10 +184,10 @@ my %mandates = ();
 foreach my $member (@members) {
 	my $id = $member->{'Mitnum'};
 	next if ! $member->{'Zu7'};
-	$member->{'Zu7'} =~ m/(\d{5}), (\d{4}-\d\d-\d\d)/;
+	$member->{'Zu7'} =~ m/(\d{5}), (\d{4}-\d\d-\d\d)/ or next;
 	my $umr = $1;
 	my $signed = $2;
-	$member->{'Ktonr'} =~ m/(\S+) (\w\w)([-_0#*A-Za-z0-9]{2})$/;
+	$member->{'Ktonr'} =~ m/(\S+) (\w\w)([-_0#*A-Za-z0-9]{2})$/ or next;
 	my $account = $1;
 	my $country = $2;
 	my $checkdigits = $3;
@@ -192,8 +198,8 @@ foreach my $member (@members) {
 			ISO => $country,
 			BBAN => $sortcode . $account,
 		});
-		$iban =~ s/^IBAN //;
-		$iban =~ s/ /0/;
+		$iban =~ s/^IBAN // if $iban;
+		$iban =~ s/ /0/ if $iban;
 #		say STDERR "invalid IBAN checksum for UMR $umr @ $id; fixed!";
 	}
 	$member->{'Bank'} =~ m/^([A-Z]{6}[A-Z0-9]{2}(?:[A-Z0-9]{3})?) ?(.*)/;
@@ -203,7 +209,7 @@ foreach my $member (@members) {
 	my $Zahlfremd = $member->{'Zahlfremd'} eq 'Wahr';
 	
 	$member->{umr} = $umr;
-	if ( $mandates{$umr} && $Zahlfremd ) {
+	if ( ! $umr || $mandates{$umr} && $Zahlfremd ) {
 		next;  # don't overwrite duplicates unless the new entry is the authoritative one
 	}
 	$mandates{$umr} = [$signed, $iban, $bic, $holder, $bank];
@@ -295,8 +301,8 @@ if ($options{create_paradox}) {
 		Zu4 => "eigenes Boot?",
 		Zu5 => "Bootsname/Sglnr.",
 		Zu6 => "Klasse (o.ä.)",
-		Zu7 => "Mandat (Ref, Dat)",
-		Zu8 => "[ex:Winterl.]  frei",
+		Zu7 => "[ex:WM-Nr] Mandat (Ref, Dat)",
+		Zu8 => "Winterl. Bootshs.?",
 		Zu9 => "Stegplatz - Nr.",
 		Zu10 => "Box gekauft?/Jahr",
 		Zu11 => "Schlüsselnr./Pfand",
@@ -308,8 +314,7 @@ if ($options{create_paradox}) {
 	);
 	foreach my $member (@members) {
 		my $id = $member->{Mitnum};
-#		my @lines = ("CREATE (_$id)-[:PARADOX]->(_${id}_gsv:Paradox)");
-#		$lines[0] .= "  //-- " . $member->{user} if $member->{user};
+		$id = "Gast" . $member->{Nummer} if $member->{Mitnum} !~ m/^[0-9]{3}$/;
 		print Encode::encode 'UTF-8', "CREATE (_$id)-[:PARADOX]->(:Paradox {";
 		print Encode::encode 'UTF-8', "  //-- " . $member->{user} if $member->{user};
 		foreach my $key (@keys) {
@@ -324,6 +329,7 @@ if ($options{create_paradox}) {
 				$value = 0 + ($value || 0);
 			}
 			else {
+				# Another bug in pxtools results in blob fields containing CRLF linebreaks while the rest of the XML file just has LFs. Workaround: Either not edit the file at all or (to fix after edit) replace 0a0a0a0a -> 0d0a0d0a, then 0a0a -> 0d0a, then 0d0a -> 0a.
 				$value =~ s/\n/\\n/g;
 				$value =~ s/'/\\'/g;
 				$value = "'$value'";
@@ -354,12 +360,10 @@ if ($options{create_paradox}) {
 				}
 			}
 			
-#			push @lines, "SET _${id}_gsv.$key = $value$comment";
 			print Encode::encode 'UTF-8', "\n$key: $value";
 			print Encode::encode 'UTF-8', \$key == \$keys[-1] ? " })" : ",";
 			print Encode::encode 'UTF-8', "$comment";
 		}
-#		print Encode::encode('UTF-8', join "\n", @lines), "\n\n";
 		print "\n\n";
 	}
 	exit 0;
@@ -463,12 +467,13 @@ cat_file $options{resources_file};
 my %boats = ();
 foreach my $member (@members) {
 	next if ! $member->{'Zu4'} || $member->{'Zu4'} !~ m/^ja/;
-	my $key = $member->{'Zu6'} . ' ' . $member->{'Zu5'} || scalar keys %boats;
+	my $key = $member->{'Zu6'} . $member->{'Zu5'} || scalar keys %boats;
 	if ($boats{$key}) {
 		$member->{boatNode} = $boats{$key}->{node};
 		next;
 	}
 	my $boat = { node => "_" . $member->{'Mitnum'} . "_boat" };
+	$boat->{node} = "_Gast" . $member->{'Nummer'} . "_boat" if $member->{'Mitnum'} !~ m/^[0-9]{3}$/;
 	$member->{boatNode} = $boat->{node};
 	$boat->{berth} = $member->{'Zu9'} if $member->{'Zu9'};
 	$boat->{berth} = 'Shore' if $boat->{berth} && $boat->{berth} eq 'Jollenwiese';
@@ -534,6 +539,7 @@ foreach my $key (sort {$boats{$a}->{node} cmp $boats{$b}->{node}} keys %boats) {
 	my $props = $boats{$key}->{props};
 	my $berth = $boats{$key}->{berth};
 	$berth = 'Shore' if $berth && $berth eq 'Jollenwiese';
+	$berth = undef if $berth && $berth ne 'Shore' && $berth !~ m/^[EFGHJKUW][0-7]?$/;  # archived data may contain weird formats here; ignore
 	my $berthRel = $berth ? "-[:OCCUPIES]->(berth$berth)" : "";
 	push @boatsCreate, "($node:Boat {$props})$berthRel";
 }
@@ -550,6 +556,7 @@ foreach my $member (@members) {
 	my @create = ();
 	my $gsvereinId = $member->{'Mitnum'};
 	my $id = "_$gsvereinId";
+	$id = "_Gast" . $member->{'Nummer'} if $gsvereinId !~ m/^[0-9]{3}$/;
 	my $subid = 0;
 	
 	# Ausgetretene mit beendeter Geschäftsbeziehung: Sperren!
@@ -593,7 +600,8 @@ foreach my $member (@members) {
 	elsif ($memberType =~ m/^Jugend/i) {
 		push @create, "($id)-[$memberLabel {$memberProps}]->(youthMember)";
 	}
-	elsif ($memberType !~ m/Nichtmitglied/i) {
+	elsif ($memberType !~ m/^Nichtmitglied|^Gast$/i) {
+		# "Gast" = von Agger 2002 => wie Nichtmitglied
 		warn "illegal member status type '$memberType'";
 		push @create, "($id)-[$memberLabel {$memberProps, memberType:'$memberType'}]->(member)";
 	}
@@ -616,8 +624,13 @@ foreach my $member (@members) {
 	# TODO: (Austritt), Betreuer, Zu13=Gruppe, {Bemerk}*
 	
 	# payment data
-	$member->{'Debinr'} =~ m/1(\d\d\d)0/ or warn "illegal Debinr";
-	my $debitorSerial = "$1";
+	my $debitorSerial;
+	if ($member->{'Debinr'} && $member->{'Debinr'} =~ m/1(\d\d\d)0/) {
+		$debitorSerial = "$1";
+	}
+	elsif ($member->{'Debinr'}) {
+		warn "illegal Debinr: " . $member->{'Debinr'} . " for $gsvereinId";
+	}
 	$member->{'Gbetrag'} =~ m/^(\d*),(\d*)$/ or warn "illegal Gbetrag";
 	my $debitBase = "$1.$2";
 	$debitBase =~ s/\.00$//;
@@ -641,7 +654,9 @@ foreach my $member (@members) {
 	my $gender = $member->{'Geschlecht'};
 	my $skills = $member->{'Zu12'};
 #	$skills =~ s/!/\\!/;  # database bug in 2.3.2: "[ERROR] Could not expand event" at Olaf Burgmer without this line
-	my $personProps = "name:'$name', gsvereinId:'$gsvereinId', gender:'$gender', debitorSerial:'$debitorSerial', debitBase:$debitBase";
+	my $personProps = "name:'$name', gsvereinId:'$gsvereinId', gender:'$gender'";
+	$personProps .= ", debitorSerial:'$debitorSerial'" if $debitorSerial;
+	$personProps .= ", debitBase:$debitBase";
 #	$personProps .= ", defaultEmail:'all'";
 	my $birthday = iso_date($member->{'Geburt'}, ($memberType =~ m/^Jugend/i) ? 'yq' : 'y');
 	$personProps .= ", debitReason:'$debitReason'" if $debitReason;
@@ -675,34 +690,31 @@ foreach my $member (@members) {
 	my @keys = ();
 	foreach my $zu11 ( split m/ \+ /, $member->{'Zu11'} ) {
 		next unless $zu11;
-		$zu11 =~ m{^(?:(?:Nr. )?([12])(?:er)?)? ?/ ?(?:([.,0-9]+) ?(DE?M|EUR|Euro))?(?: ?\((.+)\))?$};
-		$1 || $2 or warn "illegal Zu11 '$zu11'" and next;
-#		my $key = {};
-#		$key->{nr} = $1 if $1;
-#		$key->{deposit} = $2 if $2;
-#		$key->{currency} = $3 if $3;
-#		$key->{comment} = $4 if $4;
-#		push @keys, $key;
-		my $key = "(${id}_" . ++$subid . ":ClubKey" . ( $1 ? " {nr:$1}" : "" ) . ")";
 		my @keyProps = ();
-		push @keyProps, 'returned:true' if ! $1;
-		push @keyProps, "comment:'$4'" if $4;
-		if ($2) {
-			my ($deposit, $currency) = ($2, $3);
-			$deposit =~ s/[.,]00$//;
-			$currency =~ s/^DM$/DEM/;
-			push @keyProps, "deposit:$deposit", "currency:'$currency'";
+		my $key = "(${id}_" . ++$subid . ":ClubKey";
+		$zu11 =~ m{^(?:(?:Nr. )?([12])(?:er)?)? ?/ ?(?:([.,0-9]+) ?(DE?M|EUR|Euro))?(?: ?\((.+)\))?$};
+		if ($1 || $2) {
+			push @keyProps, "nr:$1" if $1;
+			push @keyProps, "make:'CES'" if $memberUntil && (substr $memberUntil, 0, 4) lt 2011;  # SILCA: 2011-08
+			$key .= " {" . join(", ", @keyProps) . "}" if @keyProps;
+			@keyProps = ();
+			push @keyProps, 'returned:true' if ! $1;
+			push @keyProps, "comment:'$4'" if $4;
+			if ($2) {
+				my ($deposit, $currency) = ($2, $3);
+				$deposit =~ s/[\.,]00$//;
+				$currency =~ s/^DM$/DEM/;
+				$currency =~ s/^Euro$/EUR/;
+				push @keyProps, "deposit:$deposit", "currency:'$currency'";
+			}
 		}
-		$key .= "<-[:OWNS";
+		else {  # syntax error in Zu11: assume there is a key
+			push @keyProps, "comment:'$zu11'";
+		}
+		$key .= ")<-[:OWNS";
 		$key .= " {" . join(", ", @keyProps) . "}" if scalar @keyProps;
 		$key .= "]-($id)";
 		push @create, $key;
-#		$key .= " {deposit:'$2', currency:'$3'" if $2;
-#		$key .= ! $2 && ($4 || ! $1) ? " {" : ", ";
-#		$key .= "comment:'$3'" if $4;
-#		$key .= ($2 || $4) && ! $1 ? ", " : "";
-#		$key .= ""
-#		print STDERR "$1 $2 $3 $4 '$key'";
 	}
 #	print STDERR "]";
 	
@@ -732,6 +744,7 @@ if ($options{dev}) {
 
 #print ";\nCOMMIT\n";
 print `sed -e '30,54d' -e '1,3d' -e '/^\\/\\//d' -e '/\\[:ROLE.*\\(user\\)/d' $options{intern_dir}/archive/2016-01-01/neuaufnahmen.cypher`;
+print `sed -e '/^\\/\\//d' -e '/\\[:ROLE.*\\(user\\)/d' $options{intern_dir}/archive/2017-01-01/neuaufnahmen.cypher`;
 
 
 # Step 6: Write ALLES.ASC to disc for testing
@@ -960,6 +973,7 @@ import.pl - convert a GS-Verein 'ALLES' export to Neo4j cypher code
 =head1 SYNOPSIS
 
  import.pl ALLES.ASC > ALLES.cypher
+ import.pl paradox.xml paradox-archiv.xml > ALLES.cypher
  import.pl -d ALLES.ASC | neo4j-shell
  import.pl -m ALLES.ASC > Mandatssammlung.csv
  import.pl --help|--version|--man
@@ -970,7 +984,7 @@ Arne Johannessen, L<mailto:arne@thaw.de>
 
 =head1 COPYRIGHT
 
-Copyright (c) 2015-2016 THAWsoftware, Arne Johannessen.
+Copyright (c) 2015-2017 THAWsoftware, Arne Johannessen.
 All rights reserved.
 
 =cut

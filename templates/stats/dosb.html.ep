@@ -14,13 +14,21 @@
 </dl>
 
 <h3>A-Zahlen LSB</h3>
-<p>Import über DOSB-Schnittstelle („DOSB-Format“ auswählen und Datei hochladen)
+<p>Import über DOSB-Schnittstelle („DOSB-Format“ auswählen, Datei hochladen, mit „Daten hinzufügen“ bestätigen)
 % use Mojo::Util;
 % my $data = $stats->dosb;
 %# $data =~ s/\n/\x0d\x0a/g;
 <p>→ <a href="data:;base64,<%= Mojo::Util::b64_encode $data %>" download=<%= $stats->dosb_filename %>>Download <%= $stats->dosb_filename %></a>
+<p>(Internet Explorer / Edge wird nicht unterstützt.)
 
 <h3>B-Zahlen LSB/SVNRW</h3>
+<p style="margin-bottom:0.25em">In Schritt 5 „Zusatzdaten für Verbände“ werden weitere Angaben zur manuellen Eingabe abgefragt:
+<dl style="margin:0">
+<dt style="width:10em;float:left;clear:left">Eintritt in den Verband<dd><kbd>18. September 1969</kbd> (DSV)
+<dt style="width:10em;float:left;clear:left">DSV-Nummer<dd><kbd>NW 095</kbd>
+<dt style="width:10em;float:left;clear:left">Reviere<dd>Brucher Talsperre
+<dt style="width:10em;float:left;clear:left">Ausbildungsangebote<dd>Jüngstenschein, SBF-Binnen, SBF-See, SKS, Fachkundenachweis
+</dl>
 <pre>
 %= $stats->svnrw(infinity => '-∞ ')
 </pre>
@@ -29,7 +37,7 @@
 <p style="margin-bottom:0.25em">Zugang zum DSV-<a href=http://www.dsv.org/dsv/dsv-vereine/vereinsmeldebogen/>Vereinsmeldebogen</a>:
 <dl style="margin:0">
 <dt style="width:6.5em;float:left;clear:left">registriert auf<dd><kbd>info@skgb.de</kbd>
-<dt style="width:6.5em;float:left;clear:left">Kennwort<dd>wird immer zu Jahresbeginn neu zugesandt
+<dt style="width:6.5em;float:left;clear:left">Kennwort<dd><kbd><%= $self->config->{dosb}->{dsv_password} %></kbd>
 </dl>
 
 <pre>

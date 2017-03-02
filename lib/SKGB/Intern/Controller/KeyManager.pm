@@ -422,8 +422,8 @@ _
 	
 	my $key = $self->param('key');
 	if ($key) {
-		my $s = $code_definition->{SanitizeKey};
-		$key = $s->( $self->param('key') );
+		$key =~ s/^\s*|\s*$//g;
+		$key = $code_definition->{SanitizeKey}->( $key );
 	}
 	
 	my $session;

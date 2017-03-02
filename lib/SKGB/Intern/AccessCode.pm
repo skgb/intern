@@ -28,7 +28,7 @@ sub new {
 	$self->app->isa('Mojolicious') or croak "required param 'app' [" . ref($self->app) . "] not a Mojolicious app; SKGB::Intern instance required";
 	$self->app->neo4j && $self->app->neo4j->session->isa('Neo4j::Session') or croak "SKGB::Intern instance required at param 'app' [" . ref($self->app) . "]; possible problem establishing database connection";
 	
-	if (ref $self->{user} && ref $self->{code}) {
+	if (ref $self->{user} && ref $self->{code} && $self->{id}) {
 		return $self;
 	}
 	
@@ -36,11 +36,12 @@ sub new {
 		my ($row, @rows) = $self->app->neo4j->get_persons(<<_, code => $self->{code});
 MATCH (c:AccessCode)-[:IDENTIFIES]->(p:Person)
 WHERE c.code = {code} AND (p)-[:ROLE|GUEST*..3]->(:Role)-[:MAY]->(:Right {right:'login'})
-RETURN p, c
+RETURN p, c, id(c)
 _
 		@rows and die "multiple results for AccessCode query -- database corrupt?";
 		if ($row) {
 			$self->{code} = $row->get('c');
+			$self->{id} = $row->get('id(c)');
 			if ( ! $self->expired ) {
 				$self->{user} = $row->get('person');
 			}
@@ -75,6 +76,12 @@ sub code {
 sub user {
 	my ($self) = @_;
 	return $self->{user};
+}
+
+
+sub handle {
+	my ($self) = @_;
+	return $self->{id};
 }
 
 

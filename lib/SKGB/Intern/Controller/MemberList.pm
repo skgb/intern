@@ -55,7 +55,6 @@ MATCH (p:Person)
  OPTIONAL MATCH (b)-->(c:Berth)
  RETURN b, c.ref
  ORDER BY b.mark
-// TODO: c.ref doesn't exist for all berths, but it's okay for the Preview
 QUERY
   clubkeys => REST::Neo4p::Query->new(<<QUERY),
 MATCH (p:Person)
@@ -68,17 +67,6 @@ MATCH (p:Person)-[:HOLDER]-(s:Mandate)
  WHERE id(p) = {node}
  RETURN s
  ORDER BY s.umr
-QUERY
-  list_postal => REST::Neo4p::Query->new(<<QUERY),
-MATCH (p:Person)<--(a:Address {type:'street'})
- WHERE (p)<-[:FOR {primary:'text'}]-(a)
-  OR (p)<-[:FOR {primary:true}]-(a)
- RETURN p, a
-QUERY
-  list_postal_all => REST::Neo4p::Query->new(<<QUERY),
-MATCH (p:Person)<--(a:Address {type:'street'})
- WHERE (p)<-[:FOR]-(a)
- RETURN p, a
 QUERY
   all_persons => <<END,
 MATCH (p:Person)
@@ -133,24 +121,32 @@ sub list {
 sub postal {
 	my ($self) = @_;
 	
-	if ( ! $self->skgb->may ) {
-		return $self->render(template => 'key_manager/forbidden', status => 403);
-	}
+	my $query = <<END;
+MATCH (p:Person)<--(a:Address {type:'street'})
+WHERE (p)<-[:FOR {primary:'text'}]-(a) OR (p)<-[:FOR {primary:true}]-(a)
+OPTIONAL MATCH (p)-[r:ROLE|GUEST]->(m:Role)-[:ROLE]->(:Role {role:'member'})
+RETURN a.address, [p, r, m]
+END
+	$query = <<END if defined $self->param('all');
+MATCH (p:Person)<--(a:Address {type:'street'})
+WHERE (p)<-[:FOR]-(a)
+OPTIONAL MATCH (p)-[r:ROLE|GUEST]->(m:Role)-[:ROLE]->(:Role {role:'member'})
+RETURN a.address, [p, r, m]
+END
 	
-	my $query = defined $self->param('all') ? $Q->{list_postal_all} : $Q->{list_postal};
 	my @list = ();
-	my @rows = $self->neo4j->execute_memory($query, 1000, ());
+	my @rows = $self->neo4j->get_persons($query);
 	my $max_address_lines = 0;
 	foreach my $row (@rows) {
-		# BUG: Neo4p doesn't handle UTF-8 encoding when plain text is returned instead of nodes, so we need an extra get_property here
-		my @address = split m/\n/, $row->[1]->get_property('address');
-		$max_address_lines = scalar @address if scalar @address > $max_address_lines;
+		my @address = split m/\n/, $row->get('a.address');
+		$max_address_lines = @address if @address > $max_address_lines;
 		push @list, {
-			person => SKGB::Intern::Person::Neo4p->new( $row->[0] ),
+			person => $row->get('person'),
+			sortkey => fc $row->get('person')->name_sortable,
 			address => \@address,
 		};
 	}
-	@list = sort {fc($a->{person}->name_sortable) cmp fc($b->{person}->name_sortable)} @list;
+	@list = sort { ! $a->{person}->membership->{status} <=> ! $b->{person}->membership->{status} || $a->{sortkey} cmp $b->{sortkey} } @list;
 	
 	$self->render(list => \@list, address_cols => $max_address_lines);
 	return;
@@ -168,6 +164,7 @@ sub list_person {
 MATCH (p:Person)
 OPTIONAL MATCH (p)-[r:ROLE|GUEST]->(m:Role)-[:ROLE]->(:Role {role:'member'})
 RETURN [p, r, m]
+ORDER BY p.gsvereinId, p.name
 END
 	
 	return $self->render(template => 'member_list/list_person', members => \@persons);
@@ -189,7 +186,7 @@ MATCH (p:Person)
 WHERE p.userId = {handle}
 RETURN id(p) AS node_id
 END
-		$result->size eq 0 and die "person not in database";
+		$result->size eq 0 and return $self->reply->not_found;
 		$result->size eq 1 or die "database corrupt: multiple persons with same handle";
 		$handle = $result->single->get('node_id');
 	}
@@ -201,6 +198,7 @@ sub gsverein {
 	my ($self) = @_;
 	
 	my $handle = $self->param('person_placeholder');
+	$handle += 0 if $handle =~ m/^[0-9]+$/;
 	my @result = $self->neo4j->get_persons(<<END, handle => $handle);
 MATCH (p:Person)-->(g:Paradox)
 WHERE p.userId = {handle} OR id(p) = {handle}
@@ -298,7 +296,9 @@ sub node {
 	$node //= $self->param('node');
 	my $person = $self->skgb->session->user;
 	if ($node) {
-		$person = $self->neo4j->execute_memory($Q->{member}, 1, (node => 0 + $node))->[0];
+		my $row = $self->neo4j->execute_memory($Q->{member}, 1, (node => 0 + $node));
+		$row or return $self->reply->not_found;
+		$person = $row->[0];
 	}
 	$person = SKGB::Intern::Person::Neo4p->new( $person );
 	

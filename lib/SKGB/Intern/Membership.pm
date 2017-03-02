@@ -21,6 +21,8 @@ sub new {
 	my $date = POSIX::strftime('%Y-%m-%d', localtime);
 	my $joined = $person->_property('joined', relationship => 'ROLE|GUEST');
 	my $leaves = $person->_property('leaves', relationship => 'ROLE|GUEST');
+	$self->{joined} = $joined;
+	$self->{leaves} = $leaves;
 	return $self if $joined && $joined gt $date || $leaves && $leaves lt $date;
 	
 	my $regular = $person->_property('regularContributor', relationship => 'ROLE|GUEST');
@@ -43,8 +45,6 @@ sub new {
 	$self->{status} = $status;
 	$self->{regular} = $regular;
 	$self->{guest} = grep {$_->{type} =~ m/^GUEST$/} @{$person->{relationships}};
-	$self->{joined} = $joined;
-	$self->{leaves} = $leaves;
 	
 	if ($person->_property('role', node => undef) eq 'honorary-member') {
 		$status = $regular ? "Aktiv, $status" : "Passiv, $status";
