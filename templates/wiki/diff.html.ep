@@ -5,17 +5,9 @@
 
 <p><b>"<%= $name %>"</b>
 
-<div><%== $diff %></div>
+<pre><%== $diff %></pre>
 
 <hr>
 % if (param 'oldid') {
 <p>(Vergleich zweier Versionen der Seite <a href="<%= url_for 'wikiview' %>"><%= $name %></a>)
 % }
-
-
-% if ($logged_in) {
-<p>'<%= $logged_in->name() %>' logged in.
-% }
-
-<p><a href=/>index</a>
-

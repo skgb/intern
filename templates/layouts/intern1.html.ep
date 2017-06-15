@@ -2,43 +2,47 @@
 <meta charset=UTF-8>
 <meta http-equiv=X-UA-Compatible content="IE=edge">
 <title><%= title %> (SKGB-intern 2)</title>
-<style>@import url("/intern1.css?a22");<%== defined $self->stash('styles') ? $self->stash('styles') : '' %></style>
-<link rel="stylesheet" type="text/css" href="/DataTables/datatables.css"/>
+<style>@import url("/intern1.css?a25");<%== defined $self->stash('styles') ? $self->stash('styles') : '' %></style>
+<link rel="stylesheet" type="text/css" href="/lib/DataTables/datatables.css"/>
 <link rel=icon href=/favicon.ico type=image/vnd.microsoft.icon>
 <body id=intern-skgb-de>
 <div id=head><h1><a href=/>SKGB<em>-intern 2</em> Preview</a></h1></div>
 
-
 <%= content %>
 
-
 % my $link_menu_to = begin
-%  my $title = shift;
-%  my $action_name = shift;
-%  my $is_query_significant = shift;
-%  my $is_index = ($is_query_significant ? $self->url_with : $self->url_for) eq $self->url_for($action_name);
-<li><%== $is_index ? '<strong>' : '' %><%= link_auth_to $title, $action_name %><%== $is_index ? '</strong>' : '' %>
-% end
+%  my ($title, $action_name, $link_action, $user) = @_;
+%  $link_action ||= $action_name;
+%  my $params = $user ? {entity => $user->handle} : {};
+%  my $is_current = url_for eq url_for $action_name, $params;
+%  my $link_access = $c->skgb->may("mojo:$action_name", undef, $user && $action_name eq 'person' ? $user->handle : undef);
+%  my $bold = $action_name eq 'index';
+<li><%== $is_current ? '<strong>' : '' %><%== $bold ? '<b>' : '' %><% if ($link_access) { %><%= link_to $title, $link_action, $params %><% } else { %><a><%= $title %></a><% } %><%== $bold ? '</b>' : '' %><%== $is_current ? '</strong>' : '' %><% end %>
 
 <div id=menu><ul>
 % my $user = $self->skgb->session->user;
 % if ($user) {
-%# <a href=/profile>
-%= $link_menu_to->($user->name, 'mglpage', 1)
-<li><%= link_to 'Abmelden', $self->url_for('login')->query(logout=>1,target=>url_for) %>
+%= $link_menu_to->($user->name, 'person', undef, $user)
+<li><%= link_to 'Abmelden', url_for('login')->query(logout=>1,target=>url_for) %>
 % }
 % else {
-<!--
-<li><%= link_to 'Anmelden', 'login' %>
--->
-%= $link_menu_to->('Anmelden', 'login')
-%= $link_menu_to->('Neuer Zugangscode', 'keyfactory')
+%  my $login_url = url_for('login');
+%  $login_url = $login_url->query(target => param('target') || url_for) unless url_for eq url_for('login') && ! param('target');
+%= $link_menu_to->('Anmelden', 'login', $login_url)
+%  my $factory_url = url_for('keyfactory');
+%  $factory_url = $factory_url->query(target => param('target') || url_for) unless url_for eq url_for('keyfactory') && ! param('target');
+%= $link_menu_to->('Neuer Zugangscode', 'keyfactory', $factory_url)
 % }
 </ul><hr><ul>
 %= $link_menu_to->('Index', 'index')
+%= $link_menu_to->('Wetter', 'wetter')
+</ul><hr><ul>
 %= $link_menu_to->('Mitgliederliste', 'mglliste')
-%#= $link_menu_to->('Jugendliste', 'jgdliste')
-%= $link_menu_to->('Anschriftenliste', 'postliste')
+%#= $link_menu_to->('Jugendliste', '_')
+%= $link_menu_to->('Postanschriften', 'postliste')
+%= $link_menu_to->('Austritte', 'list_leaving')
+%= $link_menu_to->('Einnahmen', 'list_budget')
+%= $link_menu_to->('Liegeplätze', 'list_berth')
 </ul><hr><ul id=menu-up>
 <li><a href=http://intern1.skgb.de/>intern1.skgb.de</a>
 <li><a href=http://www.skgb.de/>www.skgb.de</a>
@@ -58,6 +62,9 @@ if (document.addEventListener) {  // most browsers except IE <= 8
 					logoutForm = document.createElement('FORM');
 					logoutForm.action = logoutLink;
 					logoutForm.method = 'POST';
+					logoutForm.style = 'display:none';
+					logoutForm.innerHTML = '<input type=submit>';
+					document.body.appendChild(logoutForm);
 					logoutForm.submit();
 				};
 				menuLinks[i].href = 'javascript:logout()';
@@ -74,23 +81,11 @@ if (document.addEventListener) {  // most browsers except IE <= 8
 <br><%= POSIX::strftime('%Y-%m-%d', localtime) %>
 % if ($user) {
 <br><%= $user->name() %>
-<!--
-%= form_for login => (method => 'POST') => begin
-<input type=submit name=logout value="Logout">
-<input type=hidden name=target value="<%= url_for %>">
-% end
--->
 % }
-% elsif ( $self->url_for() eq $self->url_for('login') ) {
+% elsif ( url_for eq url_for 'login' ) {
 <br>&nbsp;
 % }
 % else {
 <br>&nbsp;
-<!--
-%= form_for login => begin
-<p><input type=submit value="Login">
-<input type=hidden name=target value="<%= url_for %>">
-% end
--->
 % }
 </div>

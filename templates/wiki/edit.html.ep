@@ -5,7 +5,7 @@
 
 <p><b>"<%= $name %>"</b>
 
-%= form_for wiki => (method => 'POST') => begin
+%= form_for wikiedit => (method => 'POST') => begin
 
 <!--p><input type=text name=title value="<%= $name %>"-->
 <p><textarea name=content><%= $article && $article->{revision}->get_property('text') %></textarea>
@@ -14,16 +14,3 @@
 
 %= csrf_field
 % end
-
-
-
-
-
-
-
-% if ($logged_in) {
-<p>'<%= $logged_in->name() %>' logged in.
-% }
-
-<p><a href=/>index</a>
-

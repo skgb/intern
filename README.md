@@ -5,7 +5,7 @@ SKGB-intern 2
 
 Use at your own risk. You have been warned!
 
-Copyright © 2016 Arne Johannessen  
+Copyright © 2016–17 Arne Johannessen  
 All Rights Reserved
 
 

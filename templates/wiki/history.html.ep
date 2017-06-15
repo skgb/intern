@@ -29,11 +29,3 @@
 %  $odd = ! $odd;
 % }
 </table>
-
-
-% if ($logged_in) {
-<p>'<%= $logged_in->name() %>' logged in.
-% }
-
-<p><a href=/>index</a>
-

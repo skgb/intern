@@ -1,4 +1,4 @@
-@import url("jquery-ui-1.8.23.custom/development-bundle/themes/base/jquery.ui.all.css");
+@import url("/lib/jquery-ui-1.8.23.custom/development-bundle/themes/base/jquery.ui.all.css");
 META {  /* pre-load and cache dragging cursor; Safari 5.1.7 seems to need this */
 	cursor: url(icons/closedhand.cur), pointer;
 }

@@ -4,7 +4,9 @@ use Mojo::Base 'Mojolicious::Controller';
 #use Data::Dumper;
 use POSIX qw();
 use Text::WordDiff qw();
+use REST::Neo4p 0.3012;
 
+use SKGB::Intern::Article;
 use SKGB::Intern::Person::Neo4p;
 
 
@@ -44,7 +46,6 @@ sub view {
 	my ($self) = @_;
 	
 	# normalise URL
-	return $self->redirect_to($self->url_for('wikiview')) if $self->stash('action_set');
 	my $slug = $self->_slug;
 	return if ! $slug;
 	
@@ -99,7 +100,7 @@ sub history {
 	foreach my $row (@rows) {
 #		$article //= $row->[-1];
 		my $date = $row->[0];
-		my $revision_url = $self->url_for('wikiview');
+		my $revision_url = $self->url_for('wikiold');
 #		$revision_url = $revision_url->query(oldid => $date) if @revisions;
 		$revision_url = $revision_url->query(oldid => $date);
 		push @revisions, [
@@ -114,8 +115,8 @@ sub history {
 	for (my $i = -1 + scalar @revisions; $i >= 0; $i--) {
 		my $revision = $revisions[$i];
 		my ($diff_prev_url, $diff_curr_url);
-		$diff_prev_url = $self->url_for('wiki', action => 'diff')->query(oldid => $revisions[$i + 1]->[2], diff => $revision->[2]) if $i < -1 + scalar @revisions;
-		$diff_curr_url = $self->url_for('wiki', action => 'diff')->query(oldid => $revision->[2], diff => $revisions[0]->[2]) if $i > 0;
+		$diff_prev_url = $self->url_for('wikidiff')->query(oldid => $revisions[$i + 1]->[2], diff => $revision->[2]) if $i < -1 + scalar @revisions;
+		$diff_curr_url = $self->url_for('wikidiff')->query(oldid => $revision->[2], diff => $revisions[0]->[2]) if $i > 0;
 		push @$revision, $diff_prev_url, $diff_curr_url;
 	}
 #	say Data::Dumper::Dumper(\@revisions);
@@ -168,19 +169,21 @@ sub _article {
 	my ($self, $slug) = @_;
 	
 	my $row;
-	if ($self->param('oldid')) {
+	if ($self->param('oldid') && $self->current_route eq 'wikiold') {
 		$row = $self->neo4j->execute_memory($Q->{old_article}, 1, (slug => $slug, oldid => 0 + $self->param('oldid')));
 	}
 	if (! $row) {
 		$row = $self->neo4j->execute_memory($Q->{article}, 1, (slug => $slug));
 	}
 	return undef if ! $row;
-	return {
+	return SKGB::Intern::Article->init(
+		auth_manager => $self->skgb,
 		article => $row->[0],
 		revision => $row->[1],
 		date => $self->_date( $row->[1]->get_property('date') ),
 		author => $row->[2],
-	};
+		slug => $slug,
+	);
 }
 
 
@@ -194,18 +197,16 @@ sub _date {
 sub _slug {
 	my ($self) = @_;
 	
-	my $slug = $self->stash('slug_placeholder');
+	my $slug = $self->stash('entity');
 	
 	# empty slug -> Main Page
-	$self->redirect_to($self->url_for(slug_placeholder => $self->main_page_slug)) if ! $slug;
+	$self->redirect_to($self->url_for(entity => $self->main_page_slug)) if ! $slug;
 	return undef if ! $slug;
 	
 	# normalise (for URL)
-	$slug =~ s/ /_/g;
-	$slug =~ s/^_+|_+$//g;
-	$slug =~ s{([^_])/([^_])}{$1_/_$2}g;
-	if ($slug ne $self->stash('slug_placeholder')) {
-		$self->redirect_to($self->url_for('wiki', slug_placeholder => $slug));
+	$slug = SKGB::Intern::Article->normalise_slug($slug);
+	if ($slug ne $self->stash('entity')) {
+		$self->redirect_to($self->url_with($self->current_route, entity => $slug));
 		return undef;
 	}
 	

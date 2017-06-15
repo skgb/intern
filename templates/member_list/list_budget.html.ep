@@ -28,7 +28,7 @@
 </thead>
 % foreach my $member (@$members) {
 <tr<%== ($member->{possible_error} > 0) && ' style="background:yellow"' %>>
-<td><%= link_auth_to person => {person_placeholder => $member->{person}->handle} => begin %><%= $member->{person}->name %><% end %>
+<td><%= auth_link_to person => $member->{person}->name, {entity => $member->{person}->handle} %>
 <td><span class=euro><%=$member->{membership} %></span>
 <td><%== $member->{berth} ? "<span class=euro>$member->{berth}</span>" : "<span class=null></span>" %>
 <td><%== $member->{usage} ? "<span class=euro>$member->{usage}</span>" : "<span class=null></span>" %>
@@ -39,7 +39,7 @@
 % }
 </table>
 
-<script type="text/javascript" src="/DataTables/datatables.js"></script>
+<script type="text/javascript" src="/lib/DataTables/datatables.js"></script>
 <script>
 // https://datatables.net/
 $(document).ready(function() {

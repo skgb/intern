@@ -6,7 +6,6 @@ sub index {
 	my ($self) = @_;
 	
 	my $user = $self->skgb->session->user;
-#	return $self->render(template => 'content/index', logged_in => $user);
 	return $self->render(logged_in => $user);
 }
 
@@ -40,7 +39,7 @@ END
 	# multiple street addresses for persons may cause duplicate entries
 	my @unique_records = do { my %seen; grep { ! $seen{$_->get('p')->handle}++ } @records };
 	
-	return $self->render(records => \@unique_records, board_member => $self->skgb->role('board-member'));
+	return $self->render(records => \@unique_records, board_member => $self->skgb->may('board-member'));
 }
 	
 1;

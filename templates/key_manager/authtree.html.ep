@@ -1,4 +1,4 @@
-% layout 'intern1';
+% layout 'intern1', styles => '#tree{height:'.(8+2.2 * scalar @$graphs).'em;width:40em;border:1px solid lightgray;margin-right:.5em;float:left}form:after{content:" ";clear:left;display:block;height:0}';
 % my $code = $codes->[0];
 % title 'Access Code ' . $code->code;
 
@@ -12,11 +12,15 @@
 <p>issued: <%= $code->creation %>
 <p>expiration: <%= $code->expiration %>
 <p>access: <%= $code->access ? "first ".$code->first_use.", last ".$code->access : "none" %>
+<p><form action="<%= $c->url_for('keyfactory')->query(secure => 1, name => $code->user->handle) %>" method=POST>secure: <%= $code->secure ? "yes" : "no" %> <input type=submit name=secure value="create secure session"<%== $code->secure ? ' disabled title="session is already secure"' : '' %>></form>
 %#<p><input type=submit name=edit value="view/edit rights"<%= $this_expired && ' disabled' %>> <input type=submit name=delete value="delete<%= $this_session && ' and log out' %>" disabled>
 
 <h3>Roles</h3>
+
 <form action="" method=POST>
 <input type=hidden name="action" value="modify-roles">
+
+<div id=tree>
 <ul class=auth>
 % foreach my $role (@$roles) {
 <li>
@@ -30,26 +34,132 @@
 %  }
 % }
 </ul>
-% if ($c->skgb->may('sudo')) {
+</div>
+
+<script src="/lib/vis.js/dist/vis-network.min.js"></script>
+<script>
+% use Mojo::JSON;
+var graphs = <%== Mojo::JSON::to_json $graphs %>;
+</script>
+<script>
+(function () {
+	var graph = {nodes:[],edges:[]};
+	var nodes = {}, edges = {};
+	for (var i = graphs.length - 1; i >= 0; i--) {
+		for (var j = graphs[i].nodes.length - 1; j >= 0; j--) {
+			var nodeId = graphs[i].nodes[j].id;
+			if (nodes[nodeId]) { continue; }
+			nodes[nodeId] = graphs[i].nodes[j];
+			nodes[nodeId].edgesOut = [];
+			nodes[nodeId].edgesIn = [];
+		}
+		for (var j = graphs[i].relationships.length - 1; j >= 0; j--) {
+			var edgeId = graphs[i].relationships[j].id;
+			if (edges[edgeId]) { continue; }
+			edges[edgeId] = graphs[i].relationships[j];
+		}
+	}
+	for (var edgeId in edges) {
+		nodes[edges[edgeId].startNode].edgesOut.push(edges[edgeId]);
+		nodes[edges[edgeId].endNode].edgesIn.push(edges[edgeId]);
+	}
+	for (var nodeId in nodes) {
+		var label = nodes[nodeId].labels[0];
+		var rolesIn = 0;
+		for (var i = nodes[nodeId].edgesIn.length - 1; i >=0 ; i--) {
+			if (nodes[nodes[nodeId].edgesIn[i].startNode].labels[0] == "Role") { rolesIn++; }
+		}
+		graph.nodes.push({
+			id: nodeId,
+			label: nodes[nodeId].properties.name || nodes[nodeId].properties.code || nodeId,
+			level: label == "AccessCode" ? 0 : label == "Person" ? 0 : ! nodes[nodeId].edgesOut.length ? 3 : rolesIn ? 2 : 1,
+			color: label == "AccessCode" ? "#eee" : label == "Person" ? "#eee" : "#ccf",
+			shape: label == "AccessCode" || label == "Person" ? "ellipse" : "box",
+			chosen: label != "AccessCode" && label != "Person"
+		});
+	}
+	for (var edgeId in edges) {
+		var identifies = edges[edgeId].type == "IDENTIFIES";
+		var special = ! identifies && nodes[edges[edgeId].startNode].labels[0] == "AccessCode";
+		var color = edges[edgeId].type == "ROLE" ? "#6c6" : edges[edgeId].type == "NOT" ? "#f33" : identifies ? "#ccc" : undefined;
+		graph.edges.push({
+			id: edgeId,
+			from: edges[edgeId].startNode,
+			to: edges[edgeId].endNode,
+			arrows: identifies ? undefined : "to",
+			dashes: identifies,
+			color: color,
+			label: edges[edgeId].type == "ROLE" ? "Rolle" : edges[edgeId].type == "NOT" ? "nicht" : undefined,
+			font: {align: 'middle', color: color},
+			smooth: special ? {type:"curvedCW", roundness:.2} : false,
+			width: special ? 2.5 : 1,
+			chosen: false
+		});
+	}
+	
+	var container = document.getElementById('tree');
+	var options = {
+		layout: {
+//			randomSeed: undefined,
+			hierarchical: {
+				direction: "LR",
+				sortMethod: "directed"
+			}
+		},
+		interaction: {
+			hover: true,
+			zoomView: false,
+			selectConnectedEdges: false,
+			hoverConnectedEdges: false,
+			multiselect: true
+		},
+		edges: {
+			smooth: {
+				type: "cubicBezier"
+			}
+		},
+		physics: {
+			enabled: false
+		}
+	};
+	var network = new vis.Network(container, graph, options);
+	var networkCanvas = container.getElementsByTagName("canvas")[0];
+	network.on('hoverNode', function () { networkCanvas.style.cursor = 'pointer' });
+	network.on('blurNode', function () { networkCanvas.style.cursor = 'default' });
+//	network.on('hoverEdge', function () { networkCanvas.style.cursor = 'pointer' });
+//	network.on('blurEdge', function () { networkCanvas.style.cursor = 'default' });
+	network.on("select", function (params) {
+//		document.getElementById("out").innerHTML = JSON.stringify(params, null, 4);
+//		document.getElementById("out").innerHTML = JSON.stringify(nodes[params.nodes[0]], null, 4);
+		if (params.nodes.length == 0 && params.edges.length != 0) {
+			params.nodes = [ edges[params.edges[0]].endNode ];
+			network.selectNodes(params.nodes);
+		}
+		
+		var selection = [];
+		for (var i = params.nodes.length - 1; i >= 0; i--) {
+			if (nodes[params.nodes[i]].labels[0] != "Role") { continue; }
+			selection.push(nodes[params.nodes[i]].properties);
+		}
+		if (! selection.length) {
+			document.getElementById("out").innerHTML = "";
+			return;
+		}
+		var text = "<p>Selected Role"+(selection.length==1?"":"s")+":";
+		selection.sort(function(b,a){return a.name<b.name?-1:a.name>b.name;});
+		for (var i = selection.length - 1; i >= 0; i--) {
+			text += "<p>"+selection[i].name;
+			text += " <input type=submit name='delete="+selection[i].role+"' value='deaktivieren'>";
+		}
+		document.getElementById("out").innerHTML = text;
+	});
+})();
+</script>
+
+% if ($c->skgb->may('super-user')) {
 <input type=submit name="sudo=all-roles" value="alle Rollen zuweisen">
 <input type=submit name="sudo=reset" value="alle Rollen zurücksetzen">
 % }
-</form>
 
-<h3>Privileges</h3>
-<ul class=auth>
-% foreach my $priv (@$privs) {
-%  if (! $priv->{new}) {
-<li>
-<p><%= $priv->{priv}->{name} %> (<%= join ', ', @{$priv->{priv}->{urls}} %>)
-%   next;
-%  }
-<li>
-<p>
-<%== $priv->{negated} ? "<del>" : $priv->{special} ? "<ins>" : "" %>
-<%= $priv->{priv}->{name} %>
-<code><%= $priv->{priv}->{right} %></code>
-<%== !! $self->skgb->may($priv->{priv}->{right}, $code->code) eq ! $priv->{negated} ? "" : "<b style=color:red;background:yellow>ERROR in queries!</b>" %>
-<%== $priv->{negated} ? "</del>" : $priv->{special} ? "</ins>" : "" %>
-% }
-</ul>
+<p id=out></p>
+</form>

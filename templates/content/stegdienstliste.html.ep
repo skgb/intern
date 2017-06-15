@@ -5,8 +5,8 @@
 
 
 	
-<SCRIPT SRC="jquery-ui-1.8.23.custom/jquery-1.8.1.js"></SCRIPT>
-<SCRIPT SRC="jquery-ui-1.8.23.custom/js/jquery-ui-1.8.23.custom.min.js"></SCRIPT>
+<SCRIPT SRC="/lib/jquery-ui-1.8.23.custom/jquery-1.8.1.js"></SCRIPT>
+<SCRIPT SRC="/lib/jquery-ui-1.8.23.custom/js/jquery-ui-1.8.23.custom.min.js"></SCRIPT>
 <!--SCRIPT SRC="jquery-ui-1.8.23.custom/development-bundle/ui/jquery-ui-1.8.23.custom.js"></SCRIPT-->
 %# userIsBoardMember: this is not meant to be fool-proof -- evil users can easily re-create something closely resembling the club's letterhead anyway
 <SCRIPT>window.userIsBoardMember = <%= $board_member ? 'true' : 'false' %>;</SCRIPT>
@@ -45,7 +45,7 @@
 </DIV>
 <P><LABEL CLASS="not-implemented"><INPUT TYPE="radio" NAME="strategy" VALUE="base" DISABLED> <STRONG>unverändert</STRONG></LABEL>
 <DIV CLASS="strategy-options">
-	<P><LABEL CLASS="not-implemented">als Vorlage zu übernehmendes Basis-Jahr: <SELECT NAME="basedata" DISABLED><OPTION VALUE="2016" SELECTED>2016</OPTION><OPTION VALUE="2015">2015</OPTION><OPTION VALUE="2014">2014</OPTION><OPTION VALUE="2013">2013</OPTION><OPTION VALUE="2012">2012</OPTION><OPTION VALUE="2011">2011</OPTION><OPTION VALUE="2010">2010</OPTION><OPTION VALUE="2009">2009</OPTION></SELECT></LABEL>
+	<P><LABEL CLASS="not-implemented">als Vorlage zu übernehmendes Basis-Jahr: <SELECT NAME="basedata" DISABLED><OPTION VALUE="2017" SELECTED>2017</OPTION><OPTION VALUE="2016">2016</OPTION><OPTION VALUE="2015">2015</OPTION><OPTION VALUE="2014">2014</OPTION><OPTION VALUE="2013">2013</OPTION><OPTION VALUE="2012">2012</OPTION><OPTION VALUE="2011">2011</OPTION><OPTION VALUE="2010">2010</OPTION><OPTION VALUE="2009">2009</OPTION></SELECT></LABEL>
 </DIV>
 <P><LABEL><INPUT TYPE="radio" NAME="strategy" VALUE="sorted"> <STRONG>sortiert</STRONG></LABEL>
 <DIV CLASS="strategy-options">
@@ -175,6 +175,8 @@ members: [
 }
 </TEXTAREA>
 
+<TEXTAREA COLS="1" ROWS="1" ID="importdata2017" READONLY STYLE="display: none;">
+</TEXTAREA>
 <TEXTAREA COLS="1" ROWS="1" ID="importdata2016" READONLY STYLE="display: none;">
 </TEXTAREA>
 <TEXTAREA COLS="1" ROWS="1" ID="importdata2015" READONLY STYLE="display: none;">
@@ -195,5 +197,5 @@ members: [
 
 
 	
-	<P><BR> $Id: stegdienst.html 850 2016-12-14 22:25:03Z aj $ <BR></P>
+	<P><BR></P>
 </BODY></HTML>

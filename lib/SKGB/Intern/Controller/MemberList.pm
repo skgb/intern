@@ -7,6 +7,7 @@ use Regexp::Common qw /number/;
 use SKGB::Intern::Person::Neo4p;
 use List::Util qw(max);
 use Data::Dumper;
+use POSIX qw();
 
 
 my $Q = {
@@ -121,13 +122,15 @@ sub list {
 sub postal {
 	my ($self) = @_;
 	
+	my $limited = ! defined $self->param('all');
+	my $date = POSIX::strftime "%Y-%m-%d", localtime if $limited;
 	my $query = <<END;
 MATCH (p:Person)<--(a:Address {type:'street'})
-WHERE (p)<-[:FOR {primary:'text'}]-(a) OR (p)<-[:FOR {primary:true}]-(a)
+WHERE (p)<-[:FOR {primary:'text'}]-(a)
 OPTIONAL MATCH (p)-[r:ROLE|GUEST]->(m:Role)-[:ROLE]->(:Role {role:'member'})
-RETURN a.address, [p, r, m]
+RETURN a.address, r.leaves, [p, r, m]
 END
-	$query = <<END if defined $self->param('all');
+	$query = <<END if ! $limited;
 MATCH (p:Person)<--(a:Address {type:'street'})
 WHERE (p)<-[:FOR]-(a)
 OPTIONAL MATCH (p)-[r:ROLE|GUEST]->(m:Role)-[:ROLE]->(:Role {role:'member'})
@@ -138,7 +141,8 @@ END
 	my @rows = $self->neo4j->get_persons($query);
 	my $max_address_lines = 0;
 	foreach my $row (@rows) {
-		my @address = split m/\n/, $row->get('a.address');
+		next if $limited && ($row->get('r.leaves') || "z") lt $date;
+		my @address = grep ! m/^\s*$/, split m/\n/, $row->get('a.address');
 		$max_address_lines = @address if @address > $max_address_lines;
 		push @list, {
 			person => $row->get('person'),
@@ -179,7 +183,7 @@ sub person {
 	# may be the transient integer low-level database node id. If the former is
 	# supplied, we need to figure out the node id because the node method
 	# expects it. This is potentially very expensive when called in a loop!
-	my $handle = $self->param('person_placeholder');
+	my $handle = $self->param('entity');
 	if ($handle !~ m/^$RE{num}{int}{-sign => ''}$/) {
 		my $result = $self->neo4j->session->run(<<END, handle => $handle);
 MATCH (p:Person)
@@ -197,7 +201,7 @@ END
 sub gsverein {
 	my ($self) = @_;
 	
-	my $handle = $self->param('person_placeholder');
+	my $handle = $self->param('entity');
 	$handle += 0 if $handle =~ m/^[0-9]+$/;
 	my @result = $self->neo4j->get_persons(<<END, handle => $handle);
 MATCH (p:Person)-->(g:Paradox)

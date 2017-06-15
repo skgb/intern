@@ -24,41 +24,33 @@ CREATE
 (clubDeputyYouthWarden:Role {name:"2. Jugendwart", role:"board-deputy-youth-warden"})-[:ROLE]->(boardMember),
 (admin:Role {name:"Administrator", role:"admin"})
 
-//CREATE
-//(memberData:Resource {name:'Member Data', urls:['/profile','/mitgliederliste','/anschriftenliste','/export/listen','/dosb','/regeln(?:/.*)?']})<-[:ACCESS]-(member),
-//(administrative:Resource {name:'Admin', urls:['/export/intern1','/wiki(?:/.*)?']})<-[:ACCESS]-(admin),
-//(login:Resource {name:'Login', urls:['/login']})<-[:ACCESS]-(user)
+CREATE
+(execBoardMember)-[:ROLE]->(paymentDataRole :Role {role:'payment-data', name:'Zahlungsdaten-Bearbeiter'}),
+(clubDeputyTreasurer)-[:ROLE]->(paymentDataRole),
+(admin)-[:ROLE]->(:Role {role:'access-log', name:'Anmeldedaten einsehen'}),
+(superUser:Role {name:"Super User", role:"super-user"})
 
 CREATE
-//(member)-[:MAY]->(:Right {right:'member-list', name:'Mitgliederliste einsehen'}),
-//(member)-[:MAY]->(:Right {right:'member-profile', name:'Mitglieder-Profilseite einsehen'}),
-//(boardMember)-[:MAY]->(:Right {right:'person', name:'Personenseite einsehen'}),
-//(boardMember)-[:MAY]->(:Right {right:'person-list', name:'Personenliste einsehen'}),
-(execBoardMember)-[:MAY]->(paymentDataRight :Right {right:'payment-data', name:'Zahlungsdaten einsehen'}),
-(clubDeputyTreasurer)-[:MAY]->(paymentDataRight),
-(admin)-[:MAY]->(:Right {right:'access-log', name:'Anmeldedaten einsehen'})
-CREATE
-(superUser:Role {name:"Super User", role:"super-user"}),
-(superUser)-[:MAY]->(:Right {right:'sudo', name:'als Super User handeln'})
-CREATE
-(admin)-[:MAY]->(:Right {right:'mojo:export1', name:'GS-Verein–Schnittstelle'}),
-(admin)-[:MAY]->(:Right {right:'mojo:wiki', name:'Wiki (lesen und bearbeiten)'}),
-(admin)-[:MAY]->(:Right {right:'mojo:wikiview', name:'Wiki (nur lesen)'}),
-(user)-[:MAY]->(:Right {right:'mojo:mglpage', name:'Personen-Report (nur eigene Person)'}),
-//(boardMember)-[:MAY]->(:Right {right:'mojo:mglpagenode'}),
-(boardMember)-[:MAY]->(:Right {right:'mojo:mglliste', name:'Mitgliederliste'}),
-(boardMember)-[:MAY]->(:Right {right:'mojo:person', name:'Personen-Report'}),
-(boardMember)-[:MAY]->(:Right {right:'mojo:list_person', name:'Liste aller Personen'}),
-(boardMember)-[:MAY]->(:Right {right:'mojo:list_leaving', name:'Austrittsliste'}),
-(boardMember)-[:MAY]->(:Right {right:'mojo:list_berth', name:'Liegeplatzliste'}),
-(boardMember)-[:MAY]->(:Right {right:'mojo:postliste', name:'Anschriftenliste'}),
-(boardMember)-[:MAY]->(:Right {right:'mojo:exportlisten', name:'Listen-Schnittstelle'}),
-(execBoardMember)-[:MAY]->(dosb_Right:Right {right:'mojo:dosb', name:'Verbandsmeldungen'}),
-(clubDeputyTreasurer)-[:MAY]->(dosb_Right),
-(execBoardMember)-[:MAY]->(:Right {right:'mojo:paradox', name:'GS-Verein'}),
-(execBoardMember)-[:MAY]->(list_budget_Right:Right {right:'mojo:list_budget', name:'Einnahmenliste'}),
-(clubDeputyTreasurer)-[:MAY]->(list_budget_Right),
-(member)-[:MAY]->(:Right {right:'mojo:regeln', name:'SKGB-Regeln'}),
-(member)-[:MAY]->(:Right {right:'mojo:stegdienstliste', name:'Stegdienstliste erzeugen'}),
-(user)-[:MAY]->(:Right {right:'login'}),
-(user)-[:MAY]->(:Right {right:'mojo:auth'})
+(admin)-[:ROLE]->(:Role {role:'mojo:export1', name:'GS-Verein–Schnittstelle'}),
+(boardMember)-[:ROLE]->(wiki:Role {role:'wiki', name:'Wiki'}),
+(admin)-[:ROLE]->(wiki),
+(wiki)-[:ROLE]->(:Role {role:'mojo:wikiview', name:'Wiki (nur lesen)'}),
+(wiki)-[:ROLE]->(:Role {role:'mojo:wikihistory', name:'Wiki (Versionsgeschichte)'}),
+(wiki)-[:ROLE]->(:Role {role:'mojo:wikiold', name:'Wiki (alte Versionen)'}),
+(wiki)-[:ROLE]->(:Role {role:'mojo:wikidiff', name:'Wiki (Unterschiede)'}),
+(admin)-[:ROLE]->(:Role {role:'mojo:wikiedit', name:'Wiki (bearbeiten)'}),
+(boardMember)-[:ROLE]->(:Role {role:'mojo:mglliste', name:'Mitgliederliste'}),
+(boardMember)-[:ROLE]->(:Role {role:'mojo:person', name:'Personen-Report'}),
+(boardMember)-[:ROLE]->(:Role {role:'mojo:list_person', name:'Liste aller Personen'}),
+(boardMember)-[:ROLE]->(:Role {role:'mojo:list_leaving', name:'Austrittsliste'}),
+(boardMember)-[:ROLE]->(:Role {role:'mojo:list_berth', name:'Liegeplatzliste'}),
+(boardMember)-[:ROLE]->(:Role {role:'mojo:postliste', name:'Anschriftenliste'}),
+(boardMember)-[:ROLE]->(:Role {role:'mojo:exportlisten', name:'Listen-Schnittstelle'}),
+(execBoardMember)-[:ROLE]->(dosb_Role:Role {role:'mojo:dosb', name:'Verbandsmeldungen'}),
+(clubDeputyTreasurer)-[:ROLE]->(dosb_Role),
+(execBoardMember)-[:ROLE]->(:Role {role:'mojo:paradox', name:'GS-Verein'}),
+(execBoardMember)-[:ROLE]->(list_budget_Role:Role {role:'mojo:list_budget', name:'Einnahmenliste'}),
+(clubDeputyTreasurer)-[:ROLE]->(list_budget_Role),
+(member)-[:ROLE]->(:Role {role:'mojo:regeln', name:'SKGB-Regeln'}),
+(member)-[:ROLE]->(:Role {role:'mojo:stegdienstliste', name:'Stegdienstliste erzeugen'}),
+(user)-[:ROLE]->(:Role {role:'mojo:auth', name:'mojo:auth'})

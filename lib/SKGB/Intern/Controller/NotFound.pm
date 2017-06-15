@@ -46,6 +46,13 @@ sub redirect {
 }
 
 
+sub method {
+	my ($c) = @_;
+	
+	return $c->render(text => "PUT, DELETE, TRACE, OPTIONS, PATCH not supported\n", status => 405);
+}
+
+
 1;
 
 __END__

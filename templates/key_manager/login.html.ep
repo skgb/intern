@@ -25,7 +25,7 @@
 %= form_for login => (method => 'POST') => begin
 
 <p>Gib hier den Zugangscode aus der E-Mail ein:
-<p><input type=text name=key id=key value="<%= param 'key' %>">
+<p><input type=text name=key id=key autocomplete=off value="<%= param 'key' %>">
 <input type=submit value="Anmelden">
 
 % if (param 'target') {

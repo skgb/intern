@@ -8,28 +8,46 @@ use DateTime::Format::ISO8601;
 use Data::Dumper;
 
 use SKGB::Intern::AccessCode;
+use SKGB::Intern::Article;
 
 
 my $Q = {
   may => <<_,
-MATCH (c:AccessCode)-[:IDENTIFIES]->(:Person)-[:ROLE|GUEST*..3]->(r:Role)-[:MAY]->(s:Right)
+MATCH (c:AccessCode)-[:IDENTIFIES]->(:Person)-[:ROLE|GUEST*..4]->(r:Role)
 WHERE c.code = {code} AND NOT( (c)-[:NOT]->(r) )
-RETURN s.right
+RETURN r.role
 UNION
-MATCH (c:AccessCode)-[:ROLE*..3]->(r:Role)-[:MAY]->(s:Right)
+MATCH (c:AccessCode)-[:ROLE*..4]->(r:Role)
 WHERE c.code = {code}
-RETURN s.right
+RETURN r.role
 _
-  role => <<_,
-MATCH (c:AccessCode)-[:IDENTIFIES]->(:Person)-[:ROLE|GUEST*..3]->(r:Role)
-WHERE c.code = {code} AND r.role = {role} AND NOT( (c)-[:NOT]->(r) )
-RETURN true AS has_role
+  wikiroles => <<_,
+MATCH (a:WikiArticle)--(r:Role)
+RETURN a.slug AS slug, collect(r.role) AS role
+_
+  entity_exceptions => <<_,
+MATCH (c:AccessCode)-[:IDENTIFIES]->(x:Person)
+WHERE c.code = {code}
+RETURN CASE WHEN has(x.userId) THEN x.userId ELSE id(x) END AS handle, head(labels(x)) AS label
 UNION
-MATCH (c:AccessCode)-[:ROLE*..3]->(r:Role)
-WHERE c.code = {code} AND r.role = {role}
-RETURN true AS has_role
+MATCH (c:AccessCode)-[:IDENTIFIES]->(p:Person)-[y:OWNS|:DEBITOR|:HOLDER|:FOR|:PARENT|:COLLECTOR]-(x)
+WHERE c.code = {code}
+RETURN CASE WHEN has(x.userId) THEN x.userId ELSE id(x) END AS handle, head(labels(x)) AS label
+UNION
+MATCH (c:AccessCode)-[:IDENTIFIES]->(q:Person)<-[:PARENT]-(x:Person)
+WHERE c.code = {code}
+RETURN CASE WHEN has(x.userId) THEN x.userId ELSE id(x) END AS handle, head(labels(x)) AS label
+UNION
+MATCH (c:AccessCode)-[:IDENTIFIES]->(q:Person)<-[:PARENT]-(p:Person)-[y:OWNS|:DEBITOR|:HOLDER|:FOR|:PARENT|:COLLECTOR]-(x)
+WHERE c.code = {code}
+RETURN CASE WHEN has(x.userId) THEN x.userId ELSE id(x) END AS handle, head(labels(x)) AS label
 _
 };
+
+
+our $OPEN_ACCESS = \'open';  # a true value, comparable by ==
+our $USER_ACCESS = \'user';  # a true value, comparable by ==
+our $NO_ACCESS = ! 1;  # a false value equal to '', yet comparable by ==
 
 
 sub register {
@@ -82,10 +100,10 @@ sub register {
 		}
 	});
 	
-	my @helpers = qw( link_auth_to has_access );
+	my @helpers = qw( link_auth_to auth_link_to );
 	$app->helper($_ => __PACKAGE__->can("_$_")) for @helpers;
 	
-	my @skgb_helpers = qw( session may role );
+	my @skgb_helpers = qw( session may _may_mojo _may_wiki role auth_link_to _link_url );
 	$app->helper("skgb.$_" => __PACKAGE__->can("_$_")) for @skgb_helpers;
 	
 	$app->helper('skgb.reset_login_fails' => sub { $self->_reset_login_fails(@_); });
@@ -102,10 +120,11 @@ sub _session {
 	$key ||= $c->session('key');
 	
 	my $session = $c->stash('session');
-	if (! $session) {
+	if (! $session || $session->code ne $key) {
 		$session = SKGB::Intern::AccessCode->new( code => $key, app => $c );
 		if ($session->user) {
 			$session->update;
+			$c->session( expiration => $c->config->{ttl}->{secure} ) if $session->secure;
 			$c->session( key => $key );
 		}
 		$c->stash(session => $session);
@@ -116,47 +135,141 @@ sub _session {
 
 
 sub _may {
-	my ($c, $right, $key) = @_;
-	$key ||= $c->session('key');
-	return undef if ! $key;
-	$right ||= "mojo:" . $c->current_route;
+	my ($c, $right, $key, $entity) = @_;
+	if (@_ == 1) {
+		$right = 'mojo:' . $c->current_route;
+		$entity = $c->match->endpoint->pattern->match($c->url_for)->{entity};
+	}
+#	say "may: $right";
+	if ($right =~ m/^(?:mojo:)?wiki([a-z]*)$/) {
+		return $c->skgb->_may_wiki($1, $entity, $key);
+	}
+	return $c->skgb->_may_mojo($right, $key, $entity);
+}
+
+
+sub __may_mojo {
+	my ($c, $right, $key, $entity) = @_;
 	
-	my $rights = $c->stash("rights:$key");  # possible bug: $key not sanitized?
+	# truth table Mojo access:
+	#  E F G => access
+	#  0 - - =>  open
+	#  - 1 - =>  user
+	#  1 0 1 =>  user
+	#  1 0 0 =>   no
+	# (E) = ROUTE exists in database
+	# (F) = USER has role for ROUTE
+	# (G) = USER has exception for ENTITY in ROUTE
+	
+	# (E) workaround; TODO
+	if ($right =~ m/^mojo:(.*)$/) {
+		my $routes = $c->app->routes;
+		my $route = $routes->lookup($1);
+		# top level route => no login requirement => public access
+		return $OPEN_ACCESS if $route && $route->parent == $routes;
+	}
+	
+	$key ||= $c->session('key');
+	return $NO_ACCESS if ! $key;  # (F)
+	
+	my $rights = $c->stash("rights:$key");
 	if (! $rights) {
 		my @rights = $c->neo4j->session->run($Q->{may}, code => $key);
 		my %rights = map { $_->get => 1 } @rights;
 		$rights = \%rights;
 		$c->stash("rights:$key" => $rights);
 		
-#		say "$key:";
+#		say "$key rights:";
 #		say Data::Dumper::Dumper $rights;
 	}
+	return $USER_ACCESS if $rights->{$right};  # (F)
 	
-	return $rights->{$right};
+	# (G):
+	return $NO_ACCESS if ! $entity;
+	my $exceptions = $c->stash("entity_exceptions:$key");
+	if (! $exceptions) {
+		my @exceptions = $c->neo4j->session->run($Q->{entity_exceptions}, code => $key);
+		my %exceptions = map { $_->get => $_->get(1) || 1 } @exceptions;
+		$exceptions = \%exceptions;
+		$c->stash("entity_exceptions:$key" => $exceptions);
+		
+#		say "$key entity exceptions:";
+#		say Data::Dumper::Dumper $exceptions;
+	}
+	return $USER_ACCESS if $exceptions->{$entity};  # (G)
+	
+	return $NO_ACCESS;
 }
 
 
-# this may be a dirty hack (initially only used to 'simplify' a provisional check in the Stegdienstliste app)
-sub _role {
-	my ($c, $role, $key) = @_;
+sub __may_wiki {
+	my ($c, $wikicommand, $slug, $key) = @_;
+	$wikicommand ||= 'view';
 	$key ||= $c->session('key');
-	return undef if ! $key;
+	return $OPEN_ACCESS if ! $slug;
+#	print "may_wiki: $wikicommand:$slug";
 	
-	my $result = $c->neo4j->session->run($Q->{role}, code => $key, role => $role);
-	return $result->size;
+	# cache role requirements of Wiki articles to minimise expensive database roundtrips
+	my $wikiroles = $c->stash("wikiroles");
+	if (! $wikiroles) {
+		my @wikiroles = $c->neo4j->session->run($Q->{wikiroles});
+		my %wikiroles = map { $_->get('slug') => $_->get('role') } @wikiroles;
+		$wikiroles = \%wikiroles;
+		$c->stash("wikiroles" => $wikiroles);
+	}
+	my $roles = $wikiroles->{$slug};
+	
+	# truth table Wiki access:
+	#  A B C D => access
+	#  0 - 1 - =>  open
+	#  0 - 0 1 =>  user
+	#  0 - 0 0 =>   no
+	#  1 0 - - =>   no
+	#  1 1 1 - =>  user
+	#  1 1 - 1 =>  user
+	# (A) = ARTICLE has role requirements
+	# (B) = USER satisfies the ARTICLE's role requirements
+	# (C) = COMMAND is 'view'
+	# (D) = USER has role for route of current COMMAND
+	
+	if ($roles) {  # (A)
+#		$role = "mojo:$role" if $role =~ m/^wiki[a-z]*$/;  # prevent recursion if database is corrupt
+		return $NO_ACCESS if ! grep { $c->skgb->_may_mojo($_, $key) } @$roles;  # (B)
+		return $USER_ACCESS if $wikicommand eq 'view';  # (C)
+	}
+	else {
+		return $OPEN_ACCESS if $wikicommand eq 'view';  # (C)
+	}
+	return $USER_ACCESS if $c->skgb->_may_mojo("mojo:wiki$wikicommand", $key);  # (D)
+	return $NO_ACCESS;
 }
 
 
-# sub _if_may {
-# 	my ($c, $right, $then) = @_;
-# 	
-# 	if (ref $then) {
-# 		# not implemented
-# 		die;
-# 	}
-# 	
-# 	return $c->skgb->may($right) ? $then : "🔒";
-# }
+# $c->auth_link_to person => $person->name, {entity => $person->handle}
+# $c->auth_link_to "$wikicommand:$slug" => $title
+sub _auth_link_to {
+	my ($c, $linktarget, $linktext, $params) = @_;
+	$linktarget =~ m/^(?:([a-z]+):)?(.+)$/ or return $linktext;
+	my $wikicommand = $1 // "mojo";
+	my $linkdest = $2;
+	my $route = $linkdest;
+	my $entity = $params->{entity};
+	if ($wikicommand ne "mojo") {
+		$route = "wiki$wikicommand";
+		$entity = SKGB::Intern::Article->normalise_slug($linkdest);
+	}
+#	say "auth_link_to: $route ($entity)";
+	
+	my $html = $c->render_to_string('link',
+		access   => $c->skgb->may("mojo:$route", undef, $entity),
+		session  => !! $c->skgb->session,
+		linkurl  => $c->url_for($route, entity => $entity, %$params),
+		linktext => $linktext,
+		showicon => 1,
+	);
+	$$html = substr $$html, 0, -1;  # remove trailing line break
+	return $html;
+}
 
 
 sub _link_auth_to {
@@ -174,19 +287,14 @@ sub _link_auth_to {
 	# Captures
 	push @url, shift if ref $_[0] eq 'HASH';
 	
-	# check auth
-	my $url = $c->url_for(@url);
-	my $target = $url[0];
-	my $access = $c->skgb->may("mojo:$target");
-	if (! $access) {
-		my $routes = $c->app->routes;
-		my $route = $routes->lookup($target);
-		$access = $route->parent == $routes if $route;  # top level route => no login requirement => public access
-#		$access ||= $c->has_access($url) unless $target && $target eq "_";  # old URL-based scheme
-	}
-	return $c->tag('a', class => 'no-access', @_) if ! $access;
+	$c->app->log->info('link_auth_to deprecated');
 	
-	return $c->tag('a', href => $url, @_);
+	# check auth
+	return $c->auth_link_to("mojo:$url[0]", $_[0]->());
+#	my $url = $c->skgb->_link_url("mojo", @url);
+#	my $restricted = ! $c->skgb->may("mojo:$url[0]");
+#	return $c->tag('a', class => 'no-access', @_) if $restricted;
+#	return $c->tag('a', href => $url, @_);
 }
 
 

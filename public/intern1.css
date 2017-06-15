@@ -220,6 +220,9 @@ TH {
 	border-right-color: #f00;
 	font-weight: normal;
 }
+#menu LI STRONG B A, #menu LI STRONG B A:hover {
+	font-weight: bold;
+}
 #menu HR {
 	display: block;
 	margin: 0 0 1px 0;

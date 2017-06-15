@@ -6,7 +6,7 @@
 
 %= form_for postliste => (method => 'GET') => begin
 <p><label><input type=checkbox name=all id=allcheckbox value="" <%= defined param('all') ? 'checked' : '' %>>
-auch Kontakte mit E-Mail zeigen</label>
+alle Kontakte zeigen</label>
 <input type=submit id=allsubmit>
 <script>
 // TODO: move this to DOM loaded event
@@ -33,7 +33,7 @@ document.getElementById("allsubmit").outerHTML = '';
 %  my $person = $row->{person};
 %  my @address = @{$row->{address}};
 <tr>
-<td><%= link_auth_to person => {person_placeholder => $person->handle} => begin %><%= $person->name %><% end %>
+<td><%= auth_link_to person => $person->name, {entity => $person->handle} %>
 <td><%= $person->membership->{status} ? "Mitglied" : "Nichtmitglied" %>
 %  for (my $i = 0; $i < $address_cols; $i++) {
 <td><%= $address[$i] || '' %>
@@ -42,7 +42,7 @@ document.getElementById("allsubmit").outerHTML = '';
 % }
 </table>
 
-<script type="text/javascript" src="DataTables/datatables.js"></script>
+<script type="text/javascript" src="/lib/DataTables/datatables.js"></script>
 <script>
 $(document).ready(function() {
 	var cols = $('#membertable tr')[1].childElementCount;
@@ -56,7 +56,7 @@ $(document).ready(function() {
 			targets: 0,
 			orderData: [ cols - 1 ]
 		}],
-		order: [[ 1, 'asc' ], [ 0, 'asc' ]],
+		order: [[ 0, 'asc' ]],
 		colReorder: true,
 		lengthMenu: [[20, 50, -1], [20, 50, "All"]],
 		iDisplayLength: 50,

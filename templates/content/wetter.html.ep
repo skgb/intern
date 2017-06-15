@@ -32,7 +32,6 @@ ATIS Dortmund 0231 9213330
 ATIS Düsseldorf 0211 421116
 -->
 <li><a href=http://wetter.gm.fh-koeln.de/>Gummersbach</a> (Hochschule)
-<li><a href=http://netzwerk.wetter.com/wetterstation/6997/>Müllenbach</a> (netzwerk.wetter.com)
 <li><a href=http://www.wetterdienst.de/Deutschlandwetter/Marienheide/Aktuell/H653>Gogarten</a> (wetterdienst.de)
 <li><a href=http://fluggs.wupperverband.de/swc/#/diagram?ts=fluggs__197,fluggs__196>Wassertemperatur</a> (Wupperverband)
 </ul>
@@ -56,6 +55,7 @@ ATIS Düsseldorf 0211 421116
 <li>yr.no: <a href=http://www.yr.no/place/Germany/North_Rhine-Westphalia/Brucher_Talsperre/avansert_meteogram.png>48 Stunden</a> / <a href=http://www.yr.no/place/Germany/North_Rhine-Westphalia/Brucher_Talsperre/long.html>10 Tage</a>
 <!-- (aktualisiert ca. 04 und 16 UT bzw. 07 und 19 UT)-->
 <li><a href=https://www.meteoblue.com/de/wetter/vorhersage/multimodel/brucher-talsperre_deutschland_2943622>Multi-Modell</a> (Meteoblue)
+<li><a href=http://www.wetterzentrale.de/maps/WRFOP12_075511_215.png>WRF-Diagramm</a> (<a href=http://www.wetterzentrale.de/show_diagrams.php?model=wrf&amp;var=92&amp;geoid=2166&amp;lid=OP>Wetterzentrale</a>)
 <li><a href=http://www.aviationweather.gov/adds/tafs?station_ids=EDDK&amp;std_trans=translated>Flughafen Köln/Bonn</a>
 <li><a href=http://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/luftsportberichte_node.html>Luftsportbericht</a> GAFOR-Gebiet 35 (DWD)
 </ul>

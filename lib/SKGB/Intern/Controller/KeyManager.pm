@@ -25,13 +25,13 @@ use SKGB::Intern::Person::Neo4p;
 
 my $Q = {
   searchname => REST::Neo4p::Query->new(<<QUERY),
-MATCH (p:Person)-[:ROLE|GUEST*..3]->(:Role)-[:MAY]->(:Right {right:'login'})
+MATCH (p:Person)-[:ROLE|GUEST*..4]->(:Role {role:'user'})
  WHERE p.name =~ {query} OR p.userId =~ {query} OR (p.userId + '\@skgb.de') =~ {query}
  RETURN p
  LIMIT 2  // we need to know whether there are 0, 1 or multiple results
 QUERY
   searchmail => REST::Neo4p::Query->new(<<QUERY),
-MATCH (a:Address {type:'email'})-[:FOR]->(p:Person)-[:ROLE|GUEST*..3]->(:Role)-[:MAY]->(:Right {right:'login'})
+MATCH (a:Address {type:'email'})-[:FOR]->(p:Person)-[:ROLE|GUEST*..4]->(:Role {role:'user'})
  WHERE a.address =~ {query}
  RETURN p, a
 QUERY
@@ -103,6 +103,12 @@ sub factory {
 #		say "name/id '$query' found for $#persons+1 persons";
 	}
 	
+	my $secure = $self->param('secure');
+	if ($secure) {
+		$self->_should_secure_session() or return $self->render(template => 'key_manager/forbidden', status => 403);
+	}
+	my $code_length = $secure ? $self->config->{keyfactory}->{length_secure} : $self->config->{keyfactory}->{length_on_request};
+	
 	# Because every email address might relate to any number of persons, we
 	# send each of these persons an individual access code. The easiest way to
 	# do this is to send multiple emails. OTOH a single person might have
@@ -110,17 +116,40 @@ sub factory {
 	# determine the primary/default email address(es) -- happening in _send_key_mail.
 	foreach my $person (@persons) {
 		
-		my $code = $self->_generate_luhn( $self->config->{keyfactory}->{length_on_request} );
+		my $code = $self->_generate_luhn( $code_length );
 	#	my $r1 = REST::Neo4p::Relationship->new($code => $person, 'IDENTIFIES');  # bug in Neo4p: is_a() instead of isa()
 		$code->set_property({ creation => SKGB::Intern::AccessCode::new_time() });
 		my $r1 = $code->relate_to($person->{_node}, 'IDENTIFIES');
 		
 		my $code_string = $code->get_property('code');
+		return $self->_secure_session($code, $code_string) if $secure;
+		
 #		$self->skgb->legacy->digestauth( $person, $code_string );
 		$self->_send_key_mail($person, $code_string, $email);
 	}
 	
 	return $self->render(user_unknown => 0, user_ambiguous => 0);
+}
+
+
+sub _should_secure_session {
+	my ($self) = @_;
+	
+	my $session = $self->skgb->session;
+	my $may_login = $session && $session->user && $self->skgb->may('user');
+	
+	return $may_login;
+	# TODO: return false if this user may not create a secure session right now, e. g. because the session already is secure, another secure session code already exists and replacing it is not allowed by policy, the current session key has already created a secure session, the user lacks the rights required for secure sessions, ...
+}
+
+
+sub _secure_session {
+	my ($self, $node, $key) = @_;
+	
+	$node->set_property({ secure => \1 });
+	my $session = $self->skgb->session( $key );  # change the session cookie
+	
+	return $self->redirect_to( $self->url_for('auth', entity => $session->handle) );
 }
 
 
@@ -313,12 +342,15 @@ sub logged_in {
 	my $session = $self->skgb->session;
 	if ( $session->valid ) {
 		if ( $self->skgb->may ) {
-			return 1;
+			return 1;  # user access, authenticated and authorized
 		}
 		# authorization bad!
 		
 		$self->render(template => 'key_manager/forbidden', status => 403, session => $session);
 		return undef;
+	}
+	elsif ( $self->skgb->may ) {
+		return 1;  # public access, not authenticated
 	}
 	# authentication bad!
 	
@@ -427,10 +459,10 @@ _
 	}
 	
 	my $session;
-	my $may_login = $self->skgb->may('login', $key) && ! $self->flash('reason');
+	my $may_login = $self->skgb->may('user', $key) && ! $self->flash('reason');
 	if ($may_login) {
 		$session = $self->skgb->session( $key );  # set the session cookie
-		$may_login = $session && $session->user && $self->skgb->may('login');
+		$may_login = $session && $session->user && $self->skgb->may('user');
 		if ($may_login) {
 			
 			my $target = $self->param('target') || 'index';

@@ -40,7 +40,7 @@ sub auth {
 		return $self->render(template => 'key_manager/forbidden', status => 403);
 	}
 	
-	return $self->_tree if $self->stash('code_placeholder');
+	return $self->_tree if $self->stash('entity');
 	
 	my $template = 'key_manager/codelist';
 	my $param = $self->session('key');
@@ -68,7 +68,7 @@ sub auth {
 sub _may_modify_role {
 	my ($self, $code) = @_;
 	# despite the name this condition is currently only valid for deletion, not for addition!
-	return $code && ! $code->session_expired && ($code->user->equals($self->skgb->session->user) || $self->skgb->may('sudo'));
+	return $code && ! $code->session_expired && ($code->user->equals($self->skgb->session->user) || $self->skgb->may('super-user'));
 }
 
 
@@ -109,7 +109,55 @@ _
 			$t->commit;
 		}
 	}
-	$self->redirect_to( $self->url_for('auth', code_placeholder => $code->handle) );
+	$self->redirect_to( $self->url_for('auth', entity => $code->handle) );
+}
+
+
+sub _get_tree {
+	my ($self, $root, $nodes, $relationships) = @_;
+	
+	if (! $root || ! $nodes || ! $relationships) {
+		# retrieve and parse database graph
+		($nodes, $relationships) = ({}, {});
+		my $param = 0 + $self->stash('entity');
+		my $t = $self->neo4j->session->begin_transaction;
+		$t->{return_graph} = 1;  # the Neo4j::* interfaces aren't finalised
+		my $result = $t->_commit(<<END, id => $param);
+MATCH a=(c:AccessCode)-[*]->(r:Role)
+WHERE id(c) = {id}
+RETURN a
+END
+		foreach my $record ( $result->list ) {
+			foreach my $node ( @{$record->{graph}->{nodes}} ) {
+				next if $nodes->{ $node->{id} };
+				($node->{rel_out}, $node->{rel_in}) = ([], []);
+				$nodes->{ $node->{id} } = $node;
+			}
+			foreach my $rel ( @{$record->{graph}->{relationships}} ) {
+				next if $relationships->{ $rel->{id} };
+				$relationships->{ $rel->{id} } = $rel;
+				push @{$nodes->{ $rel->{startNode} }->{rel_out}}, $rel->{id};
+				push @{$nodes->{ $rel->{endNode} }->{rel_in}}, $rel->{id};
+			}
+		}
+		foreach my $node_id ( keys %$nodes ) {
+			if (! @{$nodes->{$node_id}->{rel_in}}) {
+				$root and die "multiple roots -- error in query / DB corrupt";
+				$root = $nodes->{$node_id};
+			}
+		}
+	}
+	
+	# build tree
+	$root->{children} = [];
+	foreach my $rel_id ( @{$root->{rel_out}} ) {
+		my $rel = $relationships->{ $rel_id };
+		my $node = $nodes->{ $rel->{endNode} };
+#		$node->{via} = $rel;  # BUG: multiple rels to single node is possible
+		push @{$root->{children}}, $self->_get_tree($node, $nodes, $relationships);
+#		next if ! grep m/^Person$/, @{$node->{labels}};
+	}
+	return $root;
 }
 
 
@@ -117,7 +165,7 @@ sub _tree {
 	my ($self) = @_;
 	
 	my $user = $self->skgb->session->user;
-	my $param = 0 + $self->stash('code_placeholder');
+	my $param = 0 + $self->stash('entity');
 	
 	my ($code, @codes) = $self->neo4j->get_persons($Q->{code}, code => $param);
 #	say Data::Dumper::Dumper $code;
@@ -130,6 +178,25 @@ sub _tree {
 	));
 	
 	return $self->_modify_roles($codes[0]) if $self->param('action') && $self->param('action') eq 'modify-roles';
+	
+	my $tree = $self->_get_tree;
+	
+	
+	my @graphs = ();
+	my $t = $self->neo4j->session->begin_transaction;
+	$t->{return_graph} = 1;  # the Neo4j::* interfaces aren't finalised
+	my $result = $t->_commit(<<END, id => $param);
+MATCH a=(c:AccessCode)-[*]->(r:Role)
+WHERE id(c) = {id}
+RETURN a
+END
+	foreach my $record ( $result->list ) {
+		push @graphs, $record->{graph};
+	}
+	
+	
+	
+	
 	
 	my @roles;
 # 	my @roles = $self->neo4j->session->run(<<_, code => $param);
@@ -183,41 +250,7 @@ _
 #	say Data::Dumper::Dumper \@roles;
 #	say Data::Dumper::Dumper \%role_negation;
 	
-	my @privs;
-	my %priv_negation = map { $_->get => 1 } $self->neo4j->session->run(<<_, code => $param);
-MATCH (c:AccessCode)-[a:GUEST|ROLE|NOT|MAY|ACCESS*..4]->(s:Right)
-WHERE id(c) = {code} AND type(head(a)) = 'NOT'
-RETURN s.right
-_
-	foreach my $priv ( $self->neo4j->session->run(<<_, code => $param) ) {
-MATCH (c:AccessCode)-[:IDENTIFIES]->(:Person)-[:GUEST|ROLE*..3]->(r:Role)
-WHERE id(c) = {code}
-MATCH (r)-[:MAY|ACCESS]->(s)
-WHERE (s:Right) OR (s:Resource)
-RETURN s, false AS special, (s:Right) AS new
-ORDER BY s.name, s.right
-UNION
-MATCH (c:AccessCode)-[:GUEST|ROLE*..3]->(r:Role)
-WHERE id(c) = {code}
-MATCH (r)-[:MAY]->(s)
-WHERE (s:Right)
-RETURN s, true AS special, true AS new
-ORDER BY s.name, s.right
-_
-		push @privs, {
-			priv => $priv->get(0),
-			special => $priv->get('special'),
-			new => $priv->get('new'),
-			negated => $priv->get(0)->{right} ? $priv_negation{$priv->get(0)->{right}} : undef,
-		};
-	}
-#	say Data::Dumper::Dumper \@privs;
-#	say Data::Dumper::Dumper \%priv_negation;
-	
-#	my @p = ($self->skgb->may('adsd'),$self->skgb->may('member-profile'));
-#	say Data::Dumper::Dumper \@p;
-	
-	return $self->render(template => 'key_manager/authtree', logged_in => $user, codes => \@codes, roles => \@roles, privs => \@privs);
+	return $self->render(template => 'key_manager/authtree', logged_in => $user, codes => \@codes, roles => \@roles, tree => $tree, graphs => \@graphs);
 }
 
 

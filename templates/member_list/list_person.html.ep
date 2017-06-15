@@ -18,7 +18,7 @@
 %#  $profile_url = $profile_url->query(node => $member->node_id) unless $member->equals($user);
 %#  next if ! $member->membership->{status};
 <tr>
-<td><%= link_auth_to person => {person_placeholder => $member->handle} => begin %><%= $member->name %><% end %>
+<td><%= auth_link_to person => $member->name, {entity => $member->handle} %>
 <td><%= $member->membership->{status_long} %>
 <td><%= $member->gs_verein_id || '–' %>
 <td><%= fc($member->name_sortable) %>
@@ -26,7 +26,7 @@
 </table>
 <!--p>Mitgliederliste access: <%#= has_access ? 'YES' : 'NO' %>-->
 
-<script type="text/javascript" src="/DataTables/datatables.js"></script>
+<script type="text/javascript" src="/lib/DataTables/datatables.js"></script>
 <script>
 // https://datatables.net/
 $(document).ready(function() {

@@ -35,7 +35,7 @@ sub new {
 	if (defined $self->{code}) {
 		my ($row, @rows) = $self->app->neo4j->get_persons(<<_, code => $self->{code});
 MATCH (c:AccessCode)-[:IDENTIFIES]->(p:Person)
-WHERE c.code = {code} AND (p)-[:ROLE|GUEST*..3]->(:Role)-[:MAY]->(:Right {right:'login'})
+WHERE c.code = {code} AND (p)-[:ROLE|GUEST*..4]->(:Role {role:'user'})
 RETURN p, c, id(c)
 _
 		@rows and die "multiple results for AccessCode query -- database corrupt?";
@@ -103,10 +103,16 @@ sub access {
 }
 
 
+sub secure {
+	my ($self) = @_;
+	return $self->{code} && $self->{code}->{secure};
+}
+
+
 sub expiration {
 	my ($self) = @_;
 	if (! $self->{expiration}) {
-		my $ttl = $self->app->config->{ttl}->{key};
+		my $ttl = $self->secure ? $self->app->config->{ttl}->{secure} : $self->app->config->{ttl}->{key};
 		$self->{expiration} = $self->creation && POSIX::strftime($TIME_FORMAT, gmtime( DateTime::Format::ISO8601->parse_datetime($self->creation)->epoch + $ttl )) || '';
 	}
 	return $self->{expiration};

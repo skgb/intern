@@ -1,0 +1,35 @@
+%# S = session / is logged in?     = $session
+%# Z = as-is access?               = $access
+%# A = always open to the public?  = ! $limited
+%# 
+%#         S Z A
+%# strange x 0 1
+%# grey    x 1 1
+%# grey    0 1 x
+%# yellow  0 0 0
+%# red     1 0 0
+%# green   1 1 0
+%
+% my $limited = $access != $SKGB::Intern::Plugin::AuthManager::OPEN_ACCESS;
+% my $image = undef;
+% my $title = undef;
+% if ($limited && $access && $session) {
+%  $image = "open-green.svg";
+%  $title = "";
+% }
+% elsif ($limited && ! $access && $session) {
+%  $image = "closed-red.svg";
+%  $title = "kein Zugriff";
+% }
+% elsif ($limited && ! $access && ! $session) {
+%  $image = "closed-yellow.svg";
+%  $title = "Anmeldung erforderlich";
+% }
+% elsif ($access && (! $limited || ! $session)) {
+%  $image = "open-grey.svg";
+%  $title = "öffentlich zugänglich";
+% }
+%# say Data::Dumper::Dumper ($limited, $access, $session, $image, $linktext);
+%
+% my $link_403 = $c->config->{intern}->{link_to_403};
+<% if ($access || ! $limited || $link_403) { %><a href="<%= $linkurl %>"><% } else { %><a><% } %><%= $linktext %></a><% if ($image && $showicon) { %> <img src="/icons/lock-<%= $image %>" alt="<%= $access ? "🔓" : "🔒" %>"<%== $title && " title=\"$title\"" %> style="height:2ex"><% } %>

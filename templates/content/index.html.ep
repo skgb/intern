@@ -6,38 +6,38 @@
 <p>Während der Entwicklungsphase muss auf diesem Server mit unangekündigten Wartungsarbeiten gerechnet werden, die jederzeit den Betrieb stören können. Bei Problemen bitte Rückmeldung an den IT-Ausschuss!
 
 <h2>Index</h2>
-<p>Es folgt eine Übersicht der derzeit in SKGB-intern 2 verfügbaren Ressourcen. Für manche Ressourcen ist eine <%= link_auth_to 'Anmeldung', 'login' %> erforderlich.
+<p>Es folgt eine Übersicht der derzeit in SKGB-intern 2 verfügbaren Ressourcen. Für manche Ressourcen ist eine <%= auth_link_to login => "Anmeldung" %> erforderlich.
 <br><br>
 
 <p>Mitgliederdienste:
 <ul>
-<li><%= link_auth_to wetter => begin %>Wetter-Links<% end %>
-<li><%= link_auth_to regeln => begin %>SKGB-Regeln<% end %>
+<li><%= auth_link_to wetter => "Wetter-Links" %>
+<li><%= auth_link_to regeln => "SKGB-Regeln" %>
 </ul>
 
 <p>Mitgliederdatenbank:
 <ul>
-<li><%= link_auth_to mglliste => begin %>Mitgliederliste<% end %>
-<li><%= link_auth_to _ => begin %>Jugendliste<% end %>
-<li><%= link_auth_to postliste => begin %>Anschriftenliste<% end %>
-<li><%= link_auth_to list_leaving => begin %>Austrittsliste<% end %>
-<li><%= link_auth_to list_budget => begin %>Einnahmenliste<% end %>
-<li><%= link_auth_to list_berth => begin %>Liegeplatzliste<% end %>
-<!--<li><%= link_auth_to _ => begin %>Schlüsselliste<% end %>-->
+<li><%= auth_link_to mglliste => "Mitgliederliste" %>
+<li><%= auth_link_to _ => "Jugendliste" %>
+<li><%= auth_link_to postliste => "Postanschriften" %>
+<li><%= auth_link_to list_leaving => "Austritte" %>
+<li><%= auth_link_to list_budget => "Einnahmen" %>
+<li><%= auth_link_to list_berth => "Liegeplätze" %>
+<!--<li><%= auth_link_to _ => "Schlüsselliste" %>-->
 </ul>
 
 <p>Vereinsverwaltung:
 <ul>
-<li><%= link_auth_to exportlisten => begin %>Export (Listen-Schnittstelle)<% end %> (lädt langsam)
-<li><%= link_auth_to dosb => begin %>Zugang zu den Verbänden (mit Mitgliederzahlen zur Meldung)<% end %>
-<!--<li><%= link_auth_to _ => begin %>aktuelle Mitgliederzahlen<% end %> (für Vorstandssitzung)-->
-<li><%= link_auth_to stegdienstliste => begin %>Stegdienstliste erzeugen<% end %>
+<li><%= auth_link_to exportlisten => "Export (Listen-Schnittstelle)" %> (lädt langsam)
+<li><%= auth_link_to dosb => "Zugang zu den Verbänden (mit Mitgliederzahlen zur Meldung)" %>
+<!--<li><%= auth_link_to _ => "aktuelle Mitgliederzahlen" %> (für Vorstandssitzung)-->
+<li><%= auth_link_to stegdienstliste => "Stegdienstliste erzeugen" %>
 </ul>
 
 <p>Systemdienste und Experimente:
 <ul>
-<li><%= link_auth_to export1 => begin %>Export nach SKGB-intern 1 (GS-Verein–Schnittstelle)<% end %> (lädt langsam)
-<li><%== $self->skgb->may('sudo') ? '<a href=/auth/?all>Auth</a>' : link_auth_to auth => begin %>Auth<% end %>
-<li><%= link_auth_to list_person => begin %>Personenliste<% end %>
-<li><%= link_auth_to wikiview => begin %>Wiki<% end %>
+<li><%= auth_link_to export1 => "Export nach SKGB-intern 1 (GS-Verein–Schnittstelle)" %> (lädt langsam)
+<li><%== $self->skgb->may('super-user') ? '<a href=/auth/?all>Auth</a>' : auth_link_to auth => "Auth" %>
+<li><%= auth_link_to list_person => "Personenliste" %>
+<li><%= auth_link_to wikiview => "Wiki" %>
 </ul>

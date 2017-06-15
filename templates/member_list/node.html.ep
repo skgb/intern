@@ -8,7 +8,7 @@
 % my $has_primary_email = scalar $person->primary_emails;
 % my $i_am_an_intern1_user = $person->legacy_user && $has_primary_email && $person->node_id == $self->skgb->session->user->node_id;
 % my $has_skgb_email = $person->legacy_user && $has_primary_email && $person->membership && $person->membership->{status_long} ne 'Nichtmitglied';
-Handle für Permalink:  <%= link_auth_to person => {person_placeholder => $person->legacy_user} => begin %><%= $person->legacy_user %><% end %><%== $i_am_an_intern1_user ? "  (= Benutzername für <a href=http://intern1.skgb.de/>SKGB-intern 1</a>)" : "" %>
+Handle für Permalink:  <%= $person->legacy_user ? auth_link_to person => $person->legacy_user, {entity => $person->legacy_user} : "" %><%== $i_am_an_intern1_user ? "  (= Benutzername für <a href=http://intern1.skgb.de/>SKGB-intern 1</a>)" : "" %>
 % my $skgbEmail = $has_skgb_email ? $person->legacy_user . "\@skgb.de" : "";
 % my $skgbEmailHref = $skgbEmail ? " href=mailto:$skgbEmail" : "";
 SKGB–E-Mail–Adresse:   <a<%= $skgbEmailHref %>><%= $skgbEmail %></a>
@@ -19,7 +19,7 @@ Mitgliedsstatus:  <%= $person->membership->{status_long} %>
 Jahresbeitrag:  <%= $may_payment_data ? ($person->_property('debitBase') || 0) . " €" : "🔒" %>
 Lastschriftmandate:   <%= $may_payment_data ? scalar @$mandates ? join ', ', @$mandates : "keine" : "🔒" %>
 Debitorenstammnummer:  <%= $may_payment_data ? $person->_property('debitorSerial') : "🔒" %>
-% my $gsVereinLink = $person->gs_verein_id && ($person->gs_verein_id le '396' || $person->gs_verein_id =~ m/^Gast/) ? $c->url_for('paradox', person_placeholder => $person->handle) : undef;
+% my $gsVereinLink = $person->gs_verein_id && ($person->gs_verein_id le '396' || $person->gs_verein_id =~ m/^Gast/) ? $c->url_for('paradox', entity => $person->handle) : undef;
 % my $gsVereinExplanation = $gsVereinLink ? $self->skgb->may('mojo:paradox') ? "" : "Rechte nicht ausreichend für GS-Verein" : "nicht in GS-Verein";
 GS-Verein-Nummer / MNr-alt:  <%= $person->gs_verein_id %>  <input type=button value="in GS-Verein anzeigen" <%== ! $gsVereinExplanation ? "onclick=\"document.location.href='$gsVereinLink'\"" : "disabled title=\"$gsVereinExplanation\"" %>>
 Eintritt:  <%= $person->membership->{joined} && $person->membership->{joined} eq '1967-09-01' ? 'Gründungsmitglied 1967' : $person->membership->{joined} %>
@@ -93,7 +93,7 @@ Bekannte Beziehungen zu anderen Personen:
 %  $type =~ s/Address/Kontaktdaten/;
 %  $type =~ s/Mandate/Zahlungsdaten/;
 %  $type =~ s/Boat/Boot/;
-<%= link_auth_to person => {person_placeholder => $related->{person}->handle} => begin %><%= $related->{person}->name %><% end %>: <%= $type %>
+<%= auth_link_to person => $related->{person}->name, {entity => $related->{person}->handle} %>: <%= $type %>
 % }
 <%= "keine\n" if ! scalar @$all_related;
 

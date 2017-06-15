@@ -32,6 +32,7 @@ my %options = (
 	resources_file => undef,
 	roles_file => undef,
 	roles_dev_file => undef,
+	wiki_init_file => undef,
 	intern_dir => 'conf',
 	create_paradox => undef,
 	paradox_no_privacy => undef,
@@ -45,6 +46,7 @@ GetOptions(
 	'resources|s=s' => \$options{resources_file},
 	'roles|r=s' => \$options{roles_file},
 	'roles-dev-file=s' => \$options{roles_dev_file},
+	'wiki-init-file=s' => \$options{wiki_init_file},
 	'intern|i=s' => \$options{intern_dir},
 	'gs-verein' => \$options{create_paradox},
 	'no-gs-verein-privacy' => \$options{paradox_no_privacy},
@@ -68,6 +70,7 @@ my $alles_file = $ARGV[0];
 $options{resources_file} = "$options{intern_dir}/resources.cypher" if (! defined $options{resources_file});
 $options{roles_file} = "$options{intern_dir}/roles.cypher" if (! defined $options{roles_file});
 $options{roles_dev_file} = "$options{intern_dir}/roles.development.cypher" if (! defined $options{roles_dev_file});
+$options{wiki_init_file} = "$options{intern_dir}/wiki.cypher" if (! defined $options{wiki_init_file});
 $options{paradox_file} = "$options{intern_dir}/archive/2016-12-31/gs-verein-archive.cypher" if (! defined $options{paradox_file});
 
 
@@ -549,8 +552,8 @@ while (@boatsCreate) {
 	next if ! $create;
 	print ",\n", Encode::encode 'UTF-8', $create;
 }
-print "\n";
-
+#print "\n;";
+print "\n\n";
 
 foreach my $member (@members) {
 	my @create = ();
@@ -560,7 +563,7 @@ foreach my $member (@members) {
 	my $subid = 0;
 	
 	# Ausgetretene mit beendeter Geschäftsbeziehung: Sperren!
-	next if grep m/^$gsvereinId$/, qw(369 388 376);
+	next if grep m/^$gsvereinId$/, qw(205 280 302 309);
 	
 	# membership data
 	my $memberType = $member->{'Abteilung'};
@@ -720,8 +723,8 @@ foreach my $member (@members) {
 	
 	# software data
 #	push @create, "($id)-[:ROLE]->(user)" if $email || $member->{'Zu3'} =~ m/@/;
-	push @create, "($id)-[:ROLE]->(admin)" if $member->{'Betreuer'} eq 'IT';
-	push @create, "($id)-[:ROLE]->(superUser)" if $member->{'Betreuer'} eq 'IT' && $gsvereinId =~ m/^0/;
+	push @create, "($id)-[:ROLE]->(admin)" if $member->{'Betreuer'} =~ m/\bIT\b/;
+	push @create, "($id)-[:ROLE]->(superUser)" if $member->{'Betreuer'} =~ m/\bIT\b/ && $gsvereinId =~ m/^0/;
 	
 	print "CREATE\n", Encode::encode 'UTF-8', shift @create;
 	while (@create) {
@@ -731,229 +734,43 @@ foreach my $member (@members) {
 	}
 	print "\n";
 }
-
 print "\n\n";
-cat_file $options{paradox_file};
+
+print `sed -e '30,54d' -e '1,3d' -e '/^\\/\\//d' -e '/\\[:ROLE.*\\(user\\)/d' $options{intern_dir}/archive/2016/neuaufnahmen.cypher`;
+print `sed -e '/^\\/\\//d' -e '/\\[:ROLE.*\\(user\\)/d' $options{intern_dir}/archive/2017/neuaufnahmen.cypher`;
+
+#print "\n;\n\n";
+#cat_file $options{paradox_file};
+# Parsing nodes that have been split into several rows is very slow with the Neo4j shell. Since the paradox_file is like that, we merge the rows back together here for speed.
+open(my $fhp, '< :encoding(UTF-8)', $options{paradox_file}) or die "Could not open file '$options{paradox_file}' $!";
+my $multirow = '';
+while (my $row = <$fhp>) {
+	chomp $row;
+	if (! $row) {
+		say Encode::encode 'UTF-8', $multirow;
+		$multirow = '';
+		next;
+	}
+	$row =~ s|\s*//--(?:(?!//--).)*$||;  # all comments in the paradox_file must begin with two dashes (//--) to avoid this regex matching URLs
+	$multirow .= "$row ";
+}
+close $fhp;
+
+#print "\n";
+
+
+
 
 
 if ($options{dev}) {
 	# copy development role/right configuration
+#	print ";\n\n";
 	cat_file $options{roles_dev_file};
-	print "\n";
 }
+cat_file $options{wiki_init_file};
 
-#print ";\nCOMMIT\n";
-print `sed -e '30,54d' -e '1,3d' -e '/^\\/\\//d' -e '/\\[:ROLE.*\\(user\\)/d' $options{intern_dir}/archive/2016-01-01/neuaufnahmen.cypher`;
-print `sed -e '/^\\/\\//d' -e '/\\[:ROLE.*\\(user\\)/d' $options{intern_dir}/archive/2017-01-01/neuaufnahmen.cypher`;
-
-
-# Step 6: Write ALLES.ASC to disc for testing
-
-# if ($options{test}) {
-# 	use Try::Tiny;
-# 	use REST::Neo4p;
-# 	use SKGB::Intern::Model::Person;
-# 	
-# 	my $test_file0 = 't/J-ALLES0.ASC';
-# 	my $test_file1 = 't/J-ALLES1.ASC';
-# 	#my $test_format = "> :crlf :encoding(windows1252)";
-# 	my $test_format = "> :encoding(UTF-8)";
-# 	#my @test_keys = @keys;
-# 	my @test_keys = qw( Geburt Mitnum Name Vorname Titel Abteilung Mitseit Austritt Telefon Telefon2 Zu1 Telefax Zu2 Zu3 Plz Ort Strasse Zusatz Debinr Zu9 Zu4 Zu5 Zu6 Zu15 Aktiv Zu14 Zu12 Zu16 Geschlecht Zu8 );
-# 	
-# 	my $Q = {
-# 	  p => REST::Neo4p::Query->new(<<QUERY),
-# MATCH (p:Person) WHERE p.gsvereinId = {id} RETURN p LIMIT 1
-# QUERY
-# 	  Geburt => REST::Neo4p::Query->new(<<QUERY),
-# MATCH (p:Person) WHERE p.gsvereinId = {id} RETURN p.born LIMIT 1
-# QUERY
-# 	  Mitnum => sub { shift->gs_verein_id },
-# 	  Name => undef,
-# 	  Vorname => undef,
-# 	  Titel => REST::Neo4p::Query->new(<<QUERY),
-# MATCH (p:Person) WHERE p.gsvereinId = {id} RETURN p.prefix LIMIT 1
-# QUERY
-# 	  Abteilung => REST::Neo4p::Query->new(<<QUERY),
-# MATCH (p:Person)--(s:Role)--(m:Role {role:'member'}) WHERE s.role <> 'guest-member' AND s.role <> 'honorary-member' AND p.gsvereinId = {id} RETURN CASE WHEN (p)--(:Role{role:'guest-member'})--(m) THEN s.name+', Gastmitglied' ELSE s.name END AS status
-# UNION
-# MATCH (p:Person)-[r]-(s:Role {role:'honorary-member'}) WHERE p.gsvereinId = {id} RETURN CASE WHEN r.regularContributor THEN 'Aktiv, '+s.name ELSE 'Passiv, '+s.name END AS status
-# UNION
-# MATCH (p:Person) WHERE p.gsvereinId = {id} AND NOT (p)--(:Role)--(:Role{role:'member'}) RETURN 'Nichtmitglied' AS status
-# QUERY
-# 	  Mitseit => REST::Neo4p::Query->new(<<QUERY),
-# MATCH (p:Person)-[r]-(s:Role)--(:Role {role:'member'}) WHERE s.role <> 'guest-member' AND p.gsvereinId = {id} RETURN r.joined
-# QUERY
-# 	  Austritt => undef,
-# 	  Telefon => REST::Neo4p::Query->new(<<QUERY),
-# MATCH (p:Person)-[r {type:'privat'}]-(a:Address {type:'phone'}) WHERE p.gsvereinId = {id} RETURN a.address
-# QUERY
-# 	  Telefon2 => REST::Neo4p::Query->new(<<QUERY),
-# MATCH (p:Person)-[r {type:'beruflich'}]-(a:Address {type:'phone'}) WHERE p.gsvereinId = {id} RETURN a.address
-# QUERY
-# 	  Zu1 => REST::Neo4p::Query->new(<<QUERY),
-# MATCH (p:Person)-[r {type:'mobil'}]-(a:Address {type:'phone'}) WHERE p.gsvereinId = {id} RETURN a.address
-# QUERY
-# 	  Telefax => REST::Neo4p::Query->new(<<QUERY),
-# MATCH (p:Person)--(a:Address {type:'fax'}) WHERE p.gsvereinId = {id} RETURN a.address
-# QUERY
-# 	  Zu2 => REST::Neo4p::Query->new(<<QUERY),
-# MATCH (p:Person)-[{primary:true}]-(a:Address {type:'email'}) WHERE p.gsvereinId = {id} RETURN a.address
-# QUERY
-# 	  Zu3 => undef,
-# 	  Plz => undef,
-# 	  Ort => undef,
-# 	  Strasse => undef,
-# 	  Zusatz => undef,
-# 	  Debinr => REST::Neo4p::Query->new(<<QUERY),
-# MATCH (p:Person) WHERE p.gsvereinId = {id} RETURN '1'+p.debitorSerial+'0' LIMIT 1
-# QUERY
-# 	  Zu9 => undef,
-# 	  Zu4 => undef,
-# 	  Zu5 => undef,
-# 	  Zu6 => undef,
-# 	  Zu15 => undef,
-# 	  Aktiv => undef,
-# 	  Zu14 => undef,
-# 	  Zu12 => REST::Neo4p::Query->new(<<QUERY),
-# MATCH (p:Person) WHERE p.gsvereinId = {id} RETURN p.skills LIMIT 1
-# QUERY
-# 	  Zu16 => undef,
-# 	  Geschlecht => REST::Neo4p::Query->new(<<QUERY),
-# MATCH (p:Person) WHERE p.gsvereinId = {id} RETURN p.gender LIMIT 1
-# QUERY
-# 	  Zu8 => undef,
-# 	};
-# 	
-# 	open(my $fht0, $test_format, $test_file0) or die "Could not open file '$test_file0' $!";
-# 	print $fht0 join ("\t", @test_keys), "\n";
-# 	foreach my $member (@members) {
-# 		my @row = ();
-# 		foreach my $key (@test_keys) {
-# 			if ($key eq 'Mitseit') { push @row, iso_date $member->{$key}; next; }
-# 			push @row, $member->{$key} || '';
-# 		}
-# 		print $fht0 join("\t", @row), "\n";
-# 	}
-# 	close $fht0;
-# 	
-# 	# initiate DB connection
-# 	try {
-# 		REST::Neo4p->connect('http://127.0.0.1:7474', 'neo4j', 'pass');
-# 	} catch {
-# 		ref $_ ? $_->can('rethrow') && $_->rethrow || die $_->message : die $_;
-# 	};
-# 	
-# 	sub execute {  # execute_memory
-# 		my ($query, $limit, @params) = @_;  $limit ||= 1;
-# 		$query->execute(@params);
-# 		my @rows = ();
-# 		while ( $limit-- && (my $row = $query->fetch) ) {
-# 			push @rows, $row;
-# 		}
-# 		$query->finish;
-# 		return wantarray ? @rows : $rows[0];
-# 	}
-# 	
-# 	open(my $fht1, $test_format, $test_file1) or die "Could not open file '$test_file1' $!";
-# 	print $fht1 join "\t", @test_keys;
-# 	print $fht1 "\n";
-# 	foreach my $member (@members) {
-# 		my @row = ();
-# 		foreach my $key (@test_keys) {
-# 			my $q = $Q->{$key};
-# 			if (! $q) {
-# 				push @row, 'undef';
-# 			}
-# 			elsif (ref $q eq "REST::Neo4p::Query") {
-# 				my $r = execute($q , 1, (id => $member->{'Mitnum'}));
-# 				# possibly REST/Neo4p/Query.pm:120 must read JSON::XS->new->utf8; to make this work without extra decoding
-# 				$r = $r ? $r->[0] || '' : '';
-# 				$r = Encode::decode("utf8", $r );
-# #				Encode::_utf8_on($r);  # doesn't have any effect
-# #				say STDERR utf8::is_utf8($r) . " $key $r" if $r;
-# 				push @row, $r;
-# 			}
-# 			elsif (ref $q eq "CODE") {
-# 				my $r = execute($Q->{p}, 1, (id => $member->{'Mitnum'}) );
-# 				if ($r) {
-# 					my $p = SKGB::Intern::Model::Person->new($r->[0]);
-# 					push @row, $q->($p) || '';
-# 				}
-# 				else {
-# 					push @row, '';
-# 				}
-# 			}
-# 			else {
-# 				die 'WTF';
-# 			}
-# 		}
-# 		print $fht1 join("\t", @row), "\n";
-# 	}
-# 	close $fht1;
-# }
-
-
-
-
-
-
-
-
-	#my $email = $member->{'Zu2'};
-	#push @create, "(${id}_".++$subid.":Address {type:'email', address:'$email'})-[:FOR {primary:true}]->($id)" if $email;
-	#push @create, "(${id}_".++$subid.":Address {type:'street', address:'$home'})-[:FOR {type:'privat'}]->($id)";
-	#my $phone1 = $member->{'Telefon'};
-	#push @create, "(${id}_".++$subid.":Address {type:'phone', address:'$phone1'})-[:FOR {type:'privat'}]->($id)" if $phone1;
-	#my $phone2 = $member->{'Telefon2'};
-	#push @create, "(${id}_".++$subid.":Address {type:'phone', address:'$phone2'})-[:FOR {type:'beruflich'}]->($id)" if $phone2;
-	#$member->{'Zu1'} =~ m/^(.*)(?: \((.*)\))?$/;
-	#my $phone3 = $1;
-	#my $phone3Comment = $2 ? ", comment:'$2'" : "";
-	#push @create, "(${id}_".++$subid.":Address {type:'phone', address:'$phone3'})-[:FOR {type:'mobil'$phone3Comment}]->($id)" if $phone3;
-	#my $fax = $member->{'Telefax'};
-	#push @create, "(${id}_".++$subid.":Address {type:'fax', address:'$fax'})-[:FOR]->($id)" if $fax;
-
-
-
-
-
-
-
-
-
-
-#say Data::Dumper::Dumper(\@members);
-
-
-exit 0;
-
-__END__
-
-
-// DSV-Queries:
-
-// Jugendliche männlich
-MATCH (r:Role{role:'youth-member'})<-[m]-(p:Person) WHERE r.role <> 'guest-member' AND (NOT has(m.leaves) OR m.leaves >= '2016') AND p.gender = 'M' RETURN m
-
-// Erwachsene weiblich
-MATCH (:Role{role:'member'})<--(r:Role)<-[m]-(p:Person), (j:Role{role:'youth-member'}) WHERE NOT (j)<--(p) AND r.role <> 'guest-member' AND (NOT has(m.leaves) OR m.leaves >= '2016') AND p.gender = 'W' RETURN m
-
-// Boote ohne Liegeplatz
-MATCH (b:Boat)--(p:Person)--(r:Role) WHERE NOT (b)--(:Berth) AND r.role IN ['honorary-member','active-member','passive-member'] RETURN b,p,r
-
-// Aktive mit Stegdienst
-MATCH (p:Person)-[r]-(m:Role) WHERE (NOT has(r.noStegdienst) OR NOT r.noStegdienst) AND m.role IN ['active-member'] RETURN p,r ORDER BY p.gsvereinId
-
-
-
-
-
-
-
-
-
-
+print ";\n";
+print "COMMIT\n";
 
 
 

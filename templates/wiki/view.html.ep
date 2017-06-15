@@ -5,21 +5,13 @@
 
 <p><b>"<%= $name %>"</b>
 
-<div><%= $article->{revision}->get_property('text') %></div>
+<div><%== $article->html %></div>
 <hr>
 <p>zuletzt geändert von: <%= $article->{author}->get_property('name') %>
 <p>zuletzt geändert am: <%= $article->{date} %>
 
-<p><a href="<%= url_for 'wiki', action => 'edit' %>">Artikel bearbeiten</a> · <a href="<%= url_for 'wiki', action => 'history' %>">Versionsgeschichte</a>
+<p><%= auth_link_to "edit:$name" => "Artikel bearbeiten" %> · <%= auth_link_to "history:$name" => "Versionsgeschichte" %>
 
 % if (param 'oldid') {
 <p>Dies ist eine alte Version dieser Seite. Sie kann sich erheblich von der <a href="<%= url_for 'wikiview' %>">aktuellen Version</a> unterscheiden.
 % }
-
-
-% if ($logged_in) {
-<p>'<%= $logged_in->name() %>' logged in.
-% }
-
-<p><a href=/>index</a>
-

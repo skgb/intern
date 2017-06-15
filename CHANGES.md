@@ -131,3 +131,15 @@ various hidden/internal changes:
 - allow login with leading/trailing white space in access code
 - minor additional robustness improvements
 - regression fix for 2.0.0-a22: auth code in URL is now RESTful and produces stable links even on 403 pages
+
+2.0.0-a25, 2017-06-15
+- tri-state auth logic (access / no authn / no authz) with brightly coloured lock icons
+- support CommonMark and internal links with auth logic in Wiki
+- nearly stable base implementation of new auth framework based exclusively on roles rather than named rights, resulting in a simpler model (secure access codes and role negation are not well tested and have issues remaining however)
+- graph view of role tree
+- fix postal address list view to only display those few addresses usually needed by default
+- fix the logout button's POST form introduced in 2.0.0-a12 to work in Firefox
+- fix 500 error in list\_berth template
+- improve routing setup (cleaner code and 405 Method Not Allowed responses to non-GET/POST requests)
+- significantly improve Paradox archive import performance
+- minor copy and UI updates, minor code cleanup

@@ -7,11 +7,4 @@
 
 <p>leer!
 
-<p><a href="<%= url_for 'wiki', action => 'edit' %>">Artikel anlegen</a>
-
-% if ($logged_in) {
-<p>'<%= $logged_in->name() %>' logged in.
-% }
-
-<p><a href=/>index</a>
-
+<p><%= auth_link_to wikiedit => "Artikel anlegen" %>
