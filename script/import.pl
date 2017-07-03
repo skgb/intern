@@ -698,18 +698,24 @@ foreach my $member (@members) {
 		$zu11 =~ m{^(?:(?:Nr. )?([12])(?:er)?)? ?/ ?(?:([.,0-9]+) ?(DE?M|EUR|Euro))?(?: ?\((.+)\))?$};
 		if ($1 || $2) {
 			push @keyProps, "nr:$1" if $1;
-			push @keyProps, "make:'CES'" if $memberUntil && (substr $memberUntil, 0, 4) lt 2011;  # SILCA: 2011-08
+			push @keyProps, "make:'CES'" if ($4 && "CES" eq substr $4, 0, 3) || ($1 && $1 eq "2") || $memberUntil && (substr $memberUntil, 0, 4) lt 2011;  # SILCA: 2011-08
+			push @keyProps, "make:'SILCA'" if $4 && "SILCA" eq substr $4, 0, 5;
 			$key .= " {" . join(", ", @keyProps) . "}" if @keyProps;
 			@keyProps = ();
 			push @keyProps, 'returned:true' if ! $1;
-			push @keyProps, "comment:'$4'" if $4;
-			if ($2) {
-				my ($deposit, $currency) = ($2, $3);
+			my ($deposit, $currency, $comment) = ($2, $3, $4);
+			if ($deposit) {
 				$deposit =~ s/[\.,]00$//;
 				$currency =~ s/^DM$/DEM/;
 				$currency =~ s/^Euro$/EUR/;
 				push @keyProps, "deposit:$deposit", "currency:'$currency'";
 			}
+			if ($comment && $comment =~ m/^(?:SILCA |CES )?([0-9]{4}-[0-9]{2}-[0-9]{2})/) {
+				push @keyProps, "since:'$1'";
+				push @keyProps, "new:true" if ! $deposit;
+			}
+			$comment =~ s/^(?:SILCA|CES)? ?(?:[0-9]{4}-[0-9]{2}-[0-9]{2})?,?\s?// if $comment;
+			push @keyProps, "comment:'$comment'" if $comment;
 		}
 		else {  # syntax error in Zu11: assume there is a key
 			push @keyProps, "comment:'$zu11'";

@@ -143,3 +143,6 @@ various hidden/internal changes:
 - improve routing setup (cleaner code and 405 Method Not Allowed responses to non-GET/POST requests)
 - significantly improve Paradox archive import performance
 - minor copy and UI updates, minor code cleanup
+
+2.0.0-a26, 2017-07-03
+- implemented club keys list view

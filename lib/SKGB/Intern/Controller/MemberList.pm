@@ -228,6 +228,30 @@ END
 }
 
 
+sub list_keys {
+	my ($self) = @_;
+	
+	my @records = $self->neo4j->get_persons(<<END, column => 'p');
+MATCH (k:ClubKey)
+OPTIONAL MATCH (k)-[rk]-(p:Person)
+OPTIONAL MATCH (p)-[rm:ROLE|GUEST]->(m:Role)-[:ROLE]->(:Role {role:'member'})
+RETURN k as key, rk as assigned, p, [rm, m]
+END
+	
+	my $total_deposits = 0;
+	foreach my $record (@records) {
+		$record->{deposit_euro} = 0;
+		my $assigned = $record->get('assigned');
+		next if ! $assigned || ! $assigned->{deposit};
+		my $to_euro = $assigned->{currency} && $assigned->{currency} eq "DEM" ? 1 / $self->config->{skgb}->{EURDEM} : 1;
+		$record->{deposit_euro} = 0 + sprintf "%.2f", $assigned->{deposit} * $to_euro;
+		$total_deposits += $record->{deposit_euro};
+	}
+	
+	return $self->render(template => 'member_list/list_keys', records => \@records, total_deposits => $total_deposits);
+}
+
+
 sub list_budget {
 	my ($self) = @_;
 	

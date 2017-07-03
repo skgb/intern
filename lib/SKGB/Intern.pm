@@ -5,7 +5,7 @@ use Mojo::Log;
 use SemVer;
 
 #our $VERSION = Perl::Version->new( '2.0.0_5' );
-our $VERSION = SemVer->new( '2.0.0-a25' );
+our $VERSION = SemVer->new( '2.0.0-a26' );
 
 
 sub startup {
@@ -74,6 +74,7 @@ sub setup_routing_database {
 	$l->get('/person/(#entity)/gs-verein')->to('member_list#gsverein')->name('paradox');
 	$l->get('/budgetliste')->to('member_list#list_budget')->name('list_budget');
 	$l->get('/austrittsliste')->to('member_list#list_leaving')->name('list_leaving');
+	$l->get('/schluesselliste')->to('member_list#list_keys')->name('list_keys');
 	$l->get('/boxenliste')->to('member_list#list_berth')->name('list_berth');
 	$l->get('/mitgliederliste')->to('member_list#list')->name('mglliste');
 	$l->get('/anschriftenliste')->to('member_list#postal')->name('postliste');

@@ -43,6 +43,7 @@ CREATE
 (boardMember)-[:ROLE]->(:Role {role:'mojo:person', name:'Personen-Report'}),
 (boardMember)-[:ROLE]->(:Role {role:'mojo:list_person', name:'Liste aller Personen'}),
 (boardMember)-[:ROLE]->(:Role {role:'mojo:list_leaving', name:'Austrittsliste'}),
+(boardMember)-[:ROLE]->(:Role {role:'mojo:list_keys', name:'Schlüsselliste'}),
 (boardMember)-[:ROLE]->(:Role {role:'mojo:list_berth', name:'Liegeplatzliste'}),
 (boardMember)-[:ROLE]->(:Role {role:'mojo:postliste', name:'Anschriftenliste'}),
 (boardMember)-[:ROLE]->(:Role {role:'mojo:exportlisten', name:'Listen-Schnittstelle'}),

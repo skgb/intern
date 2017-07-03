@@ -42,6 +42,7 @@
 %= $link_menu_to->('Postanschriften', 'postliste')
 %= $link_menu_to->('Austritte', 'list_leaving')
 %= $link_menu_to->('Einnahmen', 'list_budget')
+%= $link_menu_to->('Schlüssel', 'list_keys')
 %= $link_menu_to->('Liegeplätze', 'list_berth')
 </ul><hr><ul id=menu-up>
 <li><a href=http://intern1.skgb.de/>intern1.skgb.de</a>

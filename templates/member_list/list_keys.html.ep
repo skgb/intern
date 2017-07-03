@@ -1,0 +1,80 @@
+% layout 'intern1';
+% title 'Schlüsselliste';
+% use 5.016;
+
+<h2><%= title %></h2>
+
+<p>Bisher erscheinen hier nur ausgegebene Schlüssel. Zukünftig soll hier auch das Inventar in der Werkstatt ersichtlich sein.
+
+<p>Der Verein hält derzeit Schlüsselpfänder in Höhe von insgesamt <%= (sprintf "%.2f", $total_deposits) =~ s/\./,/r %> €.
+
+<table id=membertable class="compact">
+<thead>
+<tr><th>Nr.<th>Typ<th>Pfand<th>Buchung<th>Kommentar<th>Besitzer<th>Mitglied<th>Euro<th>Sortierschlüssel
+</thead>
+% my $total_deposits = 0;
+% foreach my $record (@$records) {
+%  my $member = $record->get('p');
+%  my $assigned = $record->get('assigned');
+%  next if ! $assigned;
+%  my $attention = $assigned->{returned} || $assigned->{new} || $member->membership->{status} && $member->membership->{leaves};
+<tr<%== $attention ? ' style="background:yellow"' : '' %>>
+<td><%= $record->get('key')->{nr} || "" %>
+<td><%= $record->get('key')->{make} || "" %>
+<td><%= ! defined $assigned->{deposit} ? "" : sprintf "%d %s", $assigned->{deposit}, $assigned->{currency} eq "DEM" ? "DM" : $assigned->{deposit} == 0 || $assigned->{currency} eq "EUR" ? "€" : $assigned->{currency} %>
+<td><%== $assigned->{returned} || $assigned->{new} ? "<strong>offen</strong>" : "" %>
+<td><%= $record->get('key')->{comment} || "" %> <%= $assigned->{comment} || "" %>
+<td><%= auth_link_to person => $member->name, {entity => $member->handle} %>
+<td><%== $member->membership->{status} ? ($member->membership->{leaves} ? "<strong>tritt aus</strong>" : "ja") : ($member->membership->{leaves} ? "bis " . substr $member->membership->{leaves}, 0, 4 : "–") %>
+<td><%= $record->{deposit_euro} %>
+<td><%= fc($member->name_sortable) %>
+% }
+</table>
+
+<script type="text/javascript" src="/lib/DataTables/datatables.js"></script>
+<script>
+// https://datatables.net/
+$(document).ready(function() {
+	var cols = $('#membertable tr')[0].childElementCount;
+	var exportOptions = {columns: ':visible'};
+	$('#membertable').DataTable( {
+		"columnDefs": [{
+			targets: cols - 1,
+			visible: false,
+			searchable: false
+		},{
+			targets: cols - 2,
+			visible: false,
+			searchable: false
+		},{
+			targets: 5,
+			orderData: [ cols - 1 ]
+		},{
+			targets: 2,
+			orderData: [ cols - 2 ]
+		}],
+		order: [[ 5, 'asc' ]],
+		colReorder: true,
+		lengthMenu: [[20, 50, -1], [20, 50, "All"]],
+		iDisplayLength: -1,
+		stateSave: true,
+		dom: 'lBfrtip',
+		buttons: [
+			{extend: 'copy', exportOptions: exportOptions},
+			{extend: 'csv', exportOptions: exportOptions},
+			{extend: 'pdf', exportOptions: exportOptions},
+			{extend: 'print', exportOptions: exportOptions, autoPrint: false, text: 'Print View'},
+		]
+	} );
+} );
+</script>
+
+<p>In der Geschichte der SKGB wurden bisher folgende Beträge als Schlüsselpfand genommen:
+<ul>
+<li>5,– DM bis in die 1980er Jahre
+<li>15,– DM von den 1980er Jahren bis etwa 1998
+<li>50,– DM von etwa 1998 bis 2001
+<li>25,– € von 2002 bis 4. September 2010
+<li>50,– € seit 4. September 2010
+</ul>
+<p>In 2017 gab es außerdem (als Ausnahme?) 25,– € für ein Jugendmitglied.

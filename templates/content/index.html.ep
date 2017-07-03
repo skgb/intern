@@ -22,8 +22,8 @@
 <li><%= auth_link_to postliste => "Postanschriften" %>
 <li><%= auth_link_to list_leaving => "Austritte" %>
 <li><%= auth_link_to list_budget => "Einnahmen" %>
+<li><%= auth_link_to list_keys => "Schlüssel" %>
 <li><%= auth_link_to list_berth => "Liegeplätze" %>
-<!--<li><%= auth_link_to _ => "Schlüsselliste" %>-->
 </ul>
 
 <p>Vereinsverwaltung:
