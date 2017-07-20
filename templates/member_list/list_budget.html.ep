@@ -24,16 +24,17 @@
 
 <table id=membertable class="compact">
 <thead>
-<tr><th>Name<th>Mitgliedschaft<th>Liegeplatz<th>Bootsnutzung<th>Summe<th>Abbuchung<th>Mandat<th>Sortierschlüssel
+<tr><th>Name<th>Mitglied­schaft<th>Liege­platz<th>Boots­nutzung<th>Summe<th>Abbu­chung<th>Grund<th>Mandat<th>Sortierschlüssel
 </thead>
 % foreach my $member (@$members) {
-<tr<%== ($member->{possible_error} > 0) && ' style="background:yellow"' %>>
+<tr<%== ($member->{possible_error} > 0) && ' class="mark"' %>>
 <td><%= auth_link_to person => $member->{person}->name, {entity => $member->{person}->handle} %>
 <td><span class=euro><%=$member->{membership} %></span>
 <td><%== $member->{berth} ? "<span class=euro>$member->{berth}</span>" : "<span class=null></span>" %>
 <td><%== $member->{usage} ? "<span class=euro>$member->{usage}</span>" : "<span class=null></span>" %>
 <td><strong class=euro><%=$member->{sum} %></strong>
 <td><%== $member->{debit_base} ? "<span class=euro>$member->{debit_base}</span>" : "<span class=null></span>" %>
+<td><%= $member->{debit_reason} %>
 <td><%= $member->{mandate} %>
 <td><%= fc($member->{person}->name_sortable) %>
 % }

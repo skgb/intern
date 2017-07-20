@@ -105,7 +105,7 @@ sub factory {
 	
 	my $secure = $self->param('secure');
 	if ($secure) {
-		$self->_should_secure_session() or return $self->render(template => 'key_manager/forbidden', status => 403);
+		$self->_should_secure_session() or return $self->reply->forbidden;
 	}
 	my $code_length = $secure ? $self->config->{keyfactory}->{length_secure} : $self->config->{keyfactory}->{length_on_request};
 	
@@ -346,7 +346,7 @@ sub logged_in {
 		}
 		# authorization bad!
 		
-		$self->render(template => 'key_manager/forbidden', status => 403, session => $session);
+		$self->reply->forbidden;
 		return undef;
 	}
 	elsif ( $self->skgb->may ) {

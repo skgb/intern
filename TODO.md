@@ -13,7 +13,7 @@ MUSS in 2.0 (während ALPHA):
 SOLL in 2.0 (spätestens während BETA, besser noch während ALPHA):
 -----------------------------------------------------------------
 
-- [ ] Konzept für intern1-Einbindung aufstellen
+- [X] Konzept für intern1-Einbindung aufstellen
 
 
 

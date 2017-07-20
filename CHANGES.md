@@ -146,3 +146,11 @@ various hidden/internal changes:
 
 2.0.0-a26, 2017-07-03
 - implemented club keys list view
+
+2.0.0-a27, 2017-07-20
+- reverse proxy to version 1.4 (legacy plugin)
+- add debit reason to budget report view
+- hide key details in key list when the key has been returned and deposit payback is the only thing left to do
+- improve style sheet (lock icons, yellow mark)
+- improve error handling in Neo4j driver
+- minor refactoring (Person object, 403 response, import)

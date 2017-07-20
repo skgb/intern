@@ -7,9 +7,7 @@ use SKGB::Intern::Verbandsmeldung;
 sub dosb {
 	my ($self) = @_;
 	
-	if ( ! $self->skgb->may ) {
-		return $self->render(template => 'key_manager/forbidden', status => 403);
-	}
+	return $self->reply->forbidden unless $self->skgb->may;
 	
 	my $stats = SKGB::Intern::Verbandsmeldung->new( app => $self->app, verbose => 1 )->query;
 	

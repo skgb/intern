@@ -36,9 +36,7 @@ QUERY
 sub intern1 {
 	my ($self) = @_;
 	
-	if ( ! $self->skgb->may ) {
-		return $self->render(template => 'key_manager/forbidden', status => 403);
-	}
+	return $self->reply->forbidden unless $self->skgb->may;
 	
 	my $user = $self->skgb->session->user;
 	return $self->render(logged_in => $user, export => $self->_intern1());
@@ -48,9 +46,7 @@ sub intern1 {
 sub listen {
 	my ($self) = @_;
 	
-	if ( ! $self->skgb->may ) {
-		return $self->render(template => 'key_manager/forbidden', status => 403);
-	}
+	return $self->reply->forbidden unless $self->skgb->may;
 	
 	my $user = $self->skgb->session->user;
 	return $self->render(logged_in => $user, listen => $self->_listen());

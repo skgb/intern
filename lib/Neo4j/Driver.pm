@@ -93,7 +93,7 @@ sub _client {
 		
 		$self->{client} = REST::Client->new({
 			host => "$uri",
-			timeout => 60,
+			timeout => 6,  # seconds
 			follow => 1,
 		});
 		$self->{client}->addHeader('Accept', $CONTENT_TYPE);

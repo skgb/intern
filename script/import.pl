@@ -463,6 +463,16 @@ sub length_value {
 #	return 100 * $m;
 }
 
+sub print_create {
+	return unless @_;
+	print "CREATE\n", Encode::encode 'UTF-8', shift;
+	while (@_) {
+		next if ! $_[0];
+		print ",\n", Encode::encode 'UTF-8', shift;
+	}
+	print "\n";
+}
+
 
 # copy initial berth configuration
 cat_file $options{resources_file};
@@ -546,15 +556,11 @@ foreach my $key (sort {$boats{$a}->{node} cmp $boats{$b}->{node}} keys %boats) {
 	my $berthRel = $berth ? "-[:OCCUPIES]->(berth$berth)" : "";
 	push @boatsCreate, "($node:Boat {$props})$berthRel";
 }
-print "CREATE\n", Encode::encode 'UTF-8', shift @boatsCreate if scalar @boatsCreate;
-while (@boatsCreate) {
-	my $create = shift @boatsCreate;
-	next if ! $create;
-	print ",\n", Encode::encode 'UTF-8', $create;
-}
+print_create @boatsCreate;
 #print "\n;";
-print "\n\n";
+print "\n";
 
+my @finallyCreate = ();
 foreach my $member (@members) {
 	my @create = ();
 	my $gsvereinId = $member->{'Mitnum'};
@@ -642,7 +648,7 @@ foreach my $member (@members) {
 	$debitReason = "in Ausbildung" if $member->{'Satz'} =~ m/04|08|09/;
 	$debitReason = "Sondervereinbarung" if $member->{'Satz'} =~ m/11/;
 	$debitReason = "Eignergemeinschaft" if $member->{'Satz'} =~ m/14/;
-	$debitReason = "Aktiv m. Boxen f. 2 Boote (davon 1 Kanu)" if $member->{'Satz'} =~ m/15/;
+	$debitReason = "2 Boote (davon 1 Kanu)" if $member->{'Satz'} =~ m/15/;
 	my $umr = $member->{umr};
 	my $isHolder = index($mandates{$umr}->[3], $member->{'Vorname'}) > -1 && index($mandates{$umr}->[3], $member->{'Name'}) > -1 if $umr;
 	$isHolder = 1 if $umr && ($gsvereinId == '045');
@@ -656,7 +662,7 @@ foreach my $member (@members) {
 	my $userid = $member->{user};
 	my $gender = $member->{'Geschlecht'};
 	my $skills = $member->{'Zu12'};
-#	$skills =~ s/!/\\!/;  # database bug in 2.3.2: "[ERROR] Could not expand event" at Olaf Burgmer without this line
+#	$skills =~ s/!/\\!/;  # database bug in 2.3.2: "[ERROR] Could not expand event" at MNr 358 without this line
 	my $personProps = "name:'$name', gsvereinId:'$gsvereinId', gender:'$gender'";
 	$personProps .= ", debitorSerial:'$debitorSerial'" if $debitorSerial;
 	$personProps .= ", debitBase:$debitBase";
@@ -729,18 +735,18 @@ foreach my $member (@members) {
 	
 	# software data
 #	push @create, "($id)-[:ROLE]->(user)" if $email || $member->{'Zu3'} =~ m/@/;
+	if ($member->{'Zu15'} =~ m/Verpflichtung nach DSE durch ([0-3][0-9][0-9]) ([-0-9ofen]+)/) {
+		push @create, "($id)-[:ROLE]->(user)";
+#		push @finallyCreate, "($id)<-[:PRIVACY {date:'$2'}]-(_$1)";
+	}
 	push @create, "($id)-[:ROLE]->(admin)" if $member->{'Betreuer'} =~ m/\bIT\b/;
 	push @create, "($id)-[:ROLE]->(superUser)" if $member->{'Betreuer'} =~ m/\bIT\b/ && $gsvereinId =~ m/^0/;
 	
-	print "CREATE\n", Encode::encode 'UTF-8', shift @create;
-	while (@create) {
-		my $create = shift @create;
-		next if ! $create;
-		print ",\n", Encode::encode 'UTF-8', $create;
-	}
-	print "\n";
+	print_create @create;
 }
-print "\n\n";
+print "\n";
+print_create @finallyCreate;
+print "\n";
 
 print `sed -e '30,54d' -e '1,3d' -e '/^\\/\\//d' -e '/\\[:ROLE.*\\(user\\)/d' $options{intern_dir}/archive/2016/neuaufnahmen.cypher`;
 print `sed -e '/^\\/\\//d' -e '/\\[:ROLE.*\\(user\\)/d' $options{intern_dir}/archive/2017/neuaufnahmen.cypher`;

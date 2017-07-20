@@ -57,20 +57,25 @@ sub _property {
 
 sub equals {
 	my ($self, $other) = @_;
-	return $self->node_id == $other->node_id;
+	return 1 if $self == $other;
+	return $self->node_id == $other->node_id if defined $self->node_id && defined $other->node_id;
+	return $self->handle eq $other->handle if defined $self->handle && defined $other->handle;
+	croak "equals not decidable: neither id nor handle known for both objects";
 }
 
 
 sub node_id {
-	my ($self, $other) = @_;
-	return 0 + $self->{node}->{id} if $self->{node};
-	die "node id unknown";
+	my ($self) = @_;
+	return 0 + $self->{node}->{id} if $self->{node} && defined $self->{node}->{id};
+	return undef;
+	# NB: 0 is a valid node ID in Neo4j
 }
 
 
 sub handle {
 	my ($self) = @_;
-	return $self->legacy_user if $self->legacy_user;
+	return $self->_property('handle') if $self->_property('handle');
+	return $self->_property('userId') if $self->_property('userId');
 	return $self->node_id;
 }
 
@@ -166,7 +171,29 @@ sub age {
 
 sub legacy_user {
 	my ($self) = @_;
-	return $self->_property('userId');
+	return $self->_property('userId') if $self->_property('userId');
+	return $self->_property('handle');
+}
+
+
+# Query builder for this Person node.
+#  $r = $t->run($user->query("p", "SET p.skills = {skills}"), skills => "Perl");
+sub query {
+	my ($self, $var, $clause) = @_;
+	my ($where, $_person);
+	if (defined $self->node_id) {
+		$where = "id($var) = {_person}";
+		$_person = $self->node_id;
+	}
+	elsif (defined $self->handle) {
+		$where = "$var.handle = {_person} OR NOT exists($var.handle) AND $var.userId = {_person}";
+		$_person = $self->handle;
+		die "Cypher query build for Person '$_person' failed: id unknown";  # debug only: there is no reason to die here if a handle is available, since those should be unique
+	}
+	else {
+		croak "Cypher query build for Person failed: id and handle unknown";
+	}
+	return ("MATCH ($var:Person) WHERE ($where) $clause", _person => $_person);
 }
 
 

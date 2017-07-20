@@ -5,7 +5,7 @@ use Mojo::Log;
 use SemVer;
 
 #our $VERSION = Perl::Version->new( '2.0.0_5' );
-our $VERSION = SemVer->new( '2.0.0-a26' );
+our $VERSION = SemVer->new( '2.0.0-a27' );
 
 
 sub startup {
@@ -19,8 +19,8 @@ sub startup {
 	push @{$app->commands->namespaces}, 'SKGB::Intern::Command';
 	
 	$app->plugin('SKGB::Intern::Plugin::Neo4j');
-	$app->plugin('SKGB::Intern::Plugin::DigestAuth');
 	$app->plugin('SKGB::Intern::Plugin::AuthManager');
+	$app->plugin('SKGB::Intern::Plugin::Legacy');
 	
 	# Documentation browser under "/perldoc"
 #	$app->plugin('PODRenderer');

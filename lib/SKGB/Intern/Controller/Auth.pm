@@ -36,9 +36,7 @@ sub auth {
 	my ($self) = @_;
 	
 	my $user = $self->skgb->session->user;
-	if ( ! $user ) {
-		return $self->render(template => 'key_manager/forbidden', status => 403);
-	}
+	return $self->reply->forbidden unless $user;
 	
 	return $self->_tree if $self->stash('entity');
 	
@@ -75,9 +73,7 @@ sub _may_modify_role {
 sub _modify_roles {
 	my ($self, $code) = @_;
 	
-	if (! $self->_may_modify_role($code)) {
-		return $self->render(template => 'key_manager/forbidden', status => 403);
-	}
+	return $self->reply->forbidden unless $self->_may_modify_role($code);
 	
 	foreach my $role ( @{$self->req->params->names} ) {
 		if ($role =~ m/^delete=(.+)$/) {
@@ -123,7 +119,7 @@ sub _get_tree {
 		my $t = $self->neo4j->session->begin_transaction;
 		$t->{return_graph} = 1;  # the Neo4j::* interfaces aren't finalised
 		my $result = $t->_commit(<<END, id => $param);
-MATCH a=(c:AccessCode)-[*]->(r:Role)
+MATCH a=(c:AccessCode)-[:ROLE|:GUEST|:IDENTIFIES*]->(r:Role)
 WHERE id(c) = {id}
 RETURN a
 END

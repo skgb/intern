@@ -32,4 +32,4 @@
 %# say Data::Dumper::Dumper ($limited, $access, $session, $image, $linktext);
 %
 % my $link_403 = $c->config->{intern}->{link_to_403};
-<% if ($access || ! $limited || $link_403) { %><a href="<%= $linkurl %>"><% } else { %><a><% } %><%= $linktext %></a><% if ($image && $showicon) { %> <img src="/icons/lock-<%= $image %>" alt="<%= $access ? "🔓" : "🔒" %>"<%== $title && " title=\"$title\"" %> style="height:2ex"><% } %>
+<% if ($access || ! $limited || $link_403) { %><a href="<%= $linkurl %>"><% } else { %><a><% } %><%= $linktext %></a><% if ($image && $showicon) { %> <img src="/icons/lock-<%= $image %>" alt="<%= $access ? "🔓" : "🔒" %>"<%== $title && " title=\"$title\"" %> class="lock"><% } %>

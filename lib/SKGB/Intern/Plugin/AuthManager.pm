@@ -108,6 +108,11 @@ sub register {
 	
 	$app->helper('skgb.reset_login_fails' => sub { $self->_reset_login_fails(@_); });
 	
+	$app->helper('reply.forbidden' => sub {
+		shift->render(template => 'key_manager/forbidden', status => 403);
+		return undef;
+	});
+	
 }
 
 

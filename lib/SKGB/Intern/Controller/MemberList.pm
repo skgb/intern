@@ -87,7 +87,7 @@ sub list {
 #		$self->res->code(403);
 #	return $self->render(members => []);
 #	return $self->render(template => 'list', members => []);
-		return $self->render(template => 'key_manager/forbidden', status => 403);
+		return $self->reply->forbidden;
 	}
 	
 	# todo: move this to is_logged_in or whatever
@@ -160,9 +160,7 @@ END
 sub list_person {
 	my ($self) = @_;
 	
-	if ( ! $self->skgb->may ) {
-		return $self->render(template => 'key_manager/forbidden', status => 403);
-	}
+	return $self->reply->forbidden unless $self->skgb->may;
 	
 	my @persons = $self->neo4j->get_persons(<<END);
 MATCH (p:Person)
@@ -271,6 +269,7 @@ _
 			membership => $record->get('rn')->{fee},
 			berth => $record->get('b') && 65 || 0,  # BUG: hard-coded fee "Stegliegeplatz"
 			debit_base => $record->get('p')->_property('debitBase'),
+			debit_reason => $record->get('p')->_property('debitReason'),
 		};
 		foreach my $mandate ( @{$record->get('s')} ) {
 			$mandate->[0]->{terminated} and next;

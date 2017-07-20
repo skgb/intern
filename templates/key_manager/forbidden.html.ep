@@ -4,4 +4,6 @@
 <h2 style="font-size:2em"><%= title %></h2>
 
 % my $session = $c->skgb->session;
+% if ($session) {
 <p>Die Rechte von <%= $session->user->name %> (angemeldet mit <%= auth_link_to auth => $session, {entity => $session->handle} %>) erlauben es leider derzeit nicht, <%= $c->link_to('diese Ressource') %> einzusehen. Wenn du meinst, dass dies nicht richtig ist, melde das Problem bitte dem IT-Ausschuss. Vielen Dank für Deine Mithilfe!
+% }

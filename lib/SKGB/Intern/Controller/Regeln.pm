@@ -10,9 +10,7 @@ use SKGB::Regeln;
 sub regeln {
 	my $c = shift;
 	
-	if ( ! $c->skgb->may ) {
-#		return $c->render(template => 'key_manager/forbidden', status => 403);
-	}
+#	return $c->reply->forbidden unless $c->skgb->may;
 	
 	# regeln suchen, komplette liste erzeugen und mitgeben
 	my $regeln_list = {};

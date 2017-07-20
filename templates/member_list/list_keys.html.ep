@@ -18,9 +18,9 @@
 %  my $assigned = $record->get('assigned');
 %  next if ! $assigned;
 %  my $attention = $assigned->{returned} || $assigned->{new} || $member->membership->{status} && $member->membership->{leaves};
-<tr<%== $attention ? ' style="background:yellow"' : '' %>>
-<td><%= $record->get('key')->{nr} || "" %>
-<td><%= $record->get('key')->{make} || "" %>
+<tr<%== $attention ? ' class="mark"' : '' %>>
+<td><%= $assigned->{returned} ? "" : $record->get('key')->{nr} || "" %>
+<td><%= $assigned->{returned} ? "" : $record->get('key')->{make} || "" %>
 <td><%= ! defined $assigned->{deposit} ? "" : sprintf "%d %s", $assigned->{deposit}, $assigned->{currency} eq "DEM" ? "DM" : $assigned->{deposit} == 0 || $assigned->{currency} eq "EUR" ? "€" : $assigned->{currency} %>
 <td><%== $assigned->{returned} || $assigned->{new} ? "<strong>offen</strong>" : "" %>
 <td><%= $record->get('key')->{comment} || "" %> <%= $assigned->{comment} || "" %>
