@@ -5,7 +5,7 @@ use Mojo::Log;
 use SemVer;
 
 #our $VERSION = Perl::Version->new( '2.0.0_5' );
-our $VERSION = SemVer->new( '2.0.0-a27' );
+our $VERSION = SemVer->new( '2.0.0-a28' );
 
 
 sub startup {

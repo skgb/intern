@@ -154,3 +154,11 @@ various hidden/internal changes:
 - improve style sheet (lock icons, yellow mark)
 - improve error handling in Neo4j driver
 - minor refactoring (Person object, 403 response, import)
+
+2.0.0-a28, 2018-01-15
+- implement board decision of 2017-09-23 to use email addresses of legal guardians for important mailings if a member doesn't have an email address of their own
+- add key issue date to provisional person "node" report
+- update for 2018 ("Stegdienstliste", import, GS-Verein view, berth assignments)
+- fix "Stegdienstliste" to exempt members who have joined the very same year (these are usually exempt simply by not joining until after the list has been created; this fix takes care of those few that happen to join in the first days of the year)
+- auto-reset stored password for version 1.4 proxy if we are 401 Unauthorized
+- fix person endpoints to support node id 0

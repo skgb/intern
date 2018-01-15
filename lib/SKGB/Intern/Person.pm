@@ -18,7 +18,7 @@ sub new {
 		name_salutation => undef,
 		membership => undef,
 	};
-	if (! $person || ! $person->{id} || ! $person->{labels} || ! $person->{properties}) {
+	if (! $person || ! defined $person->{id} || ! $person->{labels} || ! $person->{properties}) {
 		croak "Neo4j node required (did you request a graph result?)";
 		return undef;
 	}

@@ -166,10 +166,12 @@
 {
 members: [
 % my @near = qw( Marienheide Kierspe Meinerzhagen Bergneustadt Gummersbach Wiehl Engelskirchen Lindlar Wipperfürth );
+% my $year = 1900 + (localtime)[5];
 % foreach my $record (sort {$a->get('p')->name_sortable cmp $b->get('p')->name_sortable} @$records) {
 %  my $person = $record->get('p');
 %  my $remote = ! grep { $_ eq $record->get('place') } @near;
-{ id: <%= 0 + $person->gs_verein_id %>, name: "<%= $person->name %>", remote: <%= $remote ? 'true' : 'false' %>, board: <%= $record->get('board') ? 'true' : 'false' %>, exempt: <%= $record->get('exempt') ? 'true' : 'false' %>},
+%  my $exempt = $record->get('exempt') || ($record->get('p')->membership->{joined} gt $year);
+{ id: <%= 0 + $person->gs_verein_id %>, name: "<%= $person->name %>", remote: <%= $remote ? 'true' : 'false' %>, board: <%= $record->get('board') ? 'true' : 'false' %>, exempt: <%= $exempt ? 'true' : 'false' %>},
 % }
 ]
 }

@@ -93,6 +93,23 @@ sub _intern1 {
 			my $email = $start_node->get_property('address');
 			push @emails, $email if $email;
 		}
+		if (! $p->primary_emails) {
+			# for members without primary emails, we have to add their legal guardians' email, if any (as per board decision of 2017-09-23)
+			foreach my $rel (@rels_o) {
+				next unless $rel->type eq 'PARENT';
+				my $parent = $rel->end_node;
+				my @parent_rels_i = $parent->get_incoming_relationships();
+				foreach my $addr (@parent_rels_i) {
+					next unless $addr->type eq 'FOR';
+					next unless $addr->get_property('primary') && $addr->get_property('primary') eq 'text';
+					my $address = $addr->start_node;
+					next unless $address->get_property('type') eq 'email';
+					my $parent_email = $address->get_property('address');
+					next if grep m/^$parent_email$/, @emails;
+					push @emails, $parent_email;
+				}
+			}
+		}
 		my $email = join ',',  @emails;
 		push @row, $email;
 		

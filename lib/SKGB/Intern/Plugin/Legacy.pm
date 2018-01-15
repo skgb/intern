@@ -39,6 +39,15 @@ sub register {
 		res_processor => sub {
 			my ($c, $res) = @_;
 			
+			# Reset the password in case the 2.0 and 1.4 password stores are
+			# out of sync. For instance, if an htpasswd password is changed
+			# on the server CLI for some reason, that user would otherwise be
+			# locked out of 1.4 indefinitely.
+			if ($res->code() == 401 && (my $user = $c->skgb->session->user)) {
+				$c->neo4j->session->run($user->query("p", "REMOVE p.legacyPassword"));
+				$res->headers->header(Refresh => "1");
+			}
+			
 			if (my $location = $res->headers->location) {
 				if ($location =~ s{\Q$legacy_url\E}{$proxy_base$mount_point/}) {
 					$res->headers->location($location);

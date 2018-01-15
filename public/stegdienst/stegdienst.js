@@ -1,5 +1,3 @@
-// $Id: stegdienst.js 850 2016-12-14 22:25:03Z aj $
-
 if (! window.SKGB) { window.SKGB = {}; }
 
 
@@ -8,8 +6,8 @@ if (! window.SKGB) { window.SKGB = {}; }
 
 window.config = {
 	markWeekDay: 3,  // Wednesday
-	summerStart: {month: 2, day: 18+7}, // March 2017
-	summerEnd: {month: 9, day: 21-7}  // October 2017
+	summerStart: {month: 2, day: 17+7}, // March 2018
+	summerEnd: {month: 9, day: 13-7}  // October 2018
 };
 
 // onload:
@@ -264,13 +262,13 @@ SKGB.StegdienstListe.prototype.generateShuffledSuggestions = function (members, 
 				j = 0;  
 			}
 		}
-		if (smart && i >= (membersShuffled.length - 1 /*exempt*/) * 1) {  // NB: change both of these to *2
+		if (smart && i >= (membersShuffled.length - 2 /*exempt*/) * 2) {
 			// prevent board members from being assigned multiple times
 			// BUG: infinite loop if all members are board members
-			// DEBUG: --> hard-code Jochen Schmidt (085) to avoid 3 stegdienste
-			// DEBUG: --> also hard-code those who had 3 stegdienste in 2015+2016 to avoid them this year
-			/* // DEBUG: --> also hard-code new members to avoid 3 stegdienste this year */
-			while (/*membersShuffled[j].board ||*/ membersShuffled[j].exempt || (i >= membersShuffled.length * 2 /*- 8*/ /*board*/ * 1 - 1 /*exempt*/ * 2 && ( membersShuffled[j].id == 85 || membersShuffled[j].id == 299 || membersShuffled[j].id == 91 || membersShuffled[j].id == 90 || membersShuffled[j].id == 45 /* || membersShuffled[j].id == 188 || membersShuffled[j].id == 375 || membersShuffled[j].id == 314 || membersShuffled[j].id == 334 */ ))) {
+			// DEBUG: --> hard-code id 085 to avoid 3 stegdienste
+			// DEBUG: --> also hard-code those who had either 3 stegdienste in the previous year or 3 stegdienste in at least two out of the last three years to avoid them this year
+			// DEBUG: --> also hard-code new members to avoid 3 stegdienste this year
+			while (/*membersShuffled[j].board ||*/ membersShuffled[j].exempt || (i >= membersShuffled.length * 2 /*- 8*/ /*board*/ * 1 - 2 /*exempt*/ * 2 && ( membersShuffled[j].id == 85 || membersShuffled[j].id == 365 || membersShuffled[j].id == 299 || membersShuffled[j].id == 91 || membersShuffled[j].id == 45 || membersShuffled[j].id == 515 ))) {
 				j++;  // skip this particular member
 				if (j >= membersShuffled.length) {
 					j = 0;  

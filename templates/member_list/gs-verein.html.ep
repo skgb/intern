@@ -2,7 +2,7 @@
 % title $person->name . " in GS-Verein";
 %
 % use Mojo::Util qw(xml_escape);
-% my $fake_window_title = "Mitgliedsdaten";
+% my $fake_window_title = "Mitgliedsdaten 2016";
 % my $fake_window_header = "Datenansicht · " . $paradox->{Name} . ", " . $paradox->{Vorname} . " · " . $paradox->{Mitnum};
 %
 % sub paradox_option {
@@ -430,4 +430,4 @@ NUMMER <%= $paradox->{Nummer} %>
 
 <p>Einige Feldnamen verfügen über Tooltips, welche das Format oder die Bedeutung des Felds beschreiben. Diese Tooltips erläutern die Business-Logik der SKGB und existierten nicht in GS-Verein.
 
-<p>Die hier gezeigten Daten sind auf dem <strong>Stand von Ende 2016</strong> eingefroren. In der Übergangsphase von GS-Verein zu SKGB-intern 2 wird es als nützlich erachtet, diese Daten verfügbar zu halten. Nachdem sichergestellt ist, dass die Daten in SKGB-intern 2 vollständig sind, und nachdem die neue Benutzerschnittstelle Akzeptanz beim Vorstand gefunden hat, wird diese Archivansicht abgeschaltet. Gegenwärtig (Februar 2017) wird dies nicht mehr für 2017 erwartet.
+<p>Die hier gezeigten Daten sind auf dem <strong>Stand von Ende 2016</strong> eingefroren. In der Übergangsphase von GS-Verein zu SKGB-intern 2 wird es als nützlich erachtet, diese Daten verfügbar zu halten. Nachdem sichergestellt ist, dass die Daten in SKGB-intern 2 vollständig sind, und nachdem die neue Benutzerschnittstelle Akzeptanz beim Vorstand gefunden hat, wird diese Archivansicht abgeschaltet. Gegenwärtig (Januar 2018) wird dies nicht vor Ende 2018 erwartet.

@@ -320,9 +320,9 @@ sub node {
 	my ($self, $node) = @_;
 	my @rows;
 	
-	$node //= $self->param('node');
+	$self->param('node') and die "node param no longer supported";
 	my $person = $self->skgb->session->user;
-	if ($node) {
+	if (defined $node) {
 		my $row = $self->neo4j->execute_memory($Q->{member}, 1, (node => 0 + $node));
 		$row or return $self->reply->not_found;
 		$person = $row->[0];

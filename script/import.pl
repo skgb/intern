@@ -569,7 +569,7 @@ foreach my $member (@members) {
 	my $subid = 0;
 	
 	# Ausgetretene mit beendeter Geschäftsbeziehung: Sperren!
-	next if grep m/^$gsvereinId$/, qw(205 280 302 309);
+#	next if grep m/^$gsvereinId$/, qw(367 509);
 	
 	# membership data
 	my $memberType = $member->{'Abteilung'};
@@ -750,6 +750,7 @@ print "\n";
 
 print `sed -e '30,54d' -e '1,3d' -e '/^\\/\\//d' -e '/\\[:ROLE.*\\(user\\)/d' $options{intern_dir}/archive/2016/neuaufnahmen.cypher`;
 print `sed -e '/^\\/\\//d' -e '/\\[:ROLE.*\\(user\\)/d' $options{intern_dir}/archive/2017/neuaufnahmen.cypher`;
+print `sed -e '/^\\/\\//d' -e '/\\[:ROLE.*\\(user\\)/d' $options{intern_dir}/archive/2018/neuaufnahmen.cypher`;
 
 #print "\n;\n\n";
 #cat_file $options{paradox_file};

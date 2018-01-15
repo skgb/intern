@@ -42,7 +42,7 @@ eigene Boote:
 %>
 Vereinsschlüssel:
 % foreach my $key (@$clubkeys) {
-<%= $key->{_nr} && "Nr. $key->{_nr} " %><%= $key->{deposit} ? "gegen $key->{deposit} $key->{currency}" : "ohne" %> Pfand<%= $key->{returned} && " (zurückgegeben, Pfandrückzahlung noch nicht erfolgt)" %><%= $key->{comment} && " ($key->{comment})" %>
+<%= $key->{_nr} && "Nr. $key->{_nr} " %><%= $key->{since} ? "(seit $key->{since}) " : "" %><%= $key->{deposit} ? "gegen $key->{deposit} $key->{currency}" : "ohne" %> Pfand<%= $key->{returned} && " (zurückgegeben, Pfandrückzahlung noch nicht erfolgt)" %><%= $key->{comment} && " ($key->{comment})" %>
 %#=  dumper $key
 % }
 <%= "ohne\n" if ! scalar @$clubkeys;
