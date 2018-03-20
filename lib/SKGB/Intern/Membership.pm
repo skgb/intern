@@ -55,7 +55,15 @@ sub new {
 	$status and $self->{status_long} = $status;
 #	say Dumper $self, $person;
 	
+	$self->{_reduced_fee} = $person->_property('reducedFee', relationship => 'ROLE|GUEST');
+	
 	return $self;
+}
+
+
+sub reduced_fee {
+	my ($self) = @_;
+	return $self->{_reduced_fee};
 }
 
  

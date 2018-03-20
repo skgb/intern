@@ -13,7 +13,7 @@
 
 <ul>
 <li><a href=http://www.unwetterzentrale.de/uwz/getwarning_de.php?plz=51709&amp;uwz=UWZ-DE>für Marienheide</a> (Meteomedia)
-<li><a href=http://www.dwd.de/DE/wetter/warnungen/warnWetter_node.html>für Deutschland</a> (DWD)
+<li><a href=https://www.dwd.de/DE/wetter/warnungen/warnWetter_node.html>für Deutschland</a> (DWD)
 <li><a href=http://www.estofex.org/>für Europa</a> (ESTOFEX)
 </ul>
 
@@ -25,14 +25,14 @@
 <li><strike><a href=http://wetter-muellenbach.de/>Wetterstation Müllenbach</a></strike>
 <li><strike><a href=http://edkz.de/>Flugplatz Meinerzhagen</a></strike>
 -->
-<li>Flughäfen: <a href=http://www.aviationweather.gov/adds/metars?station_ids=EDDK,EDGS,EDLW,EDDL,ETNN&amp;chk_metars=on&amp;chk_tafs=on&amp;hoursStr=past+4+hours>METAR</a> / <a href=http://www.aviationweather.gov/adds/metars/?station_ids=EDDK,EDGS,EDLW,EDDL&amp;std_trans=translated&amp;chk_metars=on>Englisch</a>
+<li>Flughäfen: <a href=https://www.aviationweather.gov/adds/metars?station_ids=EDDK,EDGS,EDLW,EDDL,ETNN&amp;chk_metars=on&amp;chk_tafs=on&amp;hoursStr=past+4+hours>METAR</a> / <a href=https://www.aviationweather.gov/adds/metars/?station_ids=EDDK,EDGS,EDLW,EDDL&amp;std_trans=translated&amp;chk_metars=on>Englisch</a>
 <!--
 ATIS Siegerland 02736 414651
 ATIS Dortmund 0231 9213330
 ATIS Düsseldorf 0211 421116
 -->
 <li><a href=http://wetter.gm.fh-koeln.de/>Gummersbach</a> (Hochschule)
-<li><a href=http://www.wetterdienst.de/Deutschlandwetter/Marienheide/Aktuell/H653>Gogarten</a> (wetterdienst.de)
+<li><a href=https://www.wetterdienst.de/Deutschlandwetter/Marienheide/Aktuell/H653>Gogarten</a> (wetterdienst.de)
 <li><a href=http://fluggs.wupperverband.de/swc/#/diagram?ts=fluggs__197,fluggs__196>Wassertemperatur</a> (Wupperverband)
 </ul>
 
@@ -40,11 +40,11 @@ ATIS Düsseldorf 0211 421116
 <h3>Wetterkarten</h3>
 
 <ul>
-<li><a href=http://www.dwd.de/DWD/wetter/wv_spez/hobbymet/wetterkarten/bwk_bodendruck_na_ana.png>Bodenanalyse</a> (<a href=http://www.dwd.de/DE/leistungen/hobbymet_wk_europa/hobbyeuropakarten.html>DWD</a>)
+<li><a href=https://www.dwd.de/DWD/wetter/wv_spez/hobbymet/wetterkarten/bwk_bodendruck_na_ana.png>Bodenanalyse</a> (<a href=https://www.dwd.de/DE/leistungen/hobbymet_wk_europa/hobbyeuropakarten.html>DWD</a>)
 <li><a href=https://earth.nullschool.net/#current/wind/surface/level/orthographic=6,52,2500/loc=7.56,51.08>Windanimation</a> (EARTH)
-<li>Regenradar: <a href=http://www.dwd.de/DWD/wetter/radar/rad_nrw_akt.jpg>Standbild</a> / <a href=http://www.dwd.de/DWD/wetter/radar/radfilm_nrw_akt.gif>Film</a> (<a href=http://www.dwd.de/DE/leistungen/radarbild_film/radarbild_film.html>DWD</a>)
+<li>Regenradar: <a href=https://www.dwd.de/DWD/wetter/radar/rad_nrw_akt.jpg>Standbild</a> / <a href=https://www.dwd.de/DWD/wetter/radar/radfilm_nrw_akt.gif>Film</a> (<a href=https://www.dwd.de/DE/leistungen/radarbild_film/radarbild_film.html>DWD</a>)
 <!--<li><a href=https://www.wunderground.com/wundermap/?lat=51.08&amp;lon=7.56&amp;zoom=7&amp;type=lightmap&amp;units=metric&amp;sat=1&amp;sat.num=1&amp;sat.spd=25&amp;sat.opa=80&amp;sat.gtt1=109&amp;sat.gtt2=109&amp;sat.type=IR4&amp;wxsn=0&amp;rad=0>Wolken Infrarot</a> (Weather Underground)-->
-<li><a href=http://www.aviationweather.gov/metar?zoom=7&amp;lat=51.08&amp;lon=7.56&amp;layers=B00FFTFFFFFTT&amp;plottype=model&amp;scale=1&amp;density=1&amp;metric=true&amp;decoded=true&amp;taf=false>METAR</a> / <a href=http://www.aviationweather.gov/taf?zoom=8&amp;lat=51.08&amp;lon=7.56&amp;layers=B00TFFFTT&amp;plottype=model&amp;fore=0&amp;density=2&amp;metric=true&amp;decoded=true&amp;metar=false&amp;scale=1.25>TAF</a> (NOAA)
+<li><a href=https://www.aviationweather.gov/metar?zoom=7&amp;lat=51.08&amp;lon=7.56&amp;layers=B00FFTFFFFFTT&amp;plottype=model&amp;scale=1&amp;density=1&amp;metric=true&amp;decoded=true&amp;taf=false>METAR</a> / <a href=https://www.aviationweather.gov/taf?zoom=8&amp;lat=51.08&amp;lon=7.56&amp;layers=B00TFFFTT&amp;plottype=model&amp;fore=0&amp;density=2&amp;metric=true&amp;decoded=true&amp;metar=false&amp;scale=1.25>TAF</a> (NOAA)
 </ul>
 
 
@@ -52,12 +52,12 @@ ATIS Düsseldorf 0211 421116
 
 <ul>
 <li><a href=https://de.windfinder.com/weatherforecast/brucher_talsperre>WindFinder</a>
-<li>yr.no: <a href=http://www.yr.no/place/Germany/North_Rhine-Westphalia/Brucher_Talsperre/avansert_meteogram.png>48 Stunden</a> / <a href=http://www.yr.no/place/Germany/North_Rhine-Westphalia/Brucher_Talsperre/long.html>10 Tage</a>
+<li>yr.no: <a href=https://www.yr.no/place/Germany/North_Rhine-Westphalia/Brucher_Talsperre/avansert_meteogram.png>48 Stunden</a> / <a href=https://www.yr.no/place/Germany/North_Rhine-Westphalia/Brucher_Talsperre/long.html>10 Tage</a>
 <!-- (aktualisiert ca. 04 und 16 UT bzw. 07 und 19 UT)-->
 <li><a href=https://www.meteoblue.com/de/wetter/vorhersage/multimodel/brucher-talsperre_deutschland_2943622>Multi-Modell</a> (Meteoblue)
 <li><a href=http://www.wetterzentrale.de/maps/WRFOP12_075511_215.png>WRF-Diagramm</a> (<a href=http://www.wetterzentrale.de/show_diagrams.php?model=wrf&amp;var=92&amp;geoid=2166&amp;lid=OP>Wetterzentrale</a>)
-<li><a href=http://www.aviationweather.gov/adds/tafs?station_ids=EDDK&amp;std_trans=translated>Flughafen Köln/Bonn</a>
-<li><a href=http://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/luftsportberichte_node.html>Luftsportbericht</a> GAFOR-Gebiet 35 (DWD)
+<li><a href=https://www.aviationweather.gov/adds/tafs?station_ids=EDDK&amp;std_trans=translated>Flughafen Köln/Bonn</a>
+<li><a href=https://www.dwd.de/DE/fachnutzer/luftfahrt/teaser/luftsportberichte/luftsportberichte_node.html>Luftsportbericht</a> GAFOR-Gebiet 35 (DWD)
 </ul>
 
 
@@ -66,5 +66,5 @@ ATIS Düsseldorf 0211 421116
 <h2>Seewetter</h2>
 
 <ul>
-<li><a href=http://www.dwd.de/DE/fachnutzer/schifffahrt/seewetter/nordostsee/_node.html>Seewetter aktuell</a> (DWD)
+<li><a href=https://www.dwd.de/DE/fachnutzer/schifffahrt/seewetter/nordostsee/_node.html>Seewetter aktuell</a> (DWD)
 </ul>

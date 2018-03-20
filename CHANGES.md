@@ -162,3 +162,9 @@ various hidden/internal changes:
 - fix "Stegdienstliste" to exempt members who have joined the very same year (these are usually exempt simply by not joining until after the list has been created; this fix takes care of those few that happen to join in the first days of the year)
 - auto-reset stored password for version 1.4 proxy if we are 401 Unauthorized
 - fix person endpoints to support node id 0
+
+2.0.0-a29, 2018-03-20
+- implement club boats (however, the 420 and Opti youth boats are not implemented as individual boats, but rather as a single group each; frequent changes currently seem to make any other approach less useful)
+- implement assembly decision of 2011-05-28 to exempt trainers of boat usage fee
+- implement reduced membership fee and special agreements on fees
+- minor fixes for intern1 and listen exports

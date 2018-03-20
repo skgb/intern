@@ -255,9 +255,10 @@ sub list_budget {
 	
 	my @records = $self->neo4j->get_persons(<<_, column => 'p');
 MATCH (p:Person)-[rm:ROLE|GUEST]->(m:Role)-[rn:ROLE]->(:Role {role:'member'})
-OPTIONAL MATCH (p)--(:Boat)--(b:Berth)
+OPTIONAL MATCH (p)-[:OWNS]->(:Boat)--(b:Berth)
 WHERE b.ref <> 'W' AND b.ref <> 'U'
-RETURN p, rn, b, [rm, m], (:Mandate)-[:DEBITOR]->(p) AS s
+OPTIONAL MATCH (p)-[:SAILS]->(c:Boat)<-[:OWNS]-(:Club {abbr:'SKGB'})
+RETURN p, rn, b, c, [rm, m], (:Mandate)-[:DEBITOR]->(p) AS s
 _
 	my @members = ();
 	my %total = (membership => 0, berth => 0, usage => 0, max_error => 0);
@@ -276,11 +277,17 @@ _
 			$member->{mandate} && $member->{mandate} > $mandate->[0]->{umr} and next;  # BUG: this simply assumes that the newest SEPA mandate should be used, but that isn't necessarily true
 			$member->{mandate} = $mandate->[0]->{umr};
 		}
-		$member->{berth} = 0 if $member->{person}->gs_verein_id eq '085' || $member->{person}->gs_verein_id eq '090' || $member->{person}->gs_verein_id eq '374';  # BUG: hard-coded condition "gekaufte Boxen"
-		$member->{usage} = $member->{membership} == 35 ? 55 : 0;  # BUG: hard-coded condition and fee "Jugendbootsnutzung"
+		$member->{membership} /= 2 if $person->membership->reduced_fee;
+		$member->{berth} = 0 if $member->{debit_reason} eq "gekaufte Box";
+		$member->{debit_reason} = "" if $member->{debit_reason} eq "Übungsleiter" && $person->membership->{status} !~ m/^Jugend/;
+		$member->{usage} = $person->membership->{status} =~ m/^Jugend/ && $record->get('c') && $member->{debit_reason} ne "Übungsleiter" ? 55 : 0;  # BUG: hard-coded fee "Jugendbootsnutzung"
 		$member->{sum} = $member->{membership} + $member->{berth} + $member->{usage};
 		$member->{possible_error} = abs($member->{sum} - $member->{debit_base});
 		$member->{possible_error} = max($member->{sum}, $member->{debit_base}) if ! $member->{possible_error} && ! $member->{mandate} && max($member->{sum}, $member->{debit_base}) > 0;
+		if ($member->{debit_reason} eq "Sondervereinbarung") {
+			$total{membership} -= $member->{sum} - $member->{debit_base};
+			$member->{possible_error} = 0;
+		}
 		
 		push @members, $member;
 		$total{membership} += $member->{membership};
@@ -297,18 +304,21 @@ sub list_berth {
 	my ($self) = @_;
 	
 	my @berths = $self->neo4j->get_persons(<<END, column => 'p');
+MATCH (us:Club {abbr:'SKGB'})
 MATCH (b:Berth)
-OPTIONAL MATCH (b)--(s:Boat)--(p:Person)
+OPTIONAL MATCH (b)--(s:Boat)
+OPTIONAL MATCH (s)<-[:OWNS]-(p)
 OPTIONAL MATCH (p)-[rm:ROLE|GUEST]->(m:Role)-[:ROLE]->(:Role {role:'member'})
-RETURN p, [rm, m], b, s
+RETURN p, [rm, m], b, s, p = us as c
 ORDER BY b.ref, s.mark, p.name
 END
 	my @boats = $self->neo4j->get_persons(<<END, column => 'p');
+MATCH (us:Club {abbr:'SKGB'})
 MATCH (s:Boat)
 WHERE NOT (s)--(:Berth)
-OPTIONAL MATCH (s)--(p:Person)
+OPTIONAL MATCH (s)<-[:OWNS]-(p)
 OPTIONAL MATCH (p)-[rm:ROLE|GUEST]->(m:Role)-[:ROLE]->(:Role {role:'member'})
-RETURN p, [rm, m], s
+RETURN p, [rm, m], s, p = us as c
 ORDER BY s.mark, p.name
 END
 	

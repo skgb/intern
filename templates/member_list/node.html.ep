@@ -92,7 +92,8 @@ Bekannte Beziehungen zu anderen Personen:
 %  $type =~ s/COLLECTOR/darf abholen/ if ! $related->{forward};
 %  $type =~ s/Address/Kontaktdaten/;
 %  $type =~ s/Mandate/Zahlungsdaten/;
-%  $type =~ s/Boat/Boot/;
+%  $type =~ s/Boat/Trainingsgruppe/ if $person->membership->{status} =~ m/^Jugend/;
+%  $type =~ s/Boat/Boot/ if $person->membership->{status} !~ m/^Jugend/;
 <%= auth_link_to person => $related->{person}->name, {entity => $related->{person}->handle} %>: <%= $type %>
 % }
 <%= "keine\n" if ! scalar @$all_related;

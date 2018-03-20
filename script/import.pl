@@ -475,6 +475,7 @@ sub print_create {
 
 
 # copy initial berth configuration
+print "\n";
 cat_file $options{resources_file};
 
 my %boats = ();
@@ -591,6 +592,7 @@ foreach my $member (@members) {
 	$memberProps .= "noService:true, " if $zu15 =~ m/kein.* Stegdienst/;
 	$memberProps .= "noDuties:true, " if $zu15 =~ m/keine.* Arbeiten/;
 	$memberProps .= "noDuties:'$zu15', " if $zu15 =~ m/Arbeiten: Vertretung/;  # TODO: reference
+	$memberProps .= "reducedFee:true, " if $member->{'Satz'} =~ m/04|08|09/;
 	$memberProps .= "regularContributor:true, " if $regularContributor;
 	$courses =~ s/, /','/g if $courses;
 	$memberProps .= "courses:['$courses'], " if $courses;
@@ -633,6 +635,8 @@ foreach my $member (@members) {
 	# TODO: (Austritt), Betreuer, Zu13=Gruppe, {Bemerk}*
 	
 	# payment data
+	push @create, "($id)-[:SAILS]->(boats420)" if $member->{'Zu13'} eq "420er" && ! $memberUntil;
+	push @create, "($id)-[:SAILS]->(boatsOpti)" if $member->{'Zu13'} eq "Opti" && ! $memberUntil;
 	my $debitorSerial;
 	if ($member->{'Debinr'} && $member->{'Debinr'} =~ m/1(\d\d\d)0/) {
 		$debitorSerial = "$1";
@@ -645,6 +649,8 @@ foreach my $member (@members) {
 	$debitBase =~ s/\.00$//;
 	#$debitBase = 0 if $member->{'Zahlart'} ne "Bankeinzug";
 	my $debitReason = undef;
+	$debitReason = "gekaufte Box" if $member->{'Zu10'} && $member->{'Zu10'} ne "nein";
+	$debitReason = "Übungsleiter" if $member->{'Betreuer'} eq "Übungsleiter";
 	$debitReason = "in Ausbildung" if $member->{'Satz'} =~ m/04|08|09/;
 	$debitReason = "Sondervereinbarung" if $member->{'Satz'} =~ m/11/;
 	$debitReason = "Eignergemeinschaft" if $member->{'Satz'} =~ m/14/;

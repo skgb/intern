@@ -1,7 +1,10 @@
 CREATE
-(berthE0:Berth {ref:'E0', comment:'Eckbox'}),
+(:System {shortLoginFails:0, shortLoginReset:'', shortLoginReport:'', longLoginFails:0, longLoginReset:'', longLoginReport:''}),
+(skgb:Club {name:'Segel- und Kanugemeinschaft Brucher Talsperre', abbr:'SKGB'})
+
+CREATE
 (berthE1:Berth {ref:'E1', width:2.4}),
-(berthE2:Berth {ref:'E2', comment:'Vereinsboot', width:1.9}),
+(berthE2:Berth {ref:'E2', width:1.9}),
 (berthE3:Berth {ref:'E3', width:1.9}),
 (berthE4:Berth {ref:'E4', width:3.4}),
 (berthF1:Berth {ref:'F1', width:2.4}),
@@ -14,23 +17,24 @@ CREATE
 (berthG4:Berth {ref:'G4', width:1.9}),
 (berthG5:Berth {ref:'G5', width:1.9}),
 (berthG6:Berth {ref:'G6', width:1.9}),
+(berthE0:Berth {ref:'G7', comment:'Eckbox G'}),
 (berthH1:Berth {ref:'H1', width:1.9}),
 (berthH2:Berth {ref:'H2', width:1.9}),
 (berthH3:Berth {ref:'H3', width:1.9}),
 (berthH4:Berth {ref:'H4', width:1.9}),
 (berthH5:Berth {ref:'H5', width:1.9}),
 (berthH6:Berth {ref:'H6', width:1.9}),
+(berthK0:Berth {ref:'H7', comment:'Eckbox H'}),
 (berthJ1:Berth {ref:'J1', width:3.7}),
 (berthJ2:Berth {ref:'J2', width:3.3}),
-(berthJ3:Berth {ref:'J3', comment:'Vereinsboot', width:2.3}),
+(berthJ3:Berth {ref:'J3', width:2.3}),
 (berthJ4:Berth {ref:'J4', width:2.3}),
 (berthJ5:Berth {ref:'J5', comment:'Badeleiter', width:1.9}),
 (berthJ6:Berth {ref:'J6', width:1.9}),
-(berthJ7:Berth {ref:'J7', comment:'Vereinsboot', width:1.9}),
-(berthK0:Berth {ref:'K0', comment:'Eckbox'}),
+(berthJ7:Berth {ref:'J7', width:1.9}),
 (berthK1:Berth {ref:'K1', width:3.7}),
 (berthK2:Berth {ref:'K2', width:3.3}),
-(berthK3:Berth {ref:'K3', comment:'Vereinsboot', width:2.3}),
+(berthK3:Berth {ref:'K3', width:2.3}),
 (berthK4:Berth {ref:'K4', width:2.3}),
 (berthK5:Berth {ref:'K5', width:1.9}),
 (berthK6:Berth {ref:'K6', width:1.9}),
@@ -39,4 +43,19 @@ CREATE
 (berthShore:Berth {ref:'W', comment:'Jollenwiese'})
 
 CREATE
-(:System {shortLoginFails:0, shortLoginReset:'', shortLoginReport:'', longLoginFails:0, longLoginReset:'', longLoginReport:''})
+(boats420:Boat {mark:'Vereins-420er', class:'420er', count:3, comment:'Sammel-Node für vereinseigene 420er der Jugendgruppe'}),
+(boatsOpti:Boat {mark:'Vereins-Optis', class:'Optimisten', count:6, comment:'Sammel-Node für vereinseigene Optis der Jugendgruppe'}),
+(boatPapillon:Boat {mark:'Papillion', name:'Papillion', sailnumber:'2532', class:'Sailhorse', width:2.14}),
+(boatSkarl:Boat {mark:'Skarl', name:'Skarl', class:'Skarl 685', width:2.00}),
+(boatVanGalen:Boat {mark:'Jan van Galen', name:'Jan van Galen', sailnumber:'327X', class:'Lelievlet', width:1.80, comment:'Startboot'}),
+(boatElch:Boat {mark:'Elch', name:'Elch', class:'Kanadier', comment:'Hersteller: Gatz-Kanus', canoe:true}),
+(boatPeggy:Boat {mark:'Peggy', name:'Pegasus', registration:'133917 S', class:'Sicherungsboot', engine:true, comment:'Motorrettungsboot 25 PS'}),
+(boatOranje:Boat {mark:'Oranje', name:'Oranje', class:'Fun Yak Coralline', width:1.30, engine:true, comment:'„E-Boot“ (Sicherungsboot mit Elektromotor)'}),
+(skgb)-[:OWNS]->(boats420)-[:OCCUPIES]->(berthShore),
+(skgb)-[:OWNS]->(boatsOpti)-[:OCCUPIES]->(berthPontoon),
+(skgb)-[:OWNS]->(boatPapillon)-[:OCCUPIES]->(berthJ3),
+(skgb)-[:OWNS]->(boatSkarl)-[:OCCUPIES]->(berthK3),
+(skgb)-[:OWNS]->(boatVanGalen)-[:OCCUPIES]->(berthE2),
+(skgb)-[:OWNS]->(boatElch)-[:OCCUPIES]->(berthPontoon),
+(skgb)-[:OWNS]->(boatPeggy)-[:OCCUPIES]->(berthJ7),
+(skgb)-[:OWNS]->(boatOranje)-[:OCCUPIES]->(berthPontoon)

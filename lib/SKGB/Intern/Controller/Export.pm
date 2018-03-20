@@ -110,7 +110,7 @@ sub _intern1 {
 				}
 			}
 		}
-		my $email = join ',',  @emails;
+		my $email = join ',', sort @emails;
 		push @row, $email;
 		
 		# get mandate
@@ -126,7 +126,7 @@ sub _intern1 {
 			$mandate{umr} = $umr;
 			$mandate{iban} = $start_node->get_property('iban');
 		}
-		$Zahlfremd = 1 if $p->gs_verein_id() && $p->gs_verein_id() eq '001' && $mandate{umr} && $mandate{umr} eq '20021';
+		$Zahlfremd = 1 if $p->gs_verein_id() && $p->gs_verein_id() eq '001' && $mandate{umr} && $mandate{umr} eq '20022';  # BUG: intern1 doesn't support mandates with two holders
 		
 		my $Gbetrag = sprintf "%.2f", $p->_property('debitBase') || 0;
 		$Gbetrag =~ s/\./,/;
@@ -319,6 +319,7 @@ sub _listen {
 		my $Telefon;
 		my $Telefon2;
 		my $Zu1;
+		my $Zu3;
 		foreach my $rel (@rels_i) {
 			next if $rel->type ne 'FOR';
 			my $start_node = $rel->start_node->as_simple;
@@ -342,8 +343,12 @@ sub _listen {
 				elsif ($kind && $kind eq 'mobil') {
 					$Zu1 = $start_node->{address};
 				}
+				else {
+					$Zu3 = $start_node->{address};
+				}
 			}
 		}
+		$Telefon = $Zu3 if ! $Telefon && ! $Telefon2 && ! $Zu1;  # "Sonstige" Nummern nur dann, wenn wirklich keine normale Nummer genannt ist (um Geheimnummern zu schützen)
 		my $email = join ',',  @emails;
 		if ($email && $p->legacy_user) {
 			$email = $p->legacy_user . '@skgb.de';

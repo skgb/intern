@@ -37,20 +37,25 @@ MATCH (p:Person)-[r]-(s:Role)--(:Role{role:'member'})
  ORDER BY p.born, p.gender, s.role, r.regularContributor
 QUERY
   no_berth => REST::Neo4p::Query->new(<<QUERY),
-MATCH (b:Boat)--(:Person)-[r]-(s:Role)
+MATCH (b:Boat)<-[:OWNS]-(:Person)-[r]-(s:Role)
  WHERE NOT (b)--(:Berth)
- AND s.role IN ['honorary-member','active-member','passive-member']
  AND (NOT has(r.leaves) OR r.leaves >= toString({target}))
  AND r.joined <= toString({target})+'-01-01'
  RETURN count(b)
 QUERY
   berth => REST::Neo4p::Query->new(<<QUERY),
-MATCH (b:Boat)--(:Person)-[r]-(s:Role)
+MATCH (b:Boat)<-[:OWNS]-(:Person)-[r]-(s:Role)
  WHERE (b)--(:Berth)
- AND s.role IN ['honorary-member','active-member','passive-member']
  AND (NOT has(r.leaves) OR r.leaves >= toString({target}))
  AND r.joined <= toString({target})+'-01-01'
  RETURN count(b)
+QUERY
+  club_boats => REST::Neo4p::Query->new(<<QUERY),
+MATCH (s:Boat)<-[:OWNS]-(:Club {abbr:'SKGB'}) WHERE (NOT has(s.engine) OR s.engine = false) AND (NOT has(s.canoe) OR s.canoe = false) AND s.class <> '420er' AND s.class <> 'Optimisten'
+MATCH (y:Boat)<-[:OWNS]-(:Club {abbr:'SKGB'}) WHERE y.class = '420er' OR y.class = 'Optimisten'
+MATCH (e:Boat {engine:true})<-[:OWNS]-(:Club {abbr:'SKGB'})
+MATCH (c:Boat {canoe:true})<-[:OWNS]-(:Club {abbr:'SKGB'})
+RETURN count(DISTINCT s), sum(DISTINCT y.count), count(DISTINCT e), count(DISTINCT c)
 QUERY
 };
 # error in Neo4p:
@@ -238,12 +243,28 @@ sub dsv {
 		push @out, sprintf " %2d %2d   ", $bins{$bin}->{M_A} + $bins{$bin}->{M_P}, $bins{$bin}->{W_A} + $bins{$bin}->{W_P};
 	}
 	
+	push @out, "\n";
 	$Q->{berth}->execute(target => $self->{targetYear});
 	my $row = $Q->{berth}->fetch;
 	push @out, "\nPrivate Boote mit Liegeplatz:  ", @$row;
+	my $private_with_berth = $row->[0];
 	$Q->{no_berth}->execute(target => $self->{targetYear});
 	my $row = $Q->{no_berth}->fetch;
 	push @out, "\nPrivate Boote ohne Liegeplatz: ", @$row;
+	my $private_no_berth = $row->[0];
+	$Q->{club_boats}->execute();
+	my $row = $Q->{club_boats}->fetch;
+	my $club_sail = $row->[0];
+	my $club_youth = $row->[1];
+	my $club_engine = $row->[2];
+	my $club_canoe = $row->[3];
+	my $sail_sum = $private_with_berth + $private_no_berth / 2 + $club_sail + $club_youth;
+	push @out, "\nVereins-Jugendboote:           ", $club_youth;
+	push @out, "\nSonstige Vereins-Segelboote:   ", $club_sail;
+	push @out, "\n";
+	push @out, "\nSegelboote insgesamt: ", $sail_sum, "  (ca.)";
+	push @out, "\nVereins-Motorboote:   ", $club_engine;
+	push @out, "\nVereins-Kanus:        ", $club_canoe;
 	
 	$self->_replace_inf($params{infinity}, \@out) if $params{infinity};
 	return wantarray ? @out : join '', @out;

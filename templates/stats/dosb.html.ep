@@ -34,7 +34,7 @@
 </pre>
 
 <h2>Deutscher Segler-Verband</h2>
-<p style="margin-bottom:0.25em">Zugang zum DSV-<a href=http://www.dsv.org/dsv/dsv-vereine/vereinsmeldebogen/>Vereinsmeldebogen</a>:
+<p style="margin-bottom:0.25em">Zugang zum DSV-<a href=https://www.dsv.org/dsv/mitgliederservice/vereinsmeldebogen/>Vereinsmeldebogen</a>:
 <dl style="margin:0">
 <dt style="width:6.5em;float:left;clear:left">registriert auf<dd><kbd>info@skgb.de</kbd>
 <dt style="width:6.5em;float:left;clear:left">Kennwort<dd><kbd><%= $self->config->{dosb}->{dsv_password} %></kbd>
@@ -44,11 +44,13 @@
 %= $stats->dsv(infinity => '-∞ ')
 </pre>
 
-<p>Die Bootszahlen berücksichtigen bisher nicht <strong>Vereinsboote und Boote von Jugendmitgliedern;</strong> diese <strong>werden dazuaddiert</strong>. Diese Zahlen inkludieren Boote aller Art; <strong>private Kanus werden subtrahiert</strong> und unter „sonstige“ separat aufgeführt.
+<!--
+<p>Die Bootszahlen berücksichtigen bisher höchstens ein privates Boot je Mitglied; zusätzliche private  Boote müssen dazuaddiert werden. Alle privaten Boote werden bisher als Segelboote betrachtet; für private Kanus müssen die Zahlen entsprechend berichtigt werden.
+-->
 
-<p>Die Boote ohne Liegeplatz sind oft Boote von „Karteileichen“, die noch existieren könnten oder auch nicht. Teilweise sind es aber auch Boote von Mitgliedern, die feste Liegeplätze an anderen Gewässern haben. Solche Feinheiten können im DSV-Formular nicht sinnvoll eingetragen werden, deshalb wurde die Zahl der Boote ohne Liegeplatz in der Vergangenheit oft der Einfachheit halber mit der Gewichtung 0,5 in der Gesamtrechnung inkludiert.
+<p>Die Boote ohne Liegeplatz sind oft Boote von „Karteileichen“, die noch existieren könnten oder auch nicht. Teilweise sind es aber auch Boote von Mitgliedern, die feste Liegeplätze an anderen Gewässern haben. Solche Feinheiten können im DSV-Formular nicht sinnvoll eingetragen werden, deshalb wird die Zahl der Boote ohne Liegeplatz hier der Einfachheit halber mit der Gewichtung 0,5 in der Summe inkludiert.
 
-<p>Die <%= auth_link_to list_berth => "Liegeplatzliste" %> mag helfen, sich eine Übersicht über die privaten Boote zu verschaffen.
+<p>Die <%= auth_link_to list_berth => "Liegeplatzliste" %> mag helfen, sich eine Übersicht über die Boote zu verschaffen.
 
 <!--
 <p>Rechenbeispiel 2016:

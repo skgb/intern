@@ -56,7 +56,6 @@ DARF in 2.0 (während BETA):
 - [ ] improved security: use initial AccessCode as a ONE TIME password, which is slightly less user-friendly, but could then be transitioned to a second code as a more secure session key (not sure if this is worth the effort)
 - [ ] Telefonnummern-Inverssuche
 - [ ] Personen-Profil (für Mitglieder) mit Einstellung der Sichtbarkeit von Einzelangaben
-- [ ] Bug in LISTEN-Schnittstelle: Neuaufnahmen haben keine Telefonnummern
 - [ ] Die SKGB-Adressen-Logik sollte jetzt in der GS-Verein-Schnittstelle korrekt sein; vereinheitlichen mit node-Report und LISTEN-Schnittstelle
 
 
@@ -69,3 +68,4 @@ NICHT in 2.0 (späteres Update):
 - Endpoints: Permalinks (insb. auch für Nodes ohne Handle) (e. g. a running id tracked by :System, e. g. /access-code/142; even better: running count in :Person with URL like /person/abc/access-code/54; node ID is not just as good, since high-security codes will outlive backups in the future, but this is possibly an edge case)
 - Daten bearbeiten: über Endpoints? REST?
 - Wiki: Mail-Abos
+- Das mit den Rollen ist noch nicht so optimal. Beispiel Anglerverein: Dessen Mitglieder können durch Rollen nicht gut abgebildet werden. Theoretisch sind durch juristische Personen ganze Hierarchien von Mitgliedschaften möglich. Das sollte so auch abgebildet werden können, insbesondere hinsichtlich Eintritt/Austritt usw.; der Mitglieds-Status darf dann gerne über Rollen laufen (wie?). In dem Fall wäre es auch sinnvoll, den Club-Node SKGB als normale (jur.) Person zu implementieren, was dann u. a. für die Liegeplatzliste berücksichtigt werden müsste.
