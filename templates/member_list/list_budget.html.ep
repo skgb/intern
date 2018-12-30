@@ -12,13 +12,16 @@
 
 <h2><%= title %></h2>
 
-<p>Problemfälle sind gelb hervorgehoben (insgesamt sind ca. <%= $total->{max_error} %>,– € zweifelhaft). Mögliche Deutungen:
+%  if ($total->{max_error}) {
+<p>Problemfälle sind gelb hervorgehoben (insgesamt sind derzeit ca. <%= $total->{max_error} %>,– € zweifelhaft). Mögliche Deutungen:
 <ul>
 <li>bisher unvollständige Implementierung in SKGB-intern
-<br>(insbesondere sind mehrere Liegeplätze für ein Mitglied noch nicht unterstützt)
 <li>Lastschriftmandat fehlt
 <li>inkonsistente Mitgliederdaten
 </ul>
+% } else {
+<p>Derzeit sind keine Problemfälle bekannt (zweifelhafte Angaben wären andernfalls in der Liste gelb hervorgehoben).
+% }
 
 <table id=membertable class="compact">
 <thead>
@@ -30,8 +33,13 @@
 <td><span class=euro><%=$member->{membership} %></span>
 <td><%== $member->{berth} ? "<span class=euro>$member->{berth}</span>" : "<span class=null></span>" %>
 <td><%== $member->{usage} ? "<span class=euro>$member->{usage}</span>" : "<span class=null></span>" %>
+%  if ($member->{sum} == $member->{debit_base}) {
 <td><strong class=euro><%=$member->{sum} %></strong>
 <td><%== $member->{debit_base} ? "<span class=euro>$member->{debit_base}</span>" : "<span class=null></span>" %>
+%  } else {
+<td><span class=euro><%=$member->{sum} %></span>
+<td><%== $member->{debit_base} ? "<strong class=euro>$member->{debit_base}</strong>" : "<strong class=null></strong>" %>
+%  }
 <td><%= $member->{debit_reason} %>
 <td><%= $member->{mandate} %>
 <td><%= fc($member->{person}->name_sortable) %>

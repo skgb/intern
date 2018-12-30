@@ -11,14 +11,14 @@
 </thead>
 % foreach my $row (@$berths) {
 %  my $member = $row->get('p');
-%  my $club_boat = $row->get_bool('c');
+%  my $club_boat = !! $row->get('c');
 %  my $berth = $row->get('b')->{ref};
 %  $berth .= " (" . $row->get('b')->{comment} . ")" if $row->get('b')->{comment};
 %  $berth = $row->get('b')->{comment} if $row->get('b')->{ref} =~ m/^(?:U|W|[GH]7)$/;
 %  my $class = $row->get('s') && $row->get('s')->{class};
 %  my $name = $row->get('s') && $row->get('s')->{name};
 %  my $sail = $row->get('s') && $row->get('s')->{sailnumber};
-%  my $count = $row->get('s') && $row->get('s')->{count} > 1 ? $row->get('s')->{count} : 0;
+%  my $count = $row->get('s') && $row->get('s')->{count} && $row->get('s')->{count} > 1 ? $row->get('s')->{count} : 0;
 <tr>
 <td><%= $berth %>
 <td><%= $count ? "$count " : "" %><%= $class ? "$class " : "" %><%== $name ? "<i class=bootsname>" : "" %><%= $name ? $name : "" %><%== $name ? "</i>" : "" %><%= $sail ? " $sail" : "" %><%= $row->get('s') ? "" : "–" %>
@@ -26,7 +26,7 @@
 <td><%= auth_link_to person => $member->name, {entity => $member->handle} %>
 <td><%= fc($member->name_sortable) %>
 %  } elsif ($club_boat) {
-<td>SKGB<%= $class =~ m/420er|Optimisten/ ? " (Jugendboote)" : "" %>
+<td>SKGB<%= $class =~ m/470er|420er|Optimisten/ ? " (Jugendboote)" : "" %>
 <td>SKGB
 %  } else {
 <td>–
@@ -77,7 +77,7 @@ $(document).ready(function() {
 <h3>Boote ohne Liegeplatz</h3>
 <ul>
 % foreach my $boat (@$boats) {
-%  my $club_boat = $boat->get_bool('c');
+%  my $club_boat = !! $boat->get('c');
 %  my $member = $boat->get('p');
 %  next unless $club_boat || $member && $member->membership->{status};
 %  my $class = $boat->get('s')->{class};

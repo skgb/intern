@@ -86,7 +86,7 @@ sub register {
 				# store in 2.0 database
 				$t->{return_stats} = 1;
 				my $result = $t->run($user->query("p", "SET p.legacyPassword = {password}"), password => $password);
-				$result->stats->{properties_set} or die 'Failed to modify databases';
+				$result->summary->counters->properties_set or die 'Failed to modify databases';
 				
 				# store in 1.4 database
 				$c->skgb->legacy->basicauth($user, $password);

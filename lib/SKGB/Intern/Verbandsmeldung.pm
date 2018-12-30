@@ -31,7 +31,7 @@ my $Q = {
   dosb => REST::Neo4p::Query->new(<<QUERY),
 MATCH (p:Person)-[r]-(s:Role)--(:Role{role:'member'})
  WHERE s.role <> 'guest-member'
- AND (NOT has(r.leaves) OR r.leaves >= toString({target}))
+ AND (NOT exists(r.leaves) OR r.leaves >= toString({target}))
  AND r.joined <= toString({target})+'-01-01'
  RETURN p, s, r
  ORDER BY p.born, p.gender, s.role, r.regularContributor
@@ -39,20 +39,20 @@ QUERY
   no_berth => REST::Neo4p::Query->new(<<QUERY),
 MATCH (b:Boat)<-[:OWNS]-(:Person)-[r]-(s:Role)
  WHERE NOT (b)--(:Berth)
- AND (NOT has(r.leaves) OR r.leaves >= toString({target}))
+ AND (NOT exists(r.leaves) OR r.leaves >= toString({target}))
  AND r.joined <= toString({target})+'-01-01'
  RETURN count(b)
 QUERY
   berth => REST::Neo4p::Query->new(<<QUERY),
 MATCH (b:Boat)<-[:OWNS]-(:Person)-[r]-(s:Role)
  WHERE (b)--(:Berth)
- AND (NOT has(r.leaves) OR r.leaves >= toString({target}))
+ AND (NOT exists(r.leaves) OR r.leaves >= toString({target}))
  AND r.joined <= toString({target})+'-01-01'
  RETURN count(b)
 QUERY
   club_boats => REST::Neo4p::Query->new(<<QUERY),
-MATCH (s:Boat)<-[:OWNS]-(:Club {abbr:'SKGB'}) WHERE (NOT has(s.engine) OR s.engine = false) AND (NOT has(s.canoe) OR s.canoe = false) AND s.class <> '420er' AND s.class <> 'Optimisten'
-MATCH (y:Boat)<-[:OWNS]-(:Club {abbr:'SKGB'}) WHERE y.class = '420er' OR y.class = 'Optimisten'
+MATCH (s:Boat)<-[:OWNS]-(:Club {abbr:'SKGB'}) WHERE (NOT exists(s.engine) OR s.engine = false) AND (NOT exists(s.canoe) OR s.canoe = false) AND s.class <> '470er' AND s.class <> '420er' AND s.class <> 'Optimisten'
+MATCH (y:Boat)<-[:OWNS]-(:Club {abbr:'SKGB'}) WHERE y.class = '470er' OR y.class = '420er' OR y.class = 'Optimisten'
 MATCH (e:Boat {engine:true})<-[:OWNS]-(:Club {abbr:'SKGB'})
 MATCH (c:Boat {canoe:true})<-[:OWNS]-(:Club {abbr:'SKGB'})
 RETURN count(DISTINCT s), sum(DISTINCT y.count), count(DISTINCT e), count(DISTINCT c)
@@ -198,23 +198,24 @@ sub svnrw {
 	
 	my @out = ();
 	my %bins = $self->_bin_ages( [6, 14, 18, 26, 40, 60, 'Inf'], \@out );
+	my $sp = " ";
 	
 	push @out, sprintf "Stichtag 1. 1. %s -- SVNRW\n", $self->{targetYear} if $self->{verbose};
-	push @out, "  ";
+	push @out, "  $sp";
 	foreach my $bin (sort { $a <=> $b } keys %bins) {
-		push @out, sprintf "%2d-%-2d J ", $bins{$bin}->{min}, $bins{$bin}->{max};
+		push @out, sprintf "%2d-%-2d J $sp", $bins{$bin}->{min}, $bins{$bin}->{max};
 	}
-	push @out, "\n   ";
+	push @out, "\n   $sp";
 	foreach my $bin (keys %bins) {
-		push @out, " m  w   ";
+		push @out, " m  w   $sp";
 	}
-	push @out, "\nA  ";
+	push @out, "\nA  $sp";
 	foreach my $bin (sort { $a <=> $b } keys %bins) {
-		push @out, sprintf "%2d %2d   ", $bins{$bin}->{M_A}, $bins{$bin}->{W_A};
+		push @out, sprintf "%2d %2d   $sp", $bins{$bin}->{M_A}, $bins{$bin}->{W_A};
 	}
-	push @out, "\nP  ";
+	push @out, "\nP  $sp";
 	foreach my $bin (sort { $a <=> $b } keys %bins) {
-		push @out, sprintf "%2d %2d   ", $bins{$bin}->{M_P}, $bins{$bin}->{W_P};
+		push @out, sprintf "%2d %2d   $sp", $bins{$bin}->{M_P}, $bins{$bin}->{W_P};
 	}
 	$self->_replace_inf($params{infinity}, \@out) if $params{infinity};
 	return wantarray ? @out : join '', @out;
@@ -229,18 +230,19 @@ sub dsv {
 	
 	my @out = ();
 	my %bins = $self->_bin_ages( [18, 'Inf'], \@out );
+	my $sp = "  ";
 	
 	push @out, sprintf "Stichtag 1. 1. %s -- DSV\n", $self->{targetYear} if $self->{verbose};
 	foreach my $bin (sort { $a <=> $b } keys %bins) {
-		push @out, sprintf "%2d-%-2d J  ", $bins{$bin}->{min}, $bins{$bin}->{max};
+		push @out, sprintf "%2d-%-2d J $sp", $bins{$bin}->{min}, $bins{$bin}->{max};
 	}
 	push @out, "\n";
 	foreach my $bin (keys %bins) {
-		push @out, "  m  w   ";
+		push @out, "  m  w  $sp";
 	}
 	push @out, "\n";
 	foreach my $bin (sort { $a <=> $b } keys %bins) {
-		push @out, sprintf " %2d %2d   ", $bins{$bin}->{M_A} + $bins{$bin}->{M_P}, $bins{$bin}->{W_A} + $bins{$bin}->{W_P};
+		push @out, sprintf " %2d %2d  $sp", $bins{$bin}->{M_A} + $bins{$bin}->{M_P}, $bins{$bin}->{W_A} + $bins{$bin}->{W_P};
 	}
 	
 	push @out, "\n";
@@ -258,7 +260,7 @@ sub dsv {
 	my $club_youth = $row->[1];
 	my $club_engine = $row->[2];
 	my $club_canoe = $row->[3];
-	my $sail_sum = $private_with_berth + $private_no_berth / 2 + $club_sail + $club_youth;
+	my $sail_sum = $private_with_berth + int($private_no_berth / 2) + $club_sail + $club_youth;
 	push @out, "\nVereins-Jugendboote:           ", $club_youth;
 	push @out, "\nSonstige Vereins-Segelboote:   ", $club_sail;
 	push @out, "\n";

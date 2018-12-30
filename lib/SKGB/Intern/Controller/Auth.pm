@@ -165,7 +165,7 @@ sub _tree {
 	
 	my ($code, @codes) = $self->neo4j->get_persons($Q->{code}, code => $param);
 #	say Data::Dumper::Dumper $code;
-	$code and not @codes or die;
+	$code and not @codes or die;  # TODO: serve 404 here (e. g. https://intern2.skgb.de/auth/999999)
 	@codes = ( SKGB::Intern::AccessCode->new(
 		code => $code->get('c'),
 		user => $code->get('person'),

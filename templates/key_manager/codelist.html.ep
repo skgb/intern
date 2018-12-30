@@ -10,7 +10,7 @@
 % my $this_session = $code->code eq $self->skgb->session->code;
 %= form_for url_for('auth', entity => $code->handle) => (method => 'POST') => begin
 <p><b><%= $code->code %></b> <%= $this_session && '(current session)' %> <%= $code->expired && '(expired)' %>
-%== defined param('all') ? '<p>for: ' . $code->user->name : '';
+%== defined param('all') ? '<p>for: ' . ($code->user ? $code->user->name : '–') : '';
 <p>issued: <%= $code->creation %>
 <p>expiration: <%= $code->expiration %>
 <p>access: <%= $code->access ? "first ".$code->first_use.", last ".$code->access : "none" %>

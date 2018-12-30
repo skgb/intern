@@ -17,7 +17,7 @@
 <td><%= auth_link_to person => $member->name, {entity => $member->handle} %>
 <td><%= $member->membership->{status_long} %>
 <td><%= $record->get('leaves') %>
-<td><%= $record->get_bool('returned') ? "Pfand offen" : $record->get('keys') ? "ja" : "nein" %>
+<td><%= $record->get('returned') ? "Pfand offen" : $record->get('keys') ? "ja" : "nein" %>
 <td><%= fc($member->name_sortable) %>
 % }
 </table>

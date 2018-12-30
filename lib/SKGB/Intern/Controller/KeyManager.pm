@@ -8,7 +8,7 @@ use POSIX qw();
 use Data::Dumper;
 # use MIME::Lite;
 use Encode qw();
-use Mojo::SMTP::Client;
+use Mojo::SMTP::Client 0.15;
 # use Mojo::IOLoop;
 # use Email::Stuffer;
 use Email::MessageID;
@@ -396,12 +396,12 @@ MATCH (s:System)
 SET s.shortLoginFails = s.shortLoginFails + 1, s.longLoginFails = s.longLoginFails + 1
 RETURN s.shortLoginFails > {short_limit} AS shortFail, s.longLoginFails > {long_limit} AS longFail, s.shortLoginReport, s.longLoginReport
 _
-	$record->stats->{properties_set} or warn 'Incrementing login failure counters failed';
-	if ($record->get_bool('shortFail') && ! $record->get('s.shortLoginReport')) {
+	$record->summary->counters->properties_set or warn 'Incrementing login failure counters failed';
+	if ($record->get('shortFail') && ! $record->get('s.shortLoginReport')) {
 		$self->neo4j->session->run("MATCH (s:System) SET s.shortLoginReport = {now}", now => SKGB::Intern::AccessCode::new_time);
 		$self->_send_report_mail($config->{report}, 'short');
 	}
-	elsif ($record->get_bool('longFail') && ! $record->get('s.longLoginReport')) {
+	elsif ($record->get('longFail') && ! $record->get('s.longLoginReport')) {
 		$self->neo4j->session->run("MATCH (s:System) SET s.longLoginReport = {now}", now => SKGB::Intern::AccessCode::new_time);
 		$self->_send_report_mail($config->{report}, 'long');
 		# TODO: shut down the application server?
@@ -447,7 +447,7 @@ sub login {
 MATCH (s:System)
 RETURN (s.shortLoginFails > {short_limit} OR s.longLoginFails > {long_limit}) AS fail
 _
-	if ($result->single->get_bool('fail')) {
+	if ($result->single->get('fail')) {
 		$self->_count_failed_login if $self->param('key');
 		return $self->reply->exception('too many login failures; denying login access');
 	}

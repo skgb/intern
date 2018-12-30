@@ -26,7 +26,7 @@ sub new {
 	$self->{app} or croak "required param 'app' missing";
 	$self->{app}->isa('Mojolicious::Controller') and $self->{app} = $self->{app}->app;
 	$self->app->isa('Mojolicious') or croak "required param 'app' [" . ref($self->app) . "] not a Mojolicious app; SKGB::Intern instance required";
-	$self->app->neo4j && $self->app->neo4j->session->isa('Neo4j::Session') or croak "SKGB::Intern instance required at param 'app' [" . ref($self->app) . "]; possible problem establishing database connection";
+	$self->app->neo4j && $self->app->neo4j->session->isa('Neo4j::Driver::Session') or croak "SKGB::Intern instance required at param 'app' [" . ref($self->app) . "]; possible problem establishing database connection";
 	
 	if (ref $self->{user} && ref $self->{code} && $self->{id}) {
 		return $self;
@@ -179,7 +179,7 @@ SET c.access = {now}
 _
 	$query .= ', c.first_use = {now}' if ! $self->first_use;
 	my $result = $self->app->neo4j->run_stats($query, code => $self->code, now => $now);
-	$result->stats->{properties_set} or warn 'Updating access time for '.$self->code.' failed';
+	$result->summary->counters->properties_set or warn 'Updating access time for '.$self->code.' failed';
 }
 
 

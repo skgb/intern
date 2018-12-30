@@ -168,3 +168,10 @@ various hidden/internal changes:
 - implement assembly decision of 2011-05-28 to exempt trainers of boat usage fee
 - implement reduced membership fee and special agreements on fees
 - minor fixes for intern1 and listen exports
+
+2.0.0-a30, 2018-12-30
+- hard-code remaining special cases in budget list
+- update for 2019 ("Stegdienstliste" etc.)
+- support for more exact dates of birth
+- support for Mojolicious 8 and Neo4j 3.5
+- switch to published version of Neo4j::Driver

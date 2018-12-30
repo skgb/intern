@@ -29,19 +29,19 @@ _
   entity_exceptions => <<_,
 MATCH (c:AccessCode)-[:IDENTIFIES]->(x:Person)
 WHERE c.code = {code}
-RETURN CASE WHEN has(x.userId) THEN x.userId ELSE id(x) END AS handle, head(labels(x)) AS label
+RETURN CASE WHEN exists(x.userId) THEN x.userId ELSE id(x) END AS handle, head(labels(x)) AS label
 UNION
 MATCH (c:AccessCode)-[:IDENTIFIES]->(p:Person)-[y:OWNS|:DEBITOR|:HOLDER|:FOR|:PARENT|:COLLECTOR]-(x)
 WHERE c.code = {code}
-RETURN CASE WHEN has(x.userId) THEN x.userId ELSE id(x) END AS handle, head(labels(x)) AS label
+RETURN CASE WHEN exists(x.userId) THEN x.userId ELSE id(x) END AS handle, head(labels(x)) AS label
 UNION
 MATCH (c:AccessCode)-[:IDENTIFIES]->(q:Person)<-[:PARENT]-(x:Person)
 WHERE c.code = {code}
-RETURN CASE WHEN has(x.userId) THEN x.userId ELSE id(x) END AS handle, head(labels(x)) AS label
+RETURN CASE WHEN exists(x.userId) THEN x.userId ELSE id(x) END AS handle, head(labels(x)) AS label
 UNION
 MATCH (c:AccessCode)-[:IDENTIFIES]->(q:Person)<-[:PARENT]-(p:Person)-[y:OWNS|:DEBITOR|:HOLDER|:FOR|:PARENT|:COLLECTOR]-(x)
 WHERE c.code = {code}
-RETURN CASE WHEN has(x.userId) THEN x.userId ELSE id(x) END AS handle, head(labels(x)) AS label
+RETURN CASE WHEN exists(x.userId) THEN x.userId ELSE id(x) END AS handle, head(labels(x)) AS label
 _
 };
 
@@ -317,7 +317,7 @@ _
 	$options{force} and say "*** Force Login Fail Reset ***";
 	
 	my $short_reset = $self->_do_reset_login_fails(
-		$record->get_bool('s.shortLoginReset'),
+		$record->get('s.shortLoginReset'),
 		$record->get('s.shortLoginFails'),
 		"min" => 60,
 		$config->{short_time},
@@ -326,7 +326,7 @@ _
 		$t => 'MATCH (s:System) SET s.shortLoginFails = 0, s.shortLoginReset = {now}',
 	);
 	my $long_reset = $self->_do_reset_login_fails(
-		$record->get_bool('s.longLoginReset'),
+		$record->get('s.longLoginReset'),
 		$record->get('s.longLoginFails'),
 		" hr" => 3600,
 		$config->{long_time},
@@ -360,7 +360,7 @@ sub _do_reset_login_fails {
 	printf "limit $rate_limit /$unit for $time_limit $unit%s)\n", $time_limit != 1 ? "s" : " ";
 	if ($force_reset || $reset) {
 		my $result = $t->run($reset_query, now => SKGB::Intern::AccessCode::new_time);
-		$result->stats->{properties_set} and return 1 or warn 'Login fail reset: Failed to modify database';
+		$result->summary->counters->properties_set and return 1 or warn 'Login fail reset: Failed to modify database';
 	}
 	return 0;
 }

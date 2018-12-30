@@ -379,7 +379,7 @@ if ($options{create_paradox}) {
 
 #my $cypher_file = $options{cypher_file};
 
-print "BEGIN\n";
+print ":begin\n";
 print "MATCH (n) DETACH DELETE n;\n";
 
 sub cat_file {
@@ -580,6 +580,7 @@ foreach my $member (@members) {
 #	}
 	my $memberSince = iso_date $member->{'Mitseit'};
 	my $memberUntil = iso_date $member->{'Austritt'};
+	my $ghostRecord = $memberUntil && $memberUntil le ( 1900 + (localtime)[5] );  # längst ausgetreten
 	my $zu15 = $member->{'Zu15'};
 	my $regularContributor = $member->{'Aktiv'} && $member->{'Aktiv'} eq 'Wahr';
 	my $courses = $member->{'Zu14'};
@@ -635,6 +636,7 @@ foreach my $member (@members) {
 	# TODO: (Austritt), Betreuer, Zu13=Gruppe, {Bemerk}*
 	
 	# payment data
+	push @create, "($id)-[:SAILS]->(boats470)" if $member->{'Zu13'} eq "470er" && ! $memberUntil;
 	push @create, "($id)-[:SAILS]->(boats420)" if $member->{'Zu13'} eq "420er" && ! $memberUntil;
 	push @create, "($id)-[:SAILS]->(boatsOpti)" if $member->{'Zu13'} eq "Opti" && ! $memberUntil;
 	my $debitorSerial;
@@ -653,6 +655,7 @@ foreach my $member (@members) {
 	$debitReason = "Übungsleiter" if $member->{'Betreuer'} eq "Übungsleiter";
 	$debitReason = "in Ausbildung" if $member->{'Satz'} =~ m/04|08|09/;
 	$debitReason = "Sondervereinbarung" if $member->{'Satz'} =~ m/11/;
+	$debitReason = "2 Boote" if $member->{'Satz'} =~ m/13/;
 	$debitReason = "Eignergemeinschaft" if $member->{'Satz'} =~ m/14/;
 	$debitReason = "2 Boote (davon 1 Kanu)" if $member->{'Satz'} =~ m/15/;
 	my $umr = $member->{umr};
@@ -673,7 +676,7 @@ foreach my $member (@members) {
 	$personProps .= ", debitorSerial:'$debitorSerial'" if $debitorSerial;
 	$personProps .= ", debitBase:$debitBase";
 #	$personProps .= ", defaultEmail:'all'";
-	my $birthday = iso_date($member->{'Geburt'}, ($memberType =~ m/^Jugend/i) ? 'yq' : 'y');
+	my $birthday = iso_date($member->{'Geburt'}, ($memberType =~ m/^Jugend/i && ! $ghostRecord) ? 'ymd' : 'y');
 	$personProps .= ", debitReason:'$debitReason'" if $debitReason;
 	$personProps .= ", userId:'$userid'" if $userid;
 	$personProps .= ", prefix:'$degree'" if $degree;
@@ -789,7 +792,7 @@ if ($options{dev}) {
 cat_file $options{wiki_init_file};
 
 print ";\n";
-print "COMMIT\n";
+print ":commit\n";
 
 
 

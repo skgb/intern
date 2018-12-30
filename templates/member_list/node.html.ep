@@ -26,7 +26,7 @@ Eintritt:  <%= $person->membership->{joined} && $person->membership->{joined} eq
 Austritt:  <%= $person->membership->{leaves} || ( $person->membership->{joined} ? '–' : '' ) %>
 
 <!--Geschlecht:  <%= $person->_property('gender') %>
--->Geboren:  <%= $person->_property('born') %>  <%= $person->_property('born') ? ( '(Alter: ' . (length $person->_property('born') > 4 ? '' : 'ca. ') . $person->age . ' Jahre)' ) : '' %>
+-->Geboren:  <%= $person->_property('born') ? ( (substr $person->_property('born'), 0, 7) . '  (Alter: ' . (length $person->_property('born') > 4 ? '' : 'ca. ') . $person->age . ' Jahre)' ) : '' %>
 Beruf/Branche (Hobbys):  <%= $person->_property('skills') %>
 beteiligt sich am Vereinsleben (GS-Verein–„Aktiv“):  <%= defined $person->membership->{status} ? $person->membership->{regular} ? 'ja' : 'nein' : '' %>
 

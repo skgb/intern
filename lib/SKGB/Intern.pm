@@ -1,11 +1,12 @@
 package SKGB::Intern;
 use Mojo::Base 'Mojolicious';
+use Mojolicious 7.75;
 use Mojo::Log;
 #use Perl::Version;
 use SemVer;
 
 #our $VERSION = Perl::Version->new( '2.0.0_5' );
-our $VERSION = SemVer->new( '2.0.0-a29' );
+our $VERSION = SemVer->new( '2.0.0-a30' );
 
 
 sub startup {
@@ -69,9 +70,9 @@ sub setup_routing_database {
 	my ($app) = @_;
 	my $l = $app->logged_in;
 	
-	$l->get('/person/(#entity)')->to('member_list#person')->name('person');
+	$l->get('/person/<#entity>')->to('member_list#person')->name('person');
 	$l->get('/person/')->to('member_list#list_person')->name('list_person');
-	$l->get('/person/(#entity)/gs-verein')->to('member_list#gsverein')->name('paradox');
+	$l->get('/person/<#entity>/gs-verein')->to('member_list#gsverein')->name('paradox');
 	$l->get('/budgetliste')->to('member_list#list_budget')->name('list_budget');
 	$l->get('/austrittsliste')->to('member_list#list_leaving')->name('list_leaving');
 	$l->get('/schluesselliste')->to('member_list#list_keys')->name('list_keys');

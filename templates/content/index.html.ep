@@ -2,8 +2,8 @@
 % title 'Index';
 
 <h2>SKGB-intern 2</h2>
-<p>Einige Dienste der neuen Mitgliederverwaltung sind bereits als Vorab-Version verfügbar. Diese Dienste sind zwar noch in Alpha-Qualität und somit keineswegs zuverlässig, mögen aber dennoch für bestimmte Zwecke nützlich sein und stehen daher schon jetzt ausgewählten Mitgliedern zur Verfügung, von denen dem Vorstand eine unterzeichnete Verpflichtungserklärung auf das Datengeheimnis vorliegt (<a href=Merkblatt%20Datenschutz.pdf>Merkblatt</a>).
-<p>Während der Entwicklungsphase muss auf diesem Server mit unangekündigten Wartungsarbeiten gerechnet werden, die jederzeit den Betrieb stören können. Bei Problemen bitte Rückmeldung an den IT-Ausschuss!
+<p>Einige Dienste der neuen Mitgliederverwaltung sind bereits als Vorab-Version verfügbar. Diese Dienste sind zwar noch in Alpha-Qualität und somit nicht komplett zuverlässig, mögen aber dennoch für bestimmte Zwecke nützlich sein und stehen daher dem Vorstand schon jetzt zur Verfügung. Die Beachtung des Datengeheimnisses ist verpflichtend (<a href=Merkblatt%20Datenschutz.pdf>Merkblatt</a>).
+<p>Bei Problemen bitte Rückmeldung an den IT-Ausschuss!
 
 <h2>Index</h2>
 <p>Es folgt eine Übersicht der derzeit in SKGB-intern 2 verfügbaren Ressourcen. Für manche Ressourcen ist eine <%= auth_link_to login => "Anmeldung" %> erforderlich.
@@ -18,7 +18,6 @@
 <p>Mitgliederdatenbank:
 <ul>
 <li><%= auth_link_to mglliste => "Mitgliederliste" %>
-<li><%= auth_link_to _ => "Jugendliste" %>
 <li><%= auth_link_to postliste => "Postanschriften" %>
 <li><%= auth_link_to list_leaving => "Austritte" %>
 <li><%= auth_link_to list_budget => "Einnahmen" %>

@@ -43,6 +43,7 @@ CREATE
 (berthShore:Berth {ref:'W', comment:'Jollenwiese'})
 
 CREATE
+(boats470:Boat {mark:'Vereins-470er', class:'470er', count:1, comment:'Sammel-Node für vereinseigene 470er der Jugendgruppe'}),
 (boats420:Boat {mark:'Vereins-420er', class:'420er', count:3, comment:'Sammel-Node für vereinseigene 420er der Jugendgruppe'}),
 (boatsOpti:Boat {mark:'Vereins-Optis', class:'Optimisten', count:6, comment:'Sammel-Node für vereinseigene Optis der Jugendgruppe'}),
 (boatPapillon:Boat {mark:'Papillion', name:'Papillion', sailnumber:'2532', class:'Sailhorse', width:2.14}),
@@ -51,9 +52,10 @@ CREATE
 (boatElch:Boat {mark:'Elch', name:'Elch', class:'Kanadier', comment:'Hersteller: Gatz-Kanus', canoe:true}),
 (boatPeggy:Boat {mark:'Peggy', name:'Pegasus', registration:'133917 S', class:'Sicherungsboot', engine:true, comment:'Motorrettungsboot 25 PS'}),
 (boatOranje:Boat {mark:'Oranje', name:'Oranje', class:'Fun Yak Coralline', width:1.30, engine:true, comment:'„E-Boot“ (Sicherungsboot mit Elektromotor)'}),
+(skgb)-[:OWNS]->(boats470)-[:OCCUPIES]->(berthShore),
 (skgb)-[:OWNS]->(boats420)-[:OCCUPIES]->(berthShore),
 (skgb)-[:OWNS]->(boatsOpti)-[:OCCUPIES]->(berthPontoon),
-(skgb)-[:OWNS]->(boatPapillon)-[:OCCUPIES]->(berthJ3),
+(skgb)-[:OWNS]->(boatPapillon)-[:OCCUPIES]->(berthK4),
 (skgb)-[:OWNS]->(boatSkarl)-[:OCCUPIES]->(berthK3),
 (skgb)-[:OWNS]->(boatVanGalen)-[:OCCUPIES]->(berthE2),
 (skgb)-[:OWNS]->(boatElch)-[:OCCUPIES]->(berthPontoon),

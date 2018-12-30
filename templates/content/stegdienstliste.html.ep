@@ -45,7 +45,7 @@
 </DIV>
 <P><LABEL CLASS="not-implemented"><INPUT TYPE="radio" NAME="strategy" VALUE="base" DISABLED> <STRONG>unverändert</STRONG></LABEL>
 <DIV CLASS="strategy-options">
-	<P><LABEL CLASS="not-implemented">als Vorlage zu übernehmendes Basis-Jahr: <SELECT NAME="basedata" DISABLED><OPTION VALUE="2017" SELECTED>2017</OPTION><OPTION VALUE="2016">2016</OPTION><OPTION VALUE="2015">2015</OPTION><OPTION VALUE="2014">2014</OPTION><OPTION VALUE="2013">2013</OPTION><OPTION VALUE="2012">2012</OPTION><OPTION VALUE="2011">2011</OPTION><OPTION VALUE="2010">2010</OPTION><OPTION VALUE="2009">2009</OPTION></SELECT></LABEL>
+	<P><LABEL CLASS="not-implemented">als Vorlage zu übernehmendes Basis-Jahr: <SELECT NAME="basedata" DISABLED><OPTION VALUE="2018" SELECTED>2018</OPTION><OPTION VALUE="2017">2017</OPTION><OPTION VALUE="2016">2016</OPTION><OPTION VALUE="2015">2015</OPTION><OPTION VALUE="2014">2014</OPTION><OPTION VALUE="2013">2013</OPTION><OPTION VALUE="2012">2012</OPTION><OPTION VALUE="2011">2011</OPTION><OPTION VALUE="2010">2010</OPTION><OPTION VALUE="2009">2009</OPTION></SELECT></LABEL>
 </DIV>
 <P><LABEL><INPUT TYPE="radio" NAME="strategy" VALUE="sorted"> <STRONG>sortiert</STRONG></LABEL>
 <DIV CLASS="strategy-options">
@@ -131,8 +131,9 @@
 <P>Selbstverständlich ist zu erwarten, dass eine finale Version dieser App eine halbwegs benutzerfreundliche Oberfläche und „sensible defaults“ hat anstelle eines solchen kryptischen Zahlenwirrwarrs. (Mal sehen, ob und ggf. wann die Erwartung wahr wird…)
 <P style="margin-top: 2em">mehr Informationen:
 <UL>
-<LI><P><A HREF="http://de.wikipedia.org/wiki/Monte-Carlo-Algorithmus">Wikipedia zur Monte-Carlo–Methodik</A>
-<LI><P><A HREF="http://intern.skgb.de/digest/vorstand/gs-verein/">Hintergründe zur Motivation für SKGB-intern 2.0</A> (im alten Vorstandsbereich)
+<LI><P><A HREF="https://de.wikipedia.org/wiki/Monte-Carlo-Algorithmus">Wikipedia zur Monte-Carlo–Methodik</A>
+<LI><P><A HREF="https://de.wikipedia.org/wiki/Bergsteigeralgorithmus">Wikipedia zur Bergsteiger-Methodik</A> (zur Verbesserung der „zufälligen“ Vorschläge)
+<LI><P><A HREF="https://intern.skgb.de/digest/vorstand/gs-verein/">Hintergründe zur Motivation für SKGB-intern 2.0</A> (im alten Vorstandsbereich)
 </UL>
 
 </DIV>
@@ -149,12 +150,9 @@
 <H2 style="display:none">Druck</H2>
 <P>Vorstandsmitglieder können hier die bearbeitete Liste im LibreOffice-Format zur Veröffentlichung herunterladen.
 <P><INPUT TYPE=button ID=printbutton VALUE="ODF laden" onclick="SKGB.print()" DISABLED>
-<P STYLE="margin-top:1.5em">Die freie <STRONG>Schriftart <A HREF="http://savannah.gnu.org/projects/freefont/">FreeSerif</A></STRONG> wird <STRONG>benötigt,</STRONG> um das einheitliche Erscheinungsbild in der Vereinskommunikation zu fördern.
-<P>Empfohlen ist die FreeFont-Version 2012 oder neuer. Es sollte alle vier Schnitte von Free<B>Serif</B> installiert werden; die anderen beiden enthaltenen Schriftarten FreeMono und FreeSans werden nicht benötigt. Direktlinks zum Download vom GNU-Server:
-<BR><A HREF="http://ftp.gnu.org/gnu/freefont/freefont-ttf-20120503.zip">freefont-ttf-20120503.zip</A> – empfohlen für Windows
-<BR><A HREF="http://ftp.gnu.org/gnu/freefont/freefont-otf-20120503.tar.gz">freefont-otf-20120503.tar.gz</A> – empfohlen für andere Betriebssysteme
-<P STYLE="margin-top:1.5em">Das ausgegebene Dokument <EM>sollte</EM> ein ganz normales unkomprimiertes OpenDocument/ODF-Textdokument sein, das auch in anderer Software funktioniert. In der Praxis werden allerdings von Drittsoftware oftmals nur komprimierte ODF-Dokumente unterstützt und die SVG-Integration funktioniert oft nicht wie erwartet. Deshalb wird nur die Verwendung mit <A HREF="https://de.libreoffice.org/download/libreoffice-fresh/">LibreOffice 5</A> empfohlen.
-<P>(Apache OpenOffice <EM>sollte</EM> ebenfalls bestens funktionieren, ist aber völlig ungetestet und deshalb nicht empfohlen.)
+<P STYLE="margin-top:1.5em">Die freie <STRONG>Schriftart <A HREF="http://savannah.gnu.org/projects/freefont/">FreeSerif</A></STRONG> wird <STRONG>benötigt,</STRONG> um das einheitliche Erscheinungsbild in der Vereinskommunikation zu fördern. Alle vier Schnitte von FreeSerif sollten installiert werden.
+<P>Direktlink zum Download: <A HREF="http://dev.thaw.de/temp/freeserif-20120503-win.zip">freeserif-20120503-win.zip</A>
+<P STYLE="margin-top:1.5em">Das ausgegebene Dokument <EM>sollte</EM> ein ganz normales unkomprimiertes OpenDocument/ODF-Textdokument sein, das auch in anderer Software funktioniert. In der Praxis werden allerdings von Drittsoftware oftmals nur komprimierte ODF-Dokumente unterstützt und die SVG-Integration funktioniert oft nicht wie erwartet. Deshalb wird nur die Verwendung mit <A HREF="https://de.libreoffice.org/download/libreoffice-fresh/">LibreOffice 6</A> empfohlen.
 
 
 </DIV>
@@ -165,18 +163,39 @@
 <TEXTAREA COLS="120" ROWS="20" ID="initdata" READONLY STYLE="display: none;">
 {
 members: [
-% my @near = qw( Marienheide Kierspe Meinerzhagen Bergneustadt Gummersbach Wiehl Engelskirchen Lindlar Wipperfürth );
+% my %typical_drive_time = (
+%  Marienheide => 10,
+%  Gummersbach => 14,
+%  Meinerzhagen => 16,
+%  Kierspe => 19,
+%  Wipperfürth => 19,
+%  Bergneustadt => 21,
+%  Wiehl => 21,
+%  Engelskirchen => 21,
+%  Lindlar => 24,
+%  Reichshof => 25,
+%  Nümbrecht => 28,
+%  Overath => 31,
+%  Kürten => 35,
+%  Morsbach => 38,
+%  Rösrath => 38,
+%  Leverkusen => 40,
+% );
+% my $near_time = 22;
 % my $year = 1900 + (localtime)[5];
+% my $month = 1 + (localtime)[4];
 % foreach my $record (sort {$a->get('p')->name_sortable cmp $b->get('p')->name_sortable} @$records) {
 %  my $person = $record->get('p');
-%  my $remote = ! grep { $_ eq $record->get('place') } @near;
-%  my $exempt = $record->get('exempt') || ($record->get('p')->membership->{joined} gt $year);
+%  my $remote = ( $typical_drive_time{ $record->get('place') } // 9999 ) > $near_time;
+%  my $exempt = $record->get('exempt') || ($record->get('p')->membership->{joined} gt $year) && $month < 11;
 { id: <%= 0 + $person->gs_verein_id %>, name: "<%= $person->name %>", remote: <%= $remote ? 'true' : 'false' %>, board: <%= $record->get('board') ? 'true' : 'false' %>, exempt: <%= $exempt ? 'true' : 'false' %>},
 % }
 ]
 }
 </TEXTAREA>
 
+<TEXTAREA COLS="1" ROWS="1" ID="importdata2018" READONLY STYLE="display: none;">
+</TEXTAREA>
 <TEXTAREA COLS="1" ROWS="1" ID="importdata2017" READONLY STYLE="display: none;">
 </TEXTAREA>
 <TEXTAREA COLS="1" ROWS="1" ID="importdata2016" READONLY STYLE="display: none;">

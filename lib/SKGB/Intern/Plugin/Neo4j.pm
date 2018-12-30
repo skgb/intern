@@ -5,7 +5,7 @@ use Carp qw();
 our @CARP_NOT = qw(Mojolicious::Renderer);
 use Data::Dumper;
 
-use Neo4j::Driver;
+use Neo4j::Driver 0.09;
 use REST::Neo4p 0.3012;
 use SKGB::Intern::Person;
 
@@ -81,7 +81,7 @@ sub register {
 		}
 		
 		foreach my $record (@{$result->{result}->{data}}) {
-			bless $record, 'Neo4j::Record';
+			bless $record, 'Neo4j::Driver::Record';
 			$record->{column_keys} = $column_keys;
 			
 			# parse graph by matching the ids

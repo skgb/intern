@@ -7,4 +7,4 @@
 
 <p>leer!
 
-<p><%= auth_link_to wikiedit => "Artikel anlegen" %>
+<p><%= auth_link_to "edit:$name" => "Artikel anlegen" %>

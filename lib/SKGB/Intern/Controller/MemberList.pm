@@ -265,12 +265,14 @@ _
 	for my $record (@records) {
 		my $person = $record->get('p');
 		next if ! $person->membership->{status};
+		my $berth_sailboat = 65;  # BUG: hard-coded fees "Stegliegeplatz"
+		my $berth_canoe = 20;
 		my $member = {
 			person => $person,
 			membership => $record->get('rn')->{fee},
-			berth => $record->get('b') && 65 || 0,  # BUG: hard-coded fee "Stegliegeplatz"
+			berth => $record->get('b') ? $berth_sailboat : 0,
 			debit_base => $record->get('p')->_property('debitBase'),
-			debit_reason => $record->get('p')->_property('debitReason'),
+			debit_reason => $record->get('p')->_property('debitReason') // "",
 		};
 		foreach my $mandate ( @{$record->get('s')} ) {
 			$mandate->[0]->{terminated} and next;
@@ -279,12 +281,14 @@ _
 		}
 		$member->{membership} /= 2 if $person->membership->reduced_fee;
 		$member->{berth} = 0 if $member->{debit_reason} eq "gekaufte Box";
+		$member->{berth} = $berth_sailboat * 2 if $member->{debit_reason} eq "2 Boote";
+		$member->{berth} = $berth_sailboat + $berth_canoe if $member->{debit_reason} eq "2 Boote (davon 1 Kanu)";
 		$member->{debit_reason} = "" if $member->{debit_reason} eq "Übungsleiter" && $person->membership->{status} !~ m/^Jugend/;
 		$member->{usage} = $person->membership->{status} =~ m/^Jugend/ && $record->get('c') && $member->{debit_reason} ne "Übungsleiter" ? 55 : 0;  # BUG: hard-coded fee "Jugendbootsnutzung"
 		$member->{sum} = $member->{membership} + $member->{berth} + $member->{usage};
 		$member->{possible_error} = abs($member->{sum} - $member->{debit_base});
 		$member->{possible_error} = max($member->{sum}, $member->{debit_base}) if ! $member->{possible_error} && ! $member->{mandate} && max($member->{sum}, $member->{debit_base}) > 0;
-		if ($member->{debit_reason} eq "Sondervereinbarung") {
+		if ($member->{debit_reason} eq "Sondervereinbarung" || $member->{debit_reason} eq "Vermeidung von Härte") {
 			$total{membership} -= $member->{sum} - $member->{debit_base};
 			$member->{possible_error} = 0;
 		}

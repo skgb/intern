@@ -146,25 +146,30 @@ sub primary_emails {
 sub age {
 	my ($self) = @_;
 	my ($day, $month, $year) = (localtime)[3..5];
+	$month += 1;  # month is 0-based
 	$self->_property('born') =~ m/^(\d{4})(?:-([01Q]\d)(?:-(\d\d))?)?/;
 	my $born_year = $1 or return '';
 	my $born_month = $2;
 	my $born_day = $3;
 	my $age_year = $year + 1900 - $born_year;
+	my $age_month = 0;
 	if ($born_month) {
 		if ($born_month =~ m/^Q/) {
 			$born_month = 3 * (substr($born_month, 1) - 1) + 1;
-			$age_year -= 1 if 1 + $month < 0 + $born_month;
-			my $age_month = ($month + 1 - $born_month + 12) % 12;
-			$age_year = " $age_year" if $age_year < 10;  # surprised this works in DataTables...
-			return "${age_year}¾" if $age_month >= 9;
-			return "${age_year}½" if $age_month >= 6;
-			return "${age_year}¼" if $age_month >= 3;
-			return $age_year;
 		}
-		die; # exact date: not currently used
-#		$age -= 1 unless sprintf("%02d%02d", $month, $day) >= sprintf("%02d%02d", $birth_month, $birth_day);
+		$age_year -= 1 if $month < 0 + $born_month;
+		$age_month = ($month - $born_month + 12) % 12;
 	}
+	if ($born_day) {
+		$age_month -= 1 if $day < 0 + $born_day;
+#		# :BUG: doesn't take into account months with different lengths
+#		my $age_day = ($day - $born_day + 30) % 30;
+	}
+	# Even if the exact birthday is recorded in the database, we elect to only display the approximate age as it is good enough for most purposes.
+	$age_year = " $age_year" if $age_year < 10;  # surprised this works in DataTables...
+	return "${age_year}¾" if $age_month >= 9;
+	return "${age_year}½" if $age_month >= 6;
+	return "${age_year}¼" if $age_month >= 3;
 	return $age_year;
 }
 
