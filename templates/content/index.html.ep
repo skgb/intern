@@ -38,6 +38,5 @@
 <li><%= auth_link_to export1 => "Export nach SKGB-intern 1 (GS-Verein–Schnittstelle)" %> (lädt langsam)
 <li><%== $self->skgb->may('super-user') ? '<a href=/auth/?all>Auth</a>' : auth_link_to auth => "Auth" %>
 <li><%= auth_link_to list_person => "Personenliste" %>
-<li><a href="<%= $c->skgb->legacy->mount_point %>/">Reverse Proxy zu 1.4</a>
 <li><%= auth_link_to wikiview => "Wiki" %>
 </ul>

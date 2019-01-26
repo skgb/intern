@@ -134,6 +134,7 @@
 <LI><P><A HREF="https://de.wikipedia.org/wiki/Monte-Carlo-Algorithmus">Wikipedia zur Monte-Carlo–Methodik</A>
 <LI><P><A HREF="https://de.wikipedia.org/wiki/Bergsteigeralgorithmus">Wikipedia zur Bergsteiger-Methodik</A> (zur Verbesserung der „zufälligen“ Vorschläge)
 <LI><P><A HREF="https://intern.skgb.de/digest/vorstand/gs-verein/">Hintergründe zur Motivation für SKGB-intern 2.0</A> (im alten Vorstandsbereich)
+<LI><P><A HREF="https://intern.skgb.de/wiki/Merkblatt-Stegdienstliste">Merkblatt Stegdienstliste</A>
 </UL>
 
 </DIV>
@@ -151,14 +152,15 @@
 <P>Vorstandsmitglieder können hier die bearbeitete Liste im LibreOffice-Format zur Veröffentlichung herunterladen.
 <P><INPUT TYPE=button ID=printbutton VALUE="ODF laden" onclick="SKGB.print()" DISABLED>
 <P STYLE="margin-top:1.5em">Die freie <STRONG>Schriftart <A HREF="http://savannah.gnu.org/projects/freefont/">FreeSerif</A></STRONG> wird <STRONG>benötigt,</STRONG> um das einheitliche Erscheinungsbild in der Vereinskommunikation zu fördern. Alle vier Schnitte von FreeSerif sollten installiert werden.
-<P>Direktlink zum Download: <A HREF="http://dev.thaw.de/temp/freeserif-20120503-win.zip">freeserif-20120503-win.zip</A>
+<P>Direktlink zum Download: <A HREF="https://servo.skgb.de/font/freeserif-20120503-win.zip">freeserif-20120503-win.zip</A>
 <P STYLE="margin-top:1.5em">Das ausgegebene Dokument <EM>sollte</EM> ein ganz normales unkomprimiertes OpenDocument/ODF-Textdokument sein, das auch in anderer Software funktioniert. In der Praxis werden allerdings von Drittsoftware oftmals nur komprimierte ODF-Dokumente unterstützt und die SVG-Integration funktioniert oft nicht wie erwartet. Deshalb wird nur die Verwendung mit <A HREF="https://de.libreoffice.org/download/libreoffice-fresh/">LibreOffice 6</A> empfohlen.
 
 
 </DIV>
 </DIV>
 
-<P STYLE="font-size:1.5em;margin-bottom:5em">Unfinished Development Work – <STRONG>Technology Preview</STRONG>
+<P>Das <A HREF="/wiki/Merkblatt-Stegdienstliste">Merkblatt Stegdienstliste</A> enthält Hinweise zum Vorgehen zur Erstellung einer Stegdienstliste.
+<P STYLE="font-size:1.5em;margin-bottom:5em">
 
 <TEXTAREA COLS="120" ROWS="20" ID="initdata" READONLY STYLE="display: none;">
 {

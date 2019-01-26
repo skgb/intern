@@ -175,3 +175,7 @@ various hidden/internal changes:
 - support for more exact dates of birth
 - support for Mojolicious 8 and Neo4j 3.5
 - switch to published version of Neo4j::Driver
+
+2.0.0-a31, 2019-01-27
+- better integration of version 1.4 reverse proxy
+- preparations for beta phase

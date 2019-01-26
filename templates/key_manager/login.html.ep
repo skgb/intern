@@ -9,7 +9,7 @@
 <div class=loginsteps>
 <h2><big>①</big> Zugangscode anfordern</h2>
 
-<p>Wenn du keinen gültigen Zugangscode hast, kannst du als Vorstandsmitglied <!--SKGB-Mitglied--> jederzeit <%= link_to 'hier einen neuen Zugangscode anfordern', url_for('keyfactory')->query($target_query) %>. Der wird dir dann automatisch per E-Mail zugeschickt, du gibst ihn einfach unten ein und schon kannst du SKGB-intern 2 benutzen.
+<p>Wenn du keinen gültigen Zugangscode hast, kannst du als SKGB-Mitglied jederzeit <%= link_to 'hier einen neuen Zugangscode anfordern', url_for('keyfactory')->query($target_query) %>. Der wird dir dann automatisch per E-Mail zugeschickt, du gibst ihn einfach unten ein und schon kannst du SKGB-intern 2 benutzen.
 
 </div>
 
