@@ -179,3 +179,6 @@ various hidden/internal changes:
 2.0.0-a31, 2019-01-27
 - better integration of version 1.4 reverse proxy
 - preparations for beta phase
+
+2.0.0-a32, 2019-01-28
+- update for change to private API of Neo4j::Driver

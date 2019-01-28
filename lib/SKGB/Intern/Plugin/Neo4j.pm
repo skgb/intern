@@ -5,7 +5,7 @@ use Carp qw();
 our @CARP_NOT = qw(Mojolicious::Renderer);
 use Data::Dumper;
 
-use Neo4j::Driver 0.09;
+use Neo4j::Driver 0.11;
 use REST::Neo4p 0.3012;
 use SKGB::Intern::Person;
 
@@ -45,7 +45,16 @@ sub register {
 		my ($c, @args) = @_;
 		my $t = $self->session->begin_transaction;
 		$t->{return_stats} = 1;
-		return $t->_commit(@args);  # the Neo4j::* interfaces aren't finalised
+		return $t->_autocommit->run(@args);  # the Neo4j::* interfaces aren't finalised
+	});
+	
+	
+	# Runs a Cypher query using the Neo4j driver, returning the result with graph.
+	$app->helper('neo4j.run_graph' => sub {
+		my ($c, @args) = @_;
+		my $t = $self->session->begin_transaction;
+		$t->{return_graph} = 1;
+		return $t->_autocommit->run(@args);  # the Neo4j::* interfaces aren't finalised
 	});
 	
 	
@@ -67,9 +76,7 @@ sub register {
 		my ($c, $query, @params) = @_;
 		
 		my $params = ref $params[0] eq 'HASH' ? $params[0] : {@params};
-		my $t = $self->session->begin_transaction;
-		$t->{return_graph} = 1;
-		my $result = $t->_commit($query, $params);  # the Neo4j::* interfaces aren't finalised
+		my $result = $c->neo4j->run_graph($query, $params);
 		
 		my $persons = [];
 		my $column_keys = $result->_column_keys;

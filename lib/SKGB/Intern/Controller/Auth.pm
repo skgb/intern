@@ -116,9 +116,7 @@ sub _get_tree {
 		# retrieve and parse database graph
 		($nodes, $relationships) = ({}, {});
 		my $param = 0 + $self->stash('entity');
-		my $t = $self->neo4j->session->begin_transaction;
-		$t->{return_graph} = 1;  # the Neo4j::* interfaces aren't finalised
-		my $result = $t->_commit(<<END, id => $param);
+		my $result = $self->neo4j->run_graph(<<END, id => $param);
 MATCH a=(c:AccessCode)-[:ROLE|:GUEST|:IDENTIFIES*]->(r:Role)
 WHERE id(c) = {id}
 RETURN a
@@ -179,9 +177,7 @@ sub _tree {
 	
 	
 	my @graphs = ();
-	my $t = $self->neo4j->session->begin_transaction;
-	$t->{return_graph} = 1;  # the Neo4j::* interfaces aren't finalised
-	my $result = $t->_commit(<<END, id => $param);
+	my $result = $self->neo4j->run_graph(<<END, id => $param);
 MATCH a=(c:AccessCode)-[*]->(r:Role)
 WHERE id(c) = {id}
 RETURN a
