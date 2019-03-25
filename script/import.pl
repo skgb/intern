@@ -631,6 +631,8 @@ foreach my $member (@members) {
 		elsif ($office eq "2. Sportwart")     { $node = 'clubDeputySportsWarden' }
 		elsif ($office eq "1. Jugendwart")    { $node = 'clubYouthWarden' }
 		elsif ($office eq "2. Jugendwart")    { $node = 'clubDeputyYouthWarden' }
+		elsif ($office eq "1. Jugendsprecher") { $node = 'clubYouthRepresentative' }
+		elsif ($office eq "2. Jugendsprecher") { $node = 'clubDeputyYouthRepresentative' }
 		push @create, "($id)-[:ROLE]->($node)";
 	}
 	# TODO: (Austritt), Betreuer, Zu13=Gruppe, {Bemerk}*
@@ -667,6 +669,7 @@ foreach my $member (@members) {
 	
 	# personal data
 	my $name = $member->{'Vorname'} . ' ' . $member->{'Name'};
+	$name = $member->{'Name'} . ' ' . $member->{'Vorname'} if $gsvereinId eq '390';
 	my $degree = $member->{'Titel'};
 	my $userid = $member->{user};
 	my $gender = $member->{'Geschlecht'};
@@ -680,6 +683,8 @@ foreach my $member (@members) {
 	$personProps .= ", debitReason:'$debitReason'" if $debitReason;
 	$personProps .= ", userId:'$userid'" if $userid;
 	$personProps .= ", prefix:'$degree'" if $degree;
+	$personProps .= ", salutation:'Hallo $member->{Vorname}'" if $gsvereinId eq '390';
+	$personProps .= ", nameSortable:'$member->{Name}, $member->{Vorname}'" if $gsvereinId eq '390';
 	$personProps .= ", skills:'$skills'" if $skills;
 	$personProps .= ", born:'$birthday'" if $birthday;
 	unshift @create, "($id:Person {$personProps})";
@@ -743,11 +748,12 @@ foreach my $member (@members) {
 #	print STDERR "]";
 	
 	# software data
-#	push @create, "($id)-[:ROLE]->(user)" if $email || $member->{'Zu3'} =~ m/@/;
-	if ($member->{'Zu15'} =~ m/Verpflichtung nach DSE durch ([0-3][0-9][0-9]) ([-0-9ofen]+)/) {
-		push @create, "($id)-[:ROLE]->(user)";
-#		push @finallyCreate, "($id)<-[:PRIVACY {date:'$2'}]-(_$1)";
-	}
+	# skip ghost records for now (the system isn't quite ready for prime time)
+	push @create, "($id)-[:ROLE]->(user)" if ($email || $member->{'Zu3'} =~ m/@/) && ! $ghostRecord;
+#	if ($member->{'Zu15'} =~ m/Verpflichtung nach DSE durch ([0-3][0-9][0-9]) ([-0-9ofen]+)/) {
+#		push @create, "($id)-[:ROLE]->(user)";
+##		push @finallyCreate, "($id)<-[:PRIVACY {date:'$2'}]-(_$1)";
+#	}
 	push @create, "($id)-[:ROLE]->(admin)" if $member->{'Betreuer'} =~ m/\bIT\b/;
 	push @create, "($id)-[:ROLE]->(superUser)" if $member->{'Betreuer'} =~ m/\bIT\b/ && $gsvereinId =~ m/^0/;
 	
@@ -757,9 +763,11 @@ print "\n";
 print_create @finallyCreate;
 print "\n";
 
-print `sed -e '30,54d' -e '1,3d' -e '/^\\/\\//d' -e '/\\[:ROLE.*\\(user\\)/d' $options{intern_dir}/archive/2016/neuaufnahmen.cypher`;
-print `sed -e '/^\\/\\//d' -e '/\\[:ROLE.*\\(user\\)/d' $options{intern_dir}/archive/2017/neuaufnahmen.cypher`;
-print `sed -e '/^\\/\\//d' -e '/\\[:ROLE.*\\(user\\)/d' $options{intern_dir}/archive/2018/neuaufnahmen.cypher`;
+# -e '/\\[:ROLE.*\\(user\\)/d'
+print `sed -e '30,54d' -e '1,3d' -e '/^\\/\\//d' $options{intern_dir}/archive/2016/neuaufnahmen.cypher`;
+print `sed -e '/^\\/\\//d' $options{intern_dir}/archive/2017/neuaufnahmen.cypher`;
+print `sed -e '/^\\/\\//d' $options{intern_dir}/archive/2018/neuaufnahmen.cypher`;
+print `sed -e '/^\\/\\//d' $options{intern_dir}/archive/2019/neuaufnahmen.cypher`;
 
 #print "\n;\n\n";
 #cat_file $options{paradox_file};

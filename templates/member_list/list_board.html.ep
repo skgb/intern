@@ -1,0 +1,93 @@
+% layout 'intern1';
+% title 'Vorstandsliste';
+% use 5.016;
+
+<h2><%= title %></h2>
+
+<!--
+<p>Diese Liste zeigt, welche Personen Ämter im Verein innehaben oder andere offizielle Funktionen ausüben.
+-->
+
+<table id=membertable class="compact">
+<thead>
+<tr><th>Rolle<th>Name<th>E-Mail<th>Sortierschlüssel Amt<th>Sortierschlüssel Name
+</thead>
+% my %role_display_order = (
+%  'board-president' => 1,
+%  'board-secretary' => 2,
+%  'board-treasurer' => 3,
+%  'board-honorary' => 4,
+%  'board-deputy-treasurer' => 5,
+%  'board-press-warden' => 6,
+%  'board-gear-warden' => 7,
+%  'board-deputy-gear-warden' => 8,
+%  'board-sports-warden' => 9,
+%  'board-deputy-sports-warden' => 10,
+%  'board-youth-warden' => 11,
+%  'board-deputy-youth-warden' => 12,
+%  'board-youth-rep' => 13,
+%  'board-deputy-youth-rep' => 14,
+% );
+% foreach my $record (@$board) {
+%  my $person = $record->get('p');
+%  my $person_email = $person->handle . '@skgb.de' if $record->get('email');
+<tr>
+<td><%= $record->get('r.name') %>
+<td><%= auth_link_to person => $person->name, {entity => $person->handle} %>
+<td><% if ($person_email) { %><a href="mailto:<%= $person_email %>"><%= $person_email %></a><% } else { %>–<% } %>
+<td><%= $role_display_order{ $record->get('r.role') } // 9999 %>
+<td><%= fc($person->name_sortable) %>
+% }
+</table>
+
+% if ( $c->skgb->may('board-member') ) {
+<p>Aus dem hier angezeigten Stand der Datenbank ergeben sich erhöhte Zugriffsrechte auf SKGB-intern 2. Der Vorstand muss daher dafür Sorge tragen, dass diese Liste korrekt ist! SKGB-intern 1 nutzt eine getrennte Datenbank mit eigenen Zugriffsrechten, die manuell abgeglichen werden müssen (über die „Benutzerverwaltung“ im <a href=/digest/vorstand/>Vorstandsbereich</a>).
+% }
+<p>Kontakt zum Vorstand allgemein: <strong><a href=mailto:info@skgb.de>info@skgb.de</a></strong> (gelesen vom geschäftsführenden Vorstand)
+
+
+<script type="text/javascript" src="/lib/DataTables/datatables.js"></script>
+<script>
+// https://datatables.net/
+$(document).ready(function() {
+	var cols = $('#membertable tr')[0].childElementCount;
+	var exportOptions = {columns: ':visible'};
+	$('#membertable').DataTable( {
+		"columnDefs": [{
+			targets: 0,
+			orderData: [ cols - 2 ]
+		},{
+			targets: 1,
+			orderData: [ cols - 1 ]
+		},{
+			targets: cols - 2,
+			visible: false,
+			searchable: false
+		},{
+			targets: cols - 1,
+			visible: false,
+			searchable: false
+		}],
+//		order: [[ cols - 1, 'asc' ]],
+		colReorder: true,
+//		fixedHeader: true,
+//		responsive: true,
+//		keys: true,
+//		select: true,
+		lengthMenu: [[20, 50, -1], [20, 50, "All"]],
+		iDisplayLength: -1,
+//		paging: false,
+		order: [[ 0, "asc" ]],
+		stateSave: false,
+		dom: 'lBfrtip',
+		buttons: [
+//			'colvis',
+			{extend: 'copy', exportOptions: exportOptions},
+			{extend: 'csv', exportOptions: exportOptions},
+//			'excel',
+			{extend: 'pdf', exportOptions: exportOptions},
+			{extend: 'print', exportOptions: exportOptions, autoPrint: false, text: 'Print View'},
+		]
+	} );
+} );
+</script>

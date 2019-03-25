@@ -1,5 +1,6 @@
 package SKGB::Intern::Controller::Content;
 use Mojo::Base 'Mojolicious::Controller';
+use strict;
 
 
 sub index {

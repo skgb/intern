@@ -135,6 +135,9 @@ sub name_sortable {
 	my ($self) = @_;
 	return $self->{name_sortable} if $self->{name_sortable};
 	
+	my $name_sortable = $self->_property('nameSortable');
+	return $self->{name_sortable} = $name_sortable if $name_sortable;
+	
 	my $prefix = $self->_property('prefix');  # e. g. "Dr."
 	$self->name =~ m/^(.*) (.*)$/ or return $self->name;
 	return $self->{name_sortable} = "$2, $1" . ($prefix ? " $prefix" : "");

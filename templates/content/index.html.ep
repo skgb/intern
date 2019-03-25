@@ -27,6 +27,7 @@
 
 <p>Vereinsverwaltung:
 <ul>
+<li><%= auth_link_to list_board => "Vorstandsliste" %>
 <li><%= auth_link_to exportlisten => "Export (Listen-Schnittstelle)" %> (lädt langsam)
 <li><%= auth_link_to dosb => "Zugang zu den Verbänden (mit Mitgliederzahlen zur Meldung)" %>
 <!--<li><%= auth_link_to _ => "aktuelle Mitgliederzahlen" %> (für Vorstandssitzung)-->

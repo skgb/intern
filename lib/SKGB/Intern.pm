@@ -4,9 +4,10 @@ use Mojolicious 7.75;
 use Mojo::Log;
 #use Perl::Version;
 use SemVer;
+use strict;
 
 #our $VERSION = Perl::Version->new( '2.0.0_5' );
-our $VERSION = SemVer->new( '2.0.0-a32' );
+our $VERSION = SemVer->new( '2.0.0-a33' );
 
 
 sub startup {
@@ -80,6 +81,7 @@ sub setup_routing_database {
 	$l->get('/mitgliederliste')->to('member_list#list')->name('mglliste');
 	$l->get('/anschriftenliste')->to('member_list#postal')->name('postliste');
 	$l->get('/jugendliste')->to('member_list#youth')->name('jgdliste');
+	$l->get('/vorstandsliste')->to('member_list#list_board')->name('list_board');
 	$l->get('/export/intern1')->to('export#intern1')->name('export1');
 	$l->get('/export/listen')->to('export#listen')->name('exportlisten');
 	$l->get('/dosb')->to('stats#dosb')->name('dosb');

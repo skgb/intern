@@ -22,6 +22,8 @@ CREATE
 (clubDeputySportsWarden:Role {name:"2. Sportwart", role:"board-deputy-sports-warden"})-[:ROLE]->(boardMember),
 (clubYouthWarden:Role {name:"1. Jugendwart", role:"board-youth-warden"})-[:ROLE]->(boardMember),
 (clubDeputyYouthWarden:Role {name:"2. Jugendwart", role:"board-deputy-youth-warden"})-[:ROLE]->(boardMember),
+(clubYouthRepresentative:Role {name:"1. Jugendsprecher", role:"board-youth-rep"})-[:ROLE]->(boardMember),
+(clubDeputyYouthRepresentative:Role {name:"2. Jugendsprecher", role:"board-deputy-youth-rep"})-[:ROLE]->(boardMember),
 (admin:Role {name:"Administrator", role:"admin"})
 
 CREATE
@@ -52,6 +54,7 @@ CREATE
 (execBoardMember)-[:ROLE]->(:Role {role:'mojo:paradox', name:'GS-Verein'}),
 (execBoardMember)-[:ROLE]->(list_budget_Role:Role {role:'mojo:list_budget', name:'Einnahmenliste'}),
 (clubDeputyTreasurer)-[:ROLE]->(list_budget_Role),
+(member)-[:ROLE]->(:Role {role:'mojo:list_board', name:'Vorstandsliste'}),
 (member)-[:ROLE]->(:Role {role:'mojo:regeln', name:'SKGB-Regeln'}),
 (member)-[:ROLE]->(:Role {role:'mojo:stegdienstliste', name:'Stegdienstliste erzeugen'}),
 (user)-[:ROLE]->(:Role {role:'mojo:auth', name:'mojo:auth'})

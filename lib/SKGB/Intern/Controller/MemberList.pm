@@ -173,6 +173,22 @@ END
 }
 
 
+sub list_board {
+	my ($self) = @_;
+	
+	return $self->reply->forbidden unless $self->skgb->may;
+	
+	my @board = $self->neo4j->get_persons(<<END, column => 'p');
+MATCH (p:Person)-[:ROLE|GUEST]->(r:Role)-[:ROLE*]->(:Role {role:'board-member'})
+OPTIONAL MATCH (p)<-[:FOR{primary:'text'}]-(e:Address{type:'email'})
+RETURN p, r.name, r.role, e.type AS email
+ORDER BY p.name
+END
+	
+	return $self->render(template => 'member_list/list_board', board => \@board);
+}
+
+
 sub person {
 	my ($self) = @_;
 	

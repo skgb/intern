@@ -182,3 +182,9 @@ various hidden/internal changes:
 
 2.0.0-a32, 2019-01-28
 - update for change to private API of Neo4j::Driver
+
+2.0.0-a33, 2019-03-25
+- start beta phase: enable access for all members
+- add board member list
+- support for youth representatives
+- support for person's names with custom sort order
