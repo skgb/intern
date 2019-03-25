@@ -7,7 +7,7 @@ use SemVer;
 use strict;
 
 #our $VERSION = Perl::Version->new( '2.0.0_5' );
-our $VERSION = SemVer->new( '2.0.0-a33' );
+our $VERSION = SemVer->new( '2.0.0-a34' );
 
 
 sub startup {

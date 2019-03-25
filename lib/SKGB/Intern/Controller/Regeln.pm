@@ -41,7 +41,7 @@ sub regeln {
 		}
 		$regeln_list->{$key} = $info;
 	};
-	find($wanted, $c->config->{skgb}->{regeln_src});
+	find($wanted, $c->config->{skgb}->{regeln}->{src_directory});
 	
 	my $regeln_param = $c->param('regeln') || $c->stash('entity');
 #	my $regeln_param = $c->param('regeln');
@@ -63,8 +63,8 @@ sub regeln {
 	
 	# run
 	my $regeln = SKGB::Regeln->load( $info->{path} );
-	$regeln->{html_stylesheet} = 'public/regeln/regeln2html.xsl';
-	$regeln->{odf_stylesheet} = 'public/regeln/regeln2odf.xsl';
+	$regeln->{html_stylesheet} = $c->config->{skgb}->{regeln}->{html_stylesheet};
+	$regeln->{odf_stylesheet} = $c->config->{skgb}->{regeln}->{odf_stylesheet};
 	
 	my $baseVersion = $c->param('base');
 	my $showChanges = $c->param('changes');

@@ -188,3 +188,6 @@ various hidden/internal changes:
 - add board member list
 - support for youth representatives
 - support for person's names with custom sort order
+
+2.0.0-a34, 2019-03-25
+- deploy regeln src through github clone
