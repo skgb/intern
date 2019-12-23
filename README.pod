@@ -1,0 +1,39 @@
+=encoding utf8
+
+=head1  SKGB-intern 2
+
+Support of this software has been discontinued in October 2019.
+There is no schedule for further development.
+
+
+=head2  Legal
+
+Copyright © 2016-2019 Arne Johannessen / SKGB
+
+Some rights reserved. This is free software, licensed under the
+Artistic License 2.0. See F<LICENSE> for details.
+
+I<< Attention is called to section (12) of the license, which
+prohibits your use of the tradename “SKGB”. This means you are
+B<required> to change the name of this software if you modify
+it or use it on a network. (Obviously, this restriction does
+not apply to the L<SKGB|https://www.skgb.de/> itself.) >>
+
+
+=head2  Requirements
+
+=over
+
+=item * Neo4j 3.x
+
+=item * Perl 5
+
+=item * Mojolicious 8
+
+=item * various other Perl modules
+
+=item * mail submission agent
+
+=item * test dataset
+
+=back
